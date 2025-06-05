@@ -5,22 +5,118 @@
     <ClCompile Include="VSGenerator.cpp" />
     <ClCompile Include="Precomp.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="File.cpp" />
-    <ClCompile Include="JsonValue.cpp" />
-    <ClCompile Include="UTF8Reader.cpp" />
-    <ClCompile Include="miniz.c" />
-    <ClCompile Include="ZipWriter.cpp" />
-    <ClCompile Include="WebPackage.cpp" />
+    <ClCompile Include="CSSTokenizer.cpp" />
+    <ClCompile Include="WebBuild.cpp" />
+    <ClCompile Include="IOData\DataBuffer.cpp">
+      <Filter>IOData</Filter>
+    </ClCompile>
+    <ClCompile Include="IOData\Directory.cpp">
+      <Filter>IOData</Filter>
+    </ClCompile>
+    <ClCompile Include="IOData\File.cpp">
+      <Filter>IOData</Filter>
+    </ClCompile>
+    <ClCompile Include="IOData\FilePath.cpp">
+      <Filter>IOData</Filter>
+    </ClCompile>
+    <ClCompile Include="IOData\MemoryDevice.cpp">
+      <Filter>IOData</Filter>
+    </ClCompile>
+    <ClCompile Include="Json\JsonValue.cpp">
+      <Filter>Json</Filter>
+    </ClCompile>
+    <ClCompile Include="Text\Text.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="Text\UTF8Reader.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="Text\UTF16.cpp">
+      <Filter>Text</Filter>
+    </ClCompile>
+    <ClCompile Include="Zip\miniz.c">
+      <Filter>Zip</Filter>
+    </ClCompile>
+    <ClCompile Include="Zip\ZipReader.cpp">
+      <Filter>Zip</Filter>
+    </ClCompile>
+    <ClCompile Include="Zip\ZipWriter.cpp">
+      <Filter>Zip</Filter>
+    </ClCompile>
+    <ClCompile Include="Javascript\quickjs-amalgam.c">
+      <Filter>Javascript</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
     <ClInclude Include="VSGenerator.h" />
     <ClInclude Include="Precomp.h" />
-    <ClInclude Include="File.h" />
-    <ClInclude Include="JsonValue.h" />
-    <ClInclude Include="UTF8Reader.h" />
-    <ClInclude Include="miniz.h" />
-    <ClInclude Include="ZipWriter.h" />
-    <ClInclude Include="WebPackage.h" />
+    <ClInclude Include="CSSTokenizer.h" />
+    <ClInclude Include="WebBuild.h" />
+    <ClInclude Include="IOData\DataBuffer.h">
+      <Filter>IOData</Filter>
+    </ClInclude>
+    <ClInclude Include="IOData\Directory.h">
+      <Filter>IOData</Filter>
+    </ClInclude>
+    <ClInclude Include="IOData\File.h">
+      <Filter>IOData</Filter>
+    </ClInclude>
+    <ClInclude Include="IOData\FilePath.h">
+      <Filter>IOData</Filter>
+    </ClInclude>
+    <ClInclude Include="IOData\IODevice.h">
+      <Filter>IOData</Filter>
+    </ClInclude>
+    <ClInclude Include="IOData\MemoryDevice.h">
+      <Filter>IOData</Filter>
+    </ClInclude>
+    <ClInclude Include="Json\JsonValue.h">
+      <Filter>Json</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\Text.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\UTF8Reader.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Text\UTF16.h">
+      <Filter>Text</Filter>
+    </ClInclude>
+    <ClInclude Include="Zip\miniz.h">
+      <Filter>Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="Zip\ZipReader.h">
+      <Filter>Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="Zip\ZipWriter.h">
+      <Filter>Zip</Filter>
+    </ClInclude>
+    <ClInclude Include="Javascript\quickjs.h">
+      <Filter>Javascript</Filter>
+    </ClInclude>
+    <ClInclude Include="Javascript\quickjs-libc.h">
+      <Filter>Javascript</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="IOData">
+      <UniqueIdentifier>{d4cfb044-fb8a-4f6e-a8d5-f6beae0d0946}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Json">
+      <UniqueIdentifier>{bf42b501-2fa7-4b45-aa4f-ac36b625e25d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Text">
+      <UniqueIdentifier>{ba0df103-00f5-47d4-92a3-494898156614}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Zip">
+      <UniqueIdentifier>{b403ec36-2f95-441a-98ee-70c82a5903c7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Javascript">
+      <UniqueIdentifier>{e85875f8-034d-45b5-84cb-4fba6bc32ca6}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="CPPBuild.manifest" />
   </ItemGroup>
 </Project>

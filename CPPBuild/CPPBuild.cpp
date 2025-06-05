@@ -2,7 +2,6 @@
 #include "Precomp.h"
 #include "CPPBuild.h"
 #include "VSGenerator.h"
-#include "WebPackage.h"
 
 CPPBuild::CPPBuild()
 {
@@ -54,12 +53,10 @@ void CPPBuild::generate()
 
 void CPPBuild::build(std::string target)
 {
-	WebPackage::build("musicplayer.webpkg", "WebPackage");
 }
 
 void CPPBuild::clean(std::string target)
 {
-	WebPackage::clean("musicplayer.webpkg", "WebPackage");
 }
 
 void CPPBuild::rebuild(std::string target)

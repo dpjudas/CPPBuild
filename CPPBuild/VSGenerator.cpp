@@ -1,7 +1,7 @@
 
 #include "Precomp.h"
 #include "VSGenerator.h"
-#include "File.h"
+#include "IOData/File.h"
 
 VSSolution::VSSolution(const std::string& name) : name(name)
 {
@@ -327,5 +327,5 @@ void VSLineWriter::writeLine(const std::string& text)
 
 void VSLineWriter::save(const std::string& filename)
 {
-	File::write_all_text(filename, lines);
+	File::writeAllText(filename, lines);
 }

@@ -19,30 +19,31 @@
 **
 */
 
+#include "Precomp.h"
 #include "UTF8Reader.h"
 
-class UTF8_Reader_Impl
+class UTF8Reader_Impl
 {
 public:
 	static const char trailing_bytes_for_utf8[256];
 	static const unsigned char bitmask_leadbyte_for_utf8[6];
 };
 
-UTF8_Reader::UTF8_Reader(const std::string::value_type *text, std::string::size_type length) : length(length), data((unsigned char *)text)
+UTF8Reader::UTF8Reader(const std::string::value_type* text, std::string::size_type length) : length(length), data((unsigned char*)text)
 {
 }
 
-bool UTF8_Reader::is_end()
+bool UTF8Reader::is_end()
 {
 	return current_position >= length;
 }
 
-unsigned int UTF8_Reader::character()
+unsigned int UTF8Reader::character()
 {
 	if (current_position >= length)
 		return 0;
 
-	int trailing_bytes = UTF8_Reader_Impl::trailing_bytes_for_utf8[data[current_position]];
+	int trailing_bytes = UTF8Reader_Impl::trailing_bytes_for_utf8[data[current_position]];
 	if (trailing_bytes == 0 && (data[current_position] & 0x80) == 0x80)
 		return '?';
 
@@ -52,7 +53,7 @@ unsigned int UTF8_Reader::character()
 	}
 	else
 	{
-		unsigned int ucs4 = (data[current_position] & UTF8_Reader_Impl::bitmask_leadbyte_for_utf8[trailing_bytes]);
+		unsigned int ucs4 = (data[current_position] & UTF8Reader_Impl::bitmask_leadbyte_for_utf8[trailing_bytes]);
 		for (std::string::size_type i = 0; i < trailing_bytes; i++)
 		{
 			if ((data[current_position + 1 + i] & 0xC0) == 0x80)
@@ -68,11 +69,11 @@ unsigned int UTF8_Reader::character()
 
 }
 
-std::string::size_type UTF8_Reader::char_length()
+std::string::size_type UTF8Reader::char_length()
 {
 	if (current_position < length)
 	{
-		int trailing_bytes = UTF8_Reader_Impl::trailing_bytes_for_utf8[data[current_position]];
+		int trailing_bytes = UTF8Reader_Impl::trailing_bytes_for_utf8[data[current_position]];
 		if (current_position + 1 + trailing_bytes > length)
 			return 1;
 
@@ -90,7 +91,7 @@ std::string::size_type UTF8_Reader::char_length()
 	}
 }
 
-void UTF8_Reader::prev()
+void UTF8Reader::prev()
 {
 	if (current_position > length)
 		current_position = length;
@@ -102,13 +103,13 @@ void UTF8_Reader::prev()
 	}
 }
 
-void UTF8_Reader::next()
+void UTF8Reader::next()
 {
 	current_position += char_length();
 
 }
 
-void UTF8_Reader::move_to_leadbyte()
+void UTF8Reader::move_to_leadbyte()
 {
 	if (current_position < length)
 	{
@@ -117,24 +118,24 @@ void UTF8_Reader::move_to_leadbyte()
 		while (lead_position > 0 && (data[lead_position] & 0xC0) == 0x80)
 			lead_position--;
 
-		int trailing_bytes = UTF8_Reader_Impl::trailing_bytes_for_utf8[data[lead_position]];
+		int trailing_bytes = UTF8Reader_Impl::trailing_bytes_for_utf8[data[lead_position]];
 		if (lead_position + trailing_bytes >= current_position)
 			current_position = lead_position;
 	}
 
 }
 
-std::string::size_type UTF8_Reader::position()
+std::string::size_type UTF8Reader::position()
 {
 	return current_position;
 }
 
-void UTF8_Reader::set_position(std::string::size_type position)
+void UTF8Reader::set_position(std::string::size_type position)
 {
 	current_position = position;
 }
 
-const char UTF8_Reader_Impl::trailing_bytes_for_utf8[256] =
+const char UTF8Reader_Impl::trailing_bytes_for_utf8[256] =
 {
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
@@ -146,7 +147,7 @@ const char UTF8_Reader_Impl::trailing_bytes_for_utf8[256] =
 	2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5
 };
 
-const unsigned char UTF8_Reader_Impl::bitmask_leadbyte_for_utf8[6] =
+const unsigned char UTF8Reader_Impl::bitmask_leadbyte_for_utf8[6] =
 {
 	0x7f,
 	0x1f,

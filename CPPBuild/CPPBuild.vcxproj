@@ -21,13 +21,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -57,9 +57,17 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32;UNICODE;_UNICODE;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Precomp.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -72,9 +80,17 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32;_WIN32;UNICODE;_UNICODE;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>Precomp.h</PrecompiledHeaderFile>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
+      <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <LanguageStandard>stdcpp20</LanguageStandard>
+      <UseStandardPreprocessor>true</UseStandardPreprocessor>
+      <AdditionalIncludeDirectories>$(ProjectDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -85,26 +101,64 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="CPPBuild.cpp" />
-    <ClCompile Include="File.cpp" />
-    <ClCompile Include="JsonValue.cpp" />
+    <ClCompile Include="CSSTokenizer.cpp" />
+    <ClCompile Include="IOData\DataBuffer.cpp" />
+    <ClCompile Include="IOData\Directory.cpp" />
+    <ClCompile Include="IOData\File.cpp" />
+    <ClCompile Include="IOData\FilePath.cpp" />
+    <ClCompile Include="IOData\MemoryDevice.cpp" />
+    <ClCompile Include="Javascript\quickjs-amalgam.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</SDLCheck>
+      <SDLCheck Condition="'$(Configuration)|$(Platform)'=='Release|x64'">false</SDLCheck>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Level1</WarningLevel>
+      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Level1</WarningLevel>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="Json\JsonValue.cpp" />
     <ClCompile Include="Main.cpp" />
-    <ClCompile Include="miniz.c" />
-    <ClCompile Include="Precomp.cpp" />
-    <ClCompile Include="UTF8Reader.cpp" />
+    <ClCompile Include="Precomp.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Text\Text.cpp" />
+    <ClCompile Include="Text\UTF16.cpp" />
+    <ClCompile Include="Text\UTF8Reader.cpp" />
     <ClCompile Include="VSGenerator.cpp" />
-    <ClCompile Include="WebPackage.cpp" />
-    <ClCompile Include="ZipWriter.cpp" />
+    <ClCompile Include="WebBuild.cpp" />
+    <ClCompile Include="Zip\miniz.c">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Zip\ZipReader.cpp" />
+    <ClCompile Include="Zip\ZipWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
-    <ClInclude Include="File.h" />
-    <ClInclude Include="JsonValue.h" />
-    <ClInclude Include="miniz.h" />
+    <ClInclude Include="CSSTokenizer.h" />
+    <ClInclude Include="IOData\DataBuffer.h" />
+    <ClInclude Include="IOData\Directory.h" />
+    <ClInclude Include="IOData\File.h" />
+    <ClInclude Include="IOData\FilePath.h" />
+    <ClInclude Include="IOData\IODevice.h" />
+    <ClInclude Include="IOData\MemoryDevice.h" />
+    <ClInclude Include="Javascript\quickjs-libc.h" />
+    <ClInclude Include="Javascript\quickjs.h" />
+    <ClInclude Include="Json\JsonValue.h" />
     <ClInclude Include="Precomp.h" />
-    <ClInclude Include="UTF8Reader.h" />
+    <ClInclude Include="Text\Text.h" />
+    <ClInclude Include="Text\UTF16.h" />
+    <ClInclude Include="Text\UTF8Reader.h" />
     <ClInclude Include="VSGenerator.h" />
-    <ClInclude Include="WebPackage.h" />
-    <ClInclude Include="ZipWriter.h" />
+    <ClInclude Include="WebBuild.h" />
+    <ClInclude Include="Zip\miniz.h" />
+    <ClInclude Include="Zip\ZipReader.h" />
+    <ClInclude Include="Zip\ZipWriter.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="CPPBuild.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

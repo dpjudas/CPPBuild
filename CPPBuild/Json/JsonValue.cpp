@@ -1,27 +1,25 @@
 
-#define _CRT_SECURE_NO_WARNINGS
-
+#include "Precomp.h"
 #include "JsonValue.h"
-#include "UTF8Reader.h"
-#include <stdexcept>
+#include "Text/UTF8Reader.h"
 
 class JsonValueImpl
 {
 public:
-	static void write(const JsonValue &value, std::string &json);
-	static void write_array(const JsonValue &value, std::string &json);
-	static void write_object(const JsonValue &value, std::string &json);
-	static void write_string(const std::string &str, std::string &json);
-	static void write_number(const JsonValue &value, std::string &json);
+	static void write(const JsonValue& value, std::string& json);
+	static void write_array(const JsonValue& value, std::string& json);
+	static void write_object(const JsonValue& value, std::string& json);
+	static void write_string(const std::string& str, std::string& json);
+	static void write_number(const JsonValue& value, std::string& json);
 
-	static JsonValue read(const std::string &json, size_t &pos);
-	static JsonValue read_object(const std::string &json, size_t &pos);
-	static JsonValue read_array(const std::string &json, size_t &pos);
-	static std::string read_string(const std::string &json, size_t &pos);
-	static JsonValue read_number(const std::string &json, size_t &pos);
-	static JsonValue read_boolean(const std::string &json, size_t &pos);
-	static JsonValue read_null(const std::string &json, size_t &pos);
-	static void read_whitespace(const std::string &json, size_t &pos);
+	static JsonValue read(const std::string& json, size_t& pos);
+	static JsonValue read_object(const std::string& json, size_t& pos);
+	static JsonValue read_array(const std::string& json, size_t& pos);
+	static std::string read_string(const std::string& json, size_t& pos);
+	static JsonValue read_number(const std::string& json, size_t& pos);
+	static JsonValue read_boolean(const std::string& json, size_t& pos);
+	static JsonValue read_null(const std::string& json, size_t& pos);
+	static void read_whitespace(const std::string& json, size_t& pos);
 
 	static std::string from_utf32(unsigned int value);
 };
@@ -33,7 +31,7 @@ std::string JsonValue::to_json() const
 	return result;
 }
 
-JsonValue JsonValue::parse(const std::string &json)
+JsonValue JsonValue::parse(const std::string& json)
 {
 	size_t pos = 0;
 	return JsonValueImpl::read(json, pos);
@@ -41,7 +39,7 @@ JsonValue JsonValue::parse(const std::string &json)
 
 /////////////////////////////////////////////////////////////////////////
 
-void JsonValueImpl::write(const JsonValue &value, std::string &json)
+void JsonValueImpl::write(const JsonValue& value, std::string& json)
 {
 	switch (value.type())
 	{
@@ -68,7 +66,7 @@ void JsonValueImpl::write(const JsonValue &value, std::string &json)
 	}
 }
 
-void JsonValueImpl::write_array(const JsonValue &value, std::string &json)
+void JsonValueImpl::write_array(const JsonValue& value, std::string& json)
 {
 	json += "[";
 	for (size_t i = 0; i < value.items().size(); i++)
@@ -80,7 +78,7 @@ void JsonValueImpl::write_array(const JsonValue &value, std::string &json)
 	json += "]";
 }
 
-void JsonValueImpl::write_object(const JsonValue &value, std::string &json)
+void JsonValueImpl::write_object(const JsonValue& value, std::string& json)
 {
 	json += "{";
 	std::map<std::string, JsonValue>::const_iterator it;
@@ -95,11 +93,11 @@ void JsonValueImpl::write_object(const JsonValue &value, std::string &json)
 	json += "}";
 }
 
-void JsonValueImpl::write_string(const std::string &str, std::string &json)
+void JsonValueImpl::write_string(const std::string& str, std::string& json)
 {
 	json.push_back('"');
 
-	UTF8_Reader reader(str.data(), str.size());
+	UTF8Reader reader(str.data(), str.size());
 	while (!reader.is_end())
 	{
 		uint32_t c = reader.character();
@@ -182,14 +180,14 @@ void JsonValueImpl::write_string(const std::string &str, std::string &json)
 	json.push_back('"');
 }
 
-void JsonValueImpl::write_number(const JsonValue &value, std::string &json)
+void JsonValueImpl::write_number(const JsonValue& value, std::string& json)
 {
 	char buf[64];
 	buf[0] = 0;
 	if (static_cast<double>(static_cast<int>(value.to_number())) == value.to_number())
 	{
 #ifdef WIN32
-		_snprintf(buf, 63, "%d", (int)value.to_number());
+		_snprintf_s(buf, 63, "%d", (int)value.to_number());
 #else
 		snprintf(buf, 63, "%d", (int)value.to_number());
 #endif
@@ -197,7 +195,7 @@ void JsonValueImpl::write_number(const JsonValue &value, std::string &json)
 	else
 	{
 #ifdef WIN32
-		_snprintf(buf, 63, "%f", value.to_number());
+		_snprintf_s(buf, 63, "%f", value.to_number());
 #else
 		snprintf(buf, 63, "%f", value.to_number());
 #endif
@@ -206,7 +204,7 @@ void JsonValueImpl::write_number(const JsonValue &value, std::string &json)
 	json += buf;
 }
 
-JsonValue JsonValueImpl::read(const std::string &json, size_t &pos)
+JsonValue JsonValueImpl::read(const std::string& json, size_t& pos)
 {
 	read_whitespace(json, pos);
 
@@ -243,7 +241,7 @@ JsonValue JsonValueImpl::read(const std::string &json, size_t &pos)
 	}
 }
 
-JsonValue JsonValueImpl::read_object(const std::string &json, size_t &pos)
+JsonValue JsonValueImpl::read_object(const std::string& json, size_t& pos)
 {
 	JsonValue result = JsonValue::object();
 
@@ -295,7 +293,7 @@ JsonValue JsonValueImpl::read_object(const std::string &json, size_t &pos)
 	return result;
 }
 
-JsonValue JsonValueImpl::read_array(const std::string &json, size_t &pos)
+JsonValue JsonValueImpl::read_array(const std::string& json, size_t& pos)
 {
 	JsonValue result = JsonValue::array();
 
@@ -335,7 +333,7 @@ JsonValue JsonValueImpl::read_array(const std::string &json, size_t &pos)
 	return result;
 }
 
-std::string JsonValueImpl::read_string(const std::string &json, size_t &pos)
+std::string JsonValueImpl::read_string(const std::string& json, size_t& pos)
 {
 	pos++;
 	if (pos == json.length())
@@ -431,7 +429,7 @@ std::string JsonValueImpl::read_string(const std::string &json, size_t &pos)
 	return result;
 }
 
-JsonValue JsonValueImpl::read_number(const std::string &json, size_t &pos)
+JsonValue JsonValueImpl::read_number(const std::string& json, size_t& pos)
 {
 	size_t start_pos = pos;
 	if (json[pos] == '-')
@@ -457,11 +455,11 @@ JsonValue JsonValueImpl::read_number(const std::string &json, size_t &pos)
 		throw std::runtime_error("Unexpected character in JSON data");
 
 	double result = 0.0;
-	sscanf(number_string.c_str(), "%lf", &result);
+	sscanf_s(number_string.c_str(), "%lf", &result);
 	return JsonValue::number(result);
 }
 
-JsonValue JsonValueImpl::read_boolean(const std::string &json, size_t &pos)
+JsonValue JsonValueImpl::read_boolean(const std::string& json, size_t& pos)
 {
 	if (json[pos] == 't')
 	{
@@ -479,7 +477,7 @@ JsonValue JsonValueImpl::read_boolean(const std::string &json, size_t &pos)
 	}
 }
 
-JsonValue JsonValueImpl::read_null(const std::string &json, size_t &pos)
+JsonValue JsonValueImpl::read_null(const std::string& json, size_t& pos)
 {
 	if (pos + 4 > json.length() || memcmp(&json[pos], "null", 4) != 0)
 		throw std::runtime_error("Unexpected character in JSON data");
@@ -487,7 +485,7 @@ JsonValue JsonValueImpl::read_null(const std::string &json, size_t &pos)
 	return JsonValue::null();
 }
 
-void JsonValueImpl::read_whitespace(const std::string &json, size_t &pos)
+void JsonValueImpl::read_whitespace(const std::string& json, size_t& pos)
 {
 	while (pos != json.length() && (json[pos] == ' ' || json[pos] == '\r' || json[pos] == '\n' || json[pos] == '\t' || json[pos] == '\f'))
 		pos++;

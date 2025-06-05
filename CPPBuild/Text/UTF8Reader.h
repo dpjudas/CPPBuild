@@ -21,15 +21,11 @@
 
 #pragma once
 
-#include <memory>
-#include <string>
-
-/// \brief Read UTF8 string as code points
-class UTF8_Reader
+class UTF8Reader
 {
 public:
 	/// Important: text is not copied by this class and must remain valid during its usage.
-	UTF8_Reader(const std::string::value_type *text, std::string::size_type length);
+	UTF8Reader(const std::string::value_type* text, std::string::size_type length);
 
 	/// \brief Returns true if the current position is at the end of the string
 	bool is_end();
@@ -58,5 +54,5 @@ public:
 private:
 	std::string::size_type current_position = 0;
 	std::string::size_type length = 0;
-	const unsigned char *data = nullptr;
+	const unsigned char* data = nullptr;
 };

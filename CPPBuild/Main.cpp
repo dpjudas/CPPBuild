@@ -11,33 +11,47 @@ int main(int argc, char** argv)
 		for (int i = 0; i < argc; i++)
 			args.push_back(argv[i]);
 
-		CPPBuild app;
-		if (args.size() == 2 && args[1] == "generate")
+		std::string workdir;
+		if (args.size() > 3 && args[1].substr(0, 8) == "-workdir")
 		{
-			app.generate();
+			workdir = args[2];
+			args.erase(args.begin() + 1, args.begin() + 3);
+		}
+		else
+		{
+			workdir = "build";
+		}
+
+		CPPBuild app;
+		if ((args.size() == 2 || args.size() == 3) && args[1] == "generate")
+		{
+			std::string sourcePath;
+			if (args.size() == 3)
+				sourcePath = args[2];
+			app.generate(sourcePath);
 			return 0;
 		}
 		else if (args.size() == 3 && args[1] == "build")
 		{
-			app.build(args[2]);
+			app.build(workdir, args[2]);
 			return 0;
 		}
 		else if (args.size() == 3 && args[1] == "clean")
 		{
-			app.clean(args[2]);
+			app.clean(workdir, args[2]);
 			return 0;
 		}
 		else if (args.size() == 3 && args[1] == "rebuild")
 		{
-			app.rebuild(args[2]);
+			app.rebuild(workdir, args[2]);
 			return 0;
 		}
 		else
 		{
-			std::cout << "cppbuild generate" << std::endl;
-			std::cout << "cppbuild build <target>" << std::endl;
-			std::cout << "cppbuild clean <target>" << std::endl;
-			std::cout << "cppbuild rebuild <target>" << std::endl;
+			std::cout << "cppbuild generate [source path]" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] build [target]" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] clean [target]" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] rebuild [target]" << std::endl;
 			return 1;
 		}
 	}

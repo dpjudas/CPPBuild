@@ -5,10 +5,10 @@ class CPPBuild
 public:
 	CPPBuild();
 
-	void generate();
-	void build(std::string target);
-	void rebuild(std::string target);
-	void clean(std::string target);
+	void generate(std::string sourcePath);
+	void build(std::string workdir, std::string target);
+	void rebuild(std::string workdir, std::string target);
+	void clean(std::string workdir, std::string target);
 
 private:
 	std::vector<std::string> sourceFiles;

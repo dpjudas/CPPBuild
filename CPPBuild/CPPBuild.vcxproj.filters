@@ -46,6 +46,9 @@
     <ClCompile Include="Javascript\quickjs-amalgam.c">
       <Filter>Javascript</Filter>
     </ClCompile>
+    <ClCompile Include="Javascript\ScriptContext.cpp">
+      <Filter>Javascript</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -96,6 +99,12 @@
       <Filter>Javascript</Filter>
     </ClInclude>
     <ClInclude Include="Javascript\quickjs-libc.h">
+      <Filter>Javascript</Filter>
+    </ClInclude>
+    <ClInclude Include="Javascript\ScriptContext.h">
+      <Filter>Javascript</Filter>
+    </ClInclude>
+    <ClInclude Include="Javascript\ScriptValue.h">
       <Filter>Javascript</Filter>
     </ClInclude>
   </ItemGroup>

@@ -117,6 +117,7 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">/experimental:c11atomics %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="Javascript\ScriptContext.cpp" />
     <ClCompile Include="Json\JsonValue.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Precomp.cpp">
@@ -146,6 +147,8 @@
     <ClInclude Include="IOData\MemoryDevice.h" />
     <ClInclude Include="Javascript\quickjs-libc.h" />
     <ClInclude Include="Javascript\quickjs.h" />
+    <ClInclude Include="Javascript\ScriptContext.h" />
+    <ClInclude Include="Javascript\ScriptValue.h" />
     <ClInclude Include="Json\JsonValue.h" />
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="Text\Text.h" />

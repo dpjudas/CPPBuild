@@ -5,7 +5,8 @@
 #include "IOData/Directory.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
-#include "Javascript/quickjs.h"
+#include "Javascript/ScriptContext.h"
+#include <iostream>
 
 CPPBuild::CPPBuild()
 {
@@ -21,20 +22,18 @@ void CPPBuild::generate(std::string sourcePath)
 
 	std::string scriptFilename = FilePath::combine(sourcePath, "CPPBuild.js");
 	std::string configureScript = File::readAllText(scriptFilename);
-	auto runtime = JS_NewRuntime();
-	auto context = JS_NewContext(runtime);
-	JSValue result = JS_Eval(context, configureScript.c_str(), configureScript.size(), scriptFilename.c_str(), JS_EVAL_TYPE_GLOBAL | JS_EVAL_FLAG_STRICT);
-	size_t strLength = 0;
-	const char* strData = JS_ToCStringLen(context, &strLength, result);
-	std::string str(strData, strLength);
-	JS_FreeCString(context, strData);
-	JS_FreeValue(context, result);
-	JS_FreeContext(context);
-	JS_FreeRuntime(runtime);
 
-	std::string solutionName = str;
-	std::string projectName = str;
-	std::string outputExe = str + ".exe";
+	ScriptContext context;
+	ScriptValue result = context.eval(configureScript, scriptFilename, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_STRICT);
+	if (result.isException())
+	{
+		std::cout << context.getException().toString().c_str() << std::endl;
+		return;
+	}
+
+	std::string solutionName = result.toString();
+	std::string projectName = result.toString();
+	std::string outputExe = result.toString() + ".exe";
 	if (solutionName.empty())
 		throw std::runtime_error("No solution name specified");
 

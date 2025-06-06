@@ -19,11 +19,12 @@ private:
 class VSSolution
 {
 public:
-	VSSolution(const std::string& name);
+	VSSolution(const std::string& name, const std::string& location);
 
 	void generate();
 
 	std::string name;
+	std::string location;
 	std::string visualStudioVersion = "16.0.30621.155";
 	std::string minimumVisualStudioVersion = "10.0.40219.1";
 	std::string solutionGuid = "B61D85A2-54FA-468F-9672-7BF3012676B4";
@@ -52,7 +53,7 @@ public:
 	{
 		std::string configurationType = "Application";
 		std::string useDebugLibraries = "false";
-		std::string platformToolset = "v142";
+		std::string platformToolset = "v143";
 		std::string characterSet = "Unicode";
 		std::string wholeProgramOptimization = "true";
 		std::string linkIncremental = "false";
@@ -102,9 +103,10 @@ public:
 class VSCppProject
 {
 public:
-	VSCppProject(const std::string& name) : name(name) { }
+	VSCppProject(const std::string& name, const std::string& location) : name(name), location(location) { }
 
 	std::string name = name;
+	std::string location = location;
 	std::string typeGuid = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942";
 	std::string projectGuid = "B9C229A1-BDC0-4C10-973A-694146B89016";
 	std::string vcProjectVersion = "16.0";

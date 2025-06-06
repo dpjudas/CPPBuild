@@ -128,6 +128,8 @@ std::string FilePath::combine(const std::string& path1, const std::string& path2
 		return normalizePathDelimiters(path1);
 	else if (path2.front() == '\\' || path2.front() == '/')
 		return normalizePathDelimiters(path2);
+	else if (path2.size() >= 2 && path2[1] == ':')
+		return normalizePathDelimiters(path2);
 	else if (path1.back() != '\\' && path1.back() != '/')
 		return normalizePathDelimiters(path1 + "\\" + path2);
 	else

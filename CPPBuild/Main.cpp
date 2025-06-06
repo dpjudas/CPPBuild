@@ -1,6 +1,8 @@
 
 #include "Precomp.h"
 #include "CPPBuild.h"
+#include "IOData/Directory.h"
+#include "IOData/FilePath.h"
 #include <iostream>
 
 int main(int argc, char** argv)
@@ -19,39 +21,39 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			workdir = "build";
+			workdir = Directory::currentDirectory();
 		}
 
-		CPPBuild app;
+		CPPBuild app(workdir);
 		if ((args.size() == 2 || args.size() == 3) && args[1] == "generate")
 		{
 			std::string sourcePath;
 			if (args.size() == 3)
 				sourcePath = args[2];
-			app.generate(sourcePath);
+			app.configure(sourcePath);
 			return 0;
 		}
-		else if (args.size() == 3 && args[1] == "build")
+		else if (args.size() == 4 && args[1] == "build")
 		{
-			app.build(workdir, args[2]);
+			app.build(args[2], args[3]);
 			return 0;
 		}
-		else if (args.size() == 3 && args[1] == "clean")
+		else if (args.size() == 4 && args[1] == "clean")
 		{
-			app.clean(workdir, args[2]);
+			app.clean(args[2], args[3]);
 			return 0;
 		}
-		else if (args.size() == 3 && args[1] == "rebuild")
+		else if (args.size() == 4 && args[1] == "rebuild")
 		{
-			app.rebuild(workdir, args[2]);
+			app.rebuild(args[2], args[3]);
 			return 0;
 		}
 		else
 		{
 			std::cout << "cppbuild generate [source path]" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] build [target]" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] clean [target]" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] rebuild [target]" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] build <target> <configuration>" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] clean <target> <configuration>" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] rebuild <target> <configuration>" << std::endl;
 			return 1;
 		}
 	}

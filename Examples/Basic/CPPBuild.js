@@ -14,11 +14,14 @@ var filters = [
 ];
 
 var basic = Targets.addExecutable("Basic");
+
 if (Environment.isWindows()) {
 	basic.addDefines(["WIN32", "_WIN32", "UNICODE", "_UNICODE"]);
 }
+
 if (Environment.isMSVC()) {
 	basic.addIncludePaths(["$(SolutionDir)"]);
 }
+
 basic.addFiles(files);
 basic.addFilters(filters);

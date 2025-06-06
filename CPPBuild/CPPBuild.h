@@ -1,12 +1,20 @@
 #pragma once
 
+class JsonValue;
+
 class CPPBuild
 {
 public:
-	CPPBuild();
+	CPPBuild(std::string workDir);
 
-	void generate(std::string sourcePath);
-	void build(std::string workdir, std::string target);
-	void rebuild(std::string workdir, std::string target);
-	void clean(std::string workdir, std::string target);
+	void configure(std::string sourcePath);
+	JsonValue runConfigureScript(const std::string& sourcePath);
+	void validateConfig(const JsonValue& config);
+	void generateWorkspace(std::string workDir);
+	void build(std::string target, std::string configuration);
+	void rebuild(std::string target, std::string configuration);
+	void clean(std::string target, std::string configuration);
+
+	std::string workDir;
+	std::string cppbuildDir;
 };

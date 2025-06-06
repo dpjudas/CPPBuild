@@ -9,14 +9,44 @@
 #include "Json/JsonValue.h"
 #include <iostream>
 
-CPPBuild::CPPBuild()
+CPPBuild::CPPBuild(std::string workDir) : workDir(workDir)
 {
+	cppbuildDir = FilePath::combine(workDir, ".cppbuild");
 }
 
-void CPPBuild::generate(std::string sourcePath)
+void CPPBuild::configure(std::string sourcePath)
 {
-	std::string cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
+	if (sourcePath.empty())
+		sourcePath = Directory::currentDirectory();
 
+	JsonValue config = JsonValue::object();
+	config["version"] = JsonValue::number(1);
+	config["sourcePath"] = JsonValue::string(sourcePath);
+	config["project"] = runConfigureScript(sourcePath);
+	validateConfig(config);
+
+	Directory::create(cppbuildDir);
+	Directory::trySetHidden(cppbuildDir);
+	File::writeAllText(FilePath::combine(cppbuildDir, "config.json"), config.to_json());
+
+	generateWorkspace(workDir);
+}
+
+void CPPBuild::validateConfig(const JsonValue& config)
+{
+	std::string name = config["project"]["name"].to_string();
+	if (name.empty())
+		throw std::runtime_error("No project name specified");
+
+	if (config["project"]["configurations"].items().empty())
+		throw std::runtime_error("No targets specified");
+
+	if (config["project"]["targets"].items().empty())
+		throw std::runtime_error("No targets specified");
+}
+
+JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
+{
 	std::string scriptFilename = FilePath::combine(sourcePath, "CPPBuild.js");
 	std::string configureScript = File::readAllText(scriptFilename);
 
@@ -26,23 +56,27 @@ void CPPBuild::generate(std::string sourcePath)
 	if (result.isException())
 	{
 		ScriptValue exception = context.getException();
-		std::cout << exception.toString().c_str() << std::endl;
-		std::cout << exception.getExceptionStack().c_str() << std::endl;
-		return;
+		throw std::runtime_error(exception.toString() + "\n" + exception.getExceptionStack());
 	}
 
-	JsonValue config = JsonValue::parse(context.generateConfiguration());
+	return JsonValue::parse(context.generateConfiguration());
+}
 
-	std::string solutionName = config["name"].to_string();
-	if (solutionName.empty())
-		throw std::runtime_error("No solution name specified");
+void CPPBuild::generateWorkspace(std::string workDir)
+{
+	std::string cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
 
-	auto solution = std::make_unique<VSSolution>(solutionName);
+	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
 
-	for (const JsonValue& configDef : config["configurations"].items())
+	std::string sourcePath = config["sourcePath"].to_string();
+	std::string solutionName = config["project"]["name"].to_string();
+
+	auto solution = std::make_unique<VSSolution>(solutionName, workDir);
+
+	for (const JsonValue& configDef : config["project"]["configurations"].items())
 		solution->configurations.push_back(std::make_unique<VSSolutionConfiguration>(configDef["name"].to_string(), configDef["platform"].to_string()));
 
-	for (const JsonValue& targetDef : config["targets"].items())
+	for (const JsonValue& targetDef : config["project"]["targets"].items())
 	{
 		std::vector<std::string> sourceFiles;
 		std::vector<std::string> headerFiles;
@@ -51,7 +85,7 @@ void CPPBuild::generate(std::string sourcePath)
 		std::vector<std::string> includes;
 
 		for (const JsonValue& item : targetDef["files"].items())
-			sourceFiles.push_back(item.to_string());
+			sourceFiles.push_back(FilePath::combine(sourcePath, item.to_string()));
 
 		for (const JsonValue& item : targetDef["defines"].items())
 			defines.push_back(item.to_string());
@@ -62,45 +96,43 @@ void CPPBuild::generate(std::string sourcePath)
 		std::string projectName = targetDef["name"].to_string();
 		std::string outputExe = projectName + ".exe";
 
-		auto debugConfig = std::make_unique<VSCppProjectConfiguration>("Debug", "x64");
-		debugConfig->general.configurationType = "Makefile";
-		debugConfig->general.nmakePreprocessorDefinitions = defines;
-		debugConfig->general.nmakeIncludeSearchPath = includes;
-		debugConfig->general.nmakeOutput = outputExe;
-		debugConfig->general.nmakeBuildCommandLine = cppbuildexe + " build debug";
-		debugConfig->general.nmakeCleanCommandLine = cppbuildexe + " clean debug";
-		debugConfig->general.nmakeReBuildCommandLine = cppbuildexe + " rebuild debug";
-
-		auto releaseConfig = std::make_unique<VSCppProjectConfiguration>("Release", "x64");
-		releaseConfig->general.configurationType = "Makefile";
-		releaseConfig->general.nmakePreprocessorDefinitions = defines;
-		releaseConfig->general.nmakeIncludeSearchPath = includes;
-		releaseConfig->general.nmakeBuildCommandLine = cppbuildexe + " build release";
-		releaseConfig->general.nmakeCleanCommandLine = cppbuildexe + " clean release";
-		releaseConfig->general.nmakeReBuildCommandLine = cppbuildexe + " rebuild release";
-
-		auto project = std::make_unique<VSCppProject>(projectName);
+		auto project = std::make_unique<VSCppProject>(projectName, cppbuildDir);
 		project->sourceFiles = sourceFiles;
 		project->headerFiles = headerFiles;
 		project->extraFiles = extraFiles;
-		project->configurations.push_back(std::move(debugConfig));
-		project->configurations.push_back(std::move(releaseConfig));
+
+		for (const JsonValue& configDef : config["project"]["configurations"].items())
+		{
+			std::string configName = configDef["name"].to_string();
+			std::string platform = configDef["platform"].to_string();
+
+			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, platform);
+			projConfig->general.configurationType = "Makefile";
+			projConfig->general.nmakePreprocessorDefinitions = defines;
+			projConfig->general.nmakeIncludeSearchPath = includes;
+			projConfig->general.nmakeOutput = outputExe;
+			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir \"${SolutionDir}\" build " + projectName + " " + configName;
+			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir \"${SolutionDir}\" clean " + projectName + " " + configName;
+			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir \"${SolutionDir}\" rebuild " + projectName + " " + configName;
+			project->configurations.push_back(std::move(projConfig));
+		}
+
 		solution->projects.push_back(std::move(project));
 	}
 
 	solution->generate();
 }
 
-void CPPBuild::build(std::string workdir, std::string target)
+void CPPBuild::build(std::string target, std::string configuration)
 {
 }
 
-void CPPBuild::clean(std::string workdir, std::string target)
+void CPPBuild::clean(std::string target, std::string configuration)
 {
 }
 
-void CPPBuild::rebuild(std::string workdir, std::string target)
+void CPPBuild::rebuild(std::string target, std::string configuration)
 {
-	clean(workdir, target);
-	build(workdir, target);
+	clean(target, configuration);
+	build(target, configuration);
 }

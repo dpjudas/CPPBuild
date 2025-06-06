@@ -1,3 +1,6 @@
 /.vs
 /Build
 /CPPBuild/*.user
+/Examples/Basic/Basic.sln
+/Examples/Basic/.cppbuild
+/Examples/Basic/.vs

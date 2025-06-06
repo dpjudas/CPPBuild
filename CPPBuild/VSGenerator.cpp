@@ -2,8 +2,9 @@
 #include "Precomp.h"
 #include "VSGenerator.h"
 #include "IOData/File.h"
+#include "IOData/FilePath.h"
 
-VSSolution::VSSolution(const std::string& name) : name(name)
+VSSolution::VSSolution(const std::string& name, const std::string& location) : name(name), location(location)
 {
 }
 
@@ -28,7 +29,7 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 	output.writeLine("MinimumVisualStudioVersion = " + solution->minimumVisualStudioVersion);
 	for (const auto& project : solution->projects)
 	{
-		output.writeLine("Project(\"" + project->typeGuid + "\") = \"" + project->name + "\", \"" + project->name + "\\" + project->name + ".vcxproj\", \"" + project->projectGuid + "\")");
+		output.writeLine("Project(\"" + project->typeGuid + "\") = \"" + project->name + "\", \"" + FilePath::combine(project->location, project->name + ".vcxproj") + "\", \"" + project->projectGuid + "\")");
 		output.writeLine("EndProject");
 	}
 	output.writeLine("Global");
@@ -55,7 +56,7 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 	output.writeLine("\t\tSolutionGuid = {" + solution->solutionGuid + "}");
 	output.writeLine("\tEndGlobalSection");
 	output.writeLine("EndGlobal");
-	output.save(solution->name + ".sln");
+	output.save(FilePath::combine(solution->location, solution->name + ".sln"));
 }
 
 void VSGenerator::writeProject(const VSCppProject* project)
@@ -221,7 +222,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 	output.writeLine("  <ImportGroup Label=\"ExtensionTargets\">");
 	output.writeLine("  </ImportGroup>");
 	output.writeLine("</Project>");
-	output.save(project->name + ".vcxproj");
+	output.save(FilePath::combine(project->location, project->name + ".vcxproj"));
 
 	if (!project->filters.empty())
 	{
@@ -304,7 +305,7 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 	output.writeLine("  </ItemGroup>");
 	output.writeLine("</Project>");
 
-	output.save(project->name + ".vcxproj.filters");
+	output.save(FilePath::combine(project->location, project->name + ".vcxproj.filters"));
 }
 
 std::string VSGenerator::toLowerCase(std::string text)

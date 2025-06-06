@@ -12,9 +12,42 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <libgen.h>
+#include <unistd.h>
 #else
 #define NOMINMAX
+#define WIN32_MEAN_AND_LEAN
 #include <Windows.h>
+#endif
+
+#ifdef WIN32
+std::string Directory::currentDirectory()
+{
+	DWORD bufferSize = GetCurrentDirectory(0, nullptr);
+	std::wstring buffer;
+	buffer.resize(bufferSize);
+	DWORD result = GetCurrentDirectory((DWORD)buffer.size(), buffer.data());
+	if (result == 0)
+		throw std::runtime_error("Could not get current directory");
+	buffer.resize(result);
+	return from_utf16(buffer);
+}
+#else
+std::string Directory::currentDirectory()
+{
+	std::string buffer;
+	buffer.resize(256);
+	while (true)
+	{
+		char* result = getcwd(buffer.data(), buffer.size());
+		if (result)
+			break;
+		if (errno != ERANGE)
+			throw std::runtime_error("Could not get current directory");
+		buffer.resize(buffer.size() * 2);
+	}
+	buffer.resize(strlen(buffer.data()));
+	return buffer;
+}
 #endif
 
 std::vector<std::string> Directory::files(const std::string& filename)
@@ -219,5 +252,23 @@ void Directory::create(const std::string& path)
 	}
 #else
 	throw std::runtime_error("Directory::create not implemented");
+#endif
+}
+
+bool Directory::trySetHidden(const std::string& path)
+{
+#ifdef WIN32
+	std::wstring path16 = to_utf16(path);
+
+	DWORD attributes = GetFileAttributes(path16.c_str());
+	if (attributes == INVALID_FILE_ATTRIBUTES)
+		return false;
+
+	attributes |= FILE_ATTRIBUTE_HIDDEN;
+
+	BOOL result = SetFileAttributes(path16.c_str(), attributes);
+	return result == TRUE;
+#else
+	return true; // Hidden flag does not exist on Unix
 #endif
 }

@@ -16,6 +16,7 @@ public:
 	static std::string removeLastComponent(const std::string& path);
 
 	static std::string combine(const std::string& path1, const std::string& path2);
+	static std::string combine(std::string path1, const std::initializer_list<std::string>& paths);
 
 	static std::string normalizePathDelimiters(std::string path);
 	static std::string forceSlash(std::string path);

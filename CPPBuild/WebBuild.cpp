@@ -10,12 +10,12 @@
 #include <iostream>
 #include <future>
 
-WebBuild::WebBuild(const std::string& projectDir, const std::string& platform, const std::string& configuration) : projectDir(projectDir), platform(platform), configuration(configuration)
+WebBuild::WebBuild(const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
 {
 	emcc = "emcc";
 	emar = "emar";
 
-	loadProjectFile();
+	loadTargets();
 }
 
 void WebBuild::build()
@@ -45,7 +45,7 @@ void WebBuild::clean()
 		File::tryDelete(FilePath::combine(binDir, filename));
 	}
 
-	std::string outputCSS = getLibPrefix() + projectName + ".css";
+	std::string outputCSS = getLibPrefix() + target + ".css";
 	std::cout << "Cleaning " << outputCSS << std::endl;
 	File::tryDelete(FilePath::combine((projectType == ProjectType::library) ? binDir : objDir, outputCSS));
 }
@@ -74,7 +74,7 @@ void WebBuild::compile()
 						if (i++ % numThreads != threadIndex)
 							continue;
 
-						std::string cppFile = FilePath::combine(projectDir, inputFile);
+						std::string cppFile = inputFile;
 						std::string objFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".obj");
 						std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".d");
 
@@ -139,11 +139,11 @@ void WebBuild::link()
 
 	std::string outputFile;
 	if (projectType == ProjectType::library)
-		outputFile = "lib" + projectName + ".a";
+		outputFile = "lib" + target + ".a";
 	else if (projectType == ProjectType::component)
-		outputFile = projectName + ".js";
+		outputFile = target + ".js";
 	else
-		outputFile = projectName + ".html";
+		outputFile = target + ".html";
 
 	std::string outputPath = (projectType == ProjectType::library) ? binDir : objDir;
 
@@ -235,7 +235,7 @@ void WebBuild::link()
 
 void WebBuild::linkCSS()
 {
-	std::string outputCSS = getLibPrefix() + projectName + ".css";
+	std::string outputCSS = getLibPrefix() + target + ".css";
 	std::string objFile = FilePath::combine((projectType == ProjectType::library) ? binDir : objDir, outputCSS);
 	std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(outputCSS) + ".cssdep");
 
@@ -277,14 +277,14 @@ void WebBuild::linkCSS()
 			includes.push_back(depFilename);
 		}
 
-		css += processCSSFile(cssFile, File::readAllText(cssFile), includes, includePath);
+		css += processCSSFile(cssFile, File::readAllText(cssFile), includes);
 
 		writeDependencyFile(depFile, cssFile, includes);
 		File::writeAllText(objFile, css);
 	}
 }
 
-std::string WebBuild::processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, const std::string& includePath, int level)
+std::string WebBuild::processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level)
 {
 	auto tokenizer = CSSTokenizer::create(text);
 
@@ -319,18 +319,24 @@ std::string WebBuild::processCSSFile(const std::string& filename, std::string te
 			}
 			catch (const std::exception&)
 			{
-				try
+				bool found = false;
+				for (const std::string& includePath : includePaths)
 				{
-					includeFilename = FilePath::combine(includePath, token.value);
-					includeText = File::readAllText(includeFilename);
+					try
+					{
+						includeFilename = FilePath::combine(includePath, token.value);
+						includeText = File::readAllText(includeFilename);
+						found = true;
+					}
+					catch (const std::exception&)
+					{
+					}
 				}
-				catch (const std::exception&)
-				{
+				if (!found)
 					throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: could not include '" + token.value);
-				}
 			}
 			includes.push_back(includeFilename);
-			includeCSS += processCSSFile(includeFilename, std::move(includeText), includes, includePath, level + 1);
+			includeCSS += processCSSFile(includeFilename, std::move(includeText), includes, level + 1);
 
 			tokenizer->read(token, true);
 			if (token.type != CSSTokenType::semi_colon)
@@ -350,13 +356,13 @@ void WebBuild::package()
 	if (projectType != ProjectType::component && projectType != ProjectType::website)
 		return;
 
-	std::string outputHtml = projectName + ".html";
-	std::string outputJS = projectName + ".js";
-	std::string outputWasm = projectName + ".wasm";
-	std::string outputCSS = projectName + ".css";
-	std::string outputPackage = projectName + ".webpkg";
+	std::string outputHtml = target + ".html";
+	std::string outputJS = target + ".js";
+	std::string outputWasm = target + ".wasm";
+	std::string outputCSS = target + ".css";
+	std::string outputPackage = target + ".webpkg";
 
-	std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(projectName) + ".pkgdep");
+	std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(target) + ".pkgdep");
 
 	bool needsCompile = false;
 	try
@@ -422,44 +428,66 @@ void WebBuild::addFolder(ZipWriter* zip, std::string srcdir, std::string destdir
 	}
 }
 
-void WebBuild::loadProjectFile()
+void WebBuild::loadTargets()
 {
-	JsonValue settings = JsonValue::parse(File::readAllText(FilePath::combine(projectDir, "WebBuild.json")));
+	std::string cppbuildDir = FilePath::combine(workDir, ".cppbuild");
+	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
+	std::string sourcePath = config["sourcePath"].to_string();
 
-	projectName = settings["name"].to_string();
-	std::string type = settings["type"].to_string();
-	std::string sources = substituteVars(settings["sources"].to_string());
-	std::string resources = substituteVars(settings["resources"].to_string());
-	binDir = FilePath::combine(projectDir, substituteVars(settings["bindir"].to_string()));
-	objDir = FilePath::combine(projectDir, substituteVars(settings["objdir"].to_string()));
+	JsonValue configDef = getConfigDef(config);
+	JsonValue targetDef = getTargetDef(config);
+
+	std::string platform = configDef["platform"].to_string();
+
+	std::string type = targetDef["type"].to_string();
+	binDir = FilePath::combine(workDir, { "Build", configuration, platform, "bin" });
+	objDir = FilePath::combine(workDir, { "Build", configuration, platform, "obj" });
 
 	Directory::create(binDir);
 	Directory::create(objDir);
 
-	if (type == "component")
+	if (type == "webcomponent")
 		projectType = ProjectType::component;
 	else if (type == "website")
 		projectType = ProjectType::website;
-	else if (type == "library")
+	else if (type == "weblibrary")
 		projectType = ProjectType::library;
 	else if (type.empty())
-		throw std::runtime_error("No project type specified in WebBuild.json");
+		throw std::runtime_error("No project type specified");
 	else
-		throw std::runtime_error("Invalid project type '" + type + "' in WebBuild.json");
+		throw std::runtime_error("Invalid project type '" + type + "'");
 
-	for (const JsonValue& item : settings["dependencies"].items())
+	for (const JsonValue& item : targetDef["linkLibraries"].items())
 		dependencies.push_back(item.to_string());
 
-	std::string searchPath = FilePath::combine(projectDir, sources);
-	wwwrootDir = FilePath::combine(projectDir, resources);
+	wwwrootDir = FilePath::combine(sourcePath, targetDef["wwwRootDir"].to_string());
 
-	ignoreList = { projectName + ".vcxproj", projectName + ".vcxproj.filters", projectName + ".vcxproj.user" };
+	for (const JsonValue& item : targetDef["files"].items())
+	{
+		std::string name = item.to_string();
+		if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc"))
+		{
+			sourceFiles.push_back(FilePath::combine(sourcePath, name));
+		}
+	}
 
-	findFiles(FilePath::combine(projectDir, sources));
+	cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef["cssRootFile"].to_string()));
+	shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef["htmlShellFile"].to_string()));
 
-	cssFile = FilePath::forceSlash(FilePath::combine(searchPath, projectName + ".css"));
-	shellFile = FilePath::forceSlash(FilePath::combine(searchPath, "shell.html"));
-	includePath = FilePath::forceSlash(FilePath::combine(projectDir, substituteVars(settings["includePath"].to_string())));
+	std::string includePath;
+	for (const JsonValue& item : targetDef["includes"].items())
+	{
+		std::string path = item.to_string();
+		if (path.empty())
+			continue;
+
+		std::string fullPath = FilePath::combine(sourcePath, path);
+		includePaths.push_back(fullPath);
+
+		if (!includePath.empty())
+			includePath.push_back(';');
+		includePath += fullPath;
+	}
 
 	// To do: use -gseparate-dwarf[=FILENAME] maybe
 
@@ -468,7 +496,7 @@ void WebBuild::loadProjectFile()
 
 	if (projectType == ProjectType::component)
 	{
-		linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME=\"'" + projectName + "'\" -s MODULARIZE  -lembind";
+		linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME=\"'" + target + "'\" -s MODULARIZE  -lembind";
 	}
 	else if (projectType == ProjectType::website)
 	{
@@ -479,39 +507,30 @@ void WebBuild::loadProjectFile()
 	linkFlags = "-O1 " + linkFlags;
 }
 
-void WebBuild::findFiles(const std::string& folder)
+JsonValue WebBuild::getConfigDef(const JsonValue& config)
 {
-	findFiles(folder, {});
+	for (const JsonValue& def : config["project"]["configurations"].items())
+	{
+		std::string configName = def["name"].to_string();
+		if (configName == configuration)
+		{
+			return def;
+		}
+	}
+	throw std::runtime_error("Configuration '" + configuration + "' not found");
 }
 
-void WebBuild::findFiles(const std::string& folder, const std::string& relativeFolder)
+JsonValue WebBuild::getTargetDef(const JsonValue& config)
 {
-	for (const std::string& name : Directory::folders(FilePath::combine(folder, "*")))
+	for (const JsonValue& def : config["project"]["targets"].items())
 	{
-		if (std::find(ignoreList.begin(), ignoreList.end(), name) == ignoreList.end())
+		std::string targetName = def["name"].to_string();
+		if (targetName == target)
 		{
-			findFiles(FilePath::combine(folder, name), FilePath::combine(relativeFolder, name));
+			return def;
 		}
 	}
-
-	for (const std::string& name : Directory::files(FilePath::combine(folder, "*")))
-	{
-		if (std::find(ignoreList.begin(), ignoreList.end(), name) == ignoreList.end())
-		{
-			if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc"))
-			{
-				sourceFiles.push_back(FilePath::combine(relativeFolder, name));
-			}
-			else if (FilePath::hasExtension(name, "h") || FilePath::hasExtension(name, "hpp"))
-			{
-				headerFiles.push_back(FilePath::combine(relativeFolder, name));
-			}
-			else
-			{
-				extraFiles.push_back(FilePath::combine(relativeFolder, name));
-			}
-		}
-	}
+	throw std::runtime_error("Target '" + target + "' not found");
 }
 
 bool WebBuild::isCppFile(const std::string& filename)
@@ -670,27 +689,4 @@ void WebBuild::writeDependencyFile(const std::string& filename, const std::strin
 		depJson["Source"] = JsonValue::string(inputFile);
 	depJson["Includes"] = JsonValue::array(includes);
 	File::writeAllText(filename, depJson.to_json());
-}
-
-std::string WebBuild::substituteVars(std::string str)
-{
-	str = substituteVar(std::move(str), "$(Platform)", platform);
-	str = substituteVar(std::move(str), "$(Configuration)", configuration);
-	str = substituteVar(std::move(str), "$(ProjectName)", projectName);
-	str = substituteVar(std::move(str), "$(ProjectDir)", projectDir);
-	return str;
-}
-
-std::string WebBuild::substituteVar(std::string str, const std::string& name, const std::string& value)
-{
-	size_t i = 0;
-	while (i < str.length())
-	{
-		size_t j = str.find(name, i);
-		if (j == std::string::npos)
-			break;
-		str.replace(j, name.size(), value);
-		i = j + value.size();
-	}
-	return str;
 }

@@ -17,6 +17,10 @@ static const char* cppbuildJS = R"xxxx(
 			this.includePaths = [];
 			this.files = [];
 			this.filters = [];
+			this.linkLibraries = [];
+			this.wwwRootDir = "wwwroot";
+			this.cssRootFile = name + ".css";
+			this.htmlShellFile = "shell.html";
 		}
 
 		addFiles(files) {
@@ -24,13 +28,13 @@ static const char* cppbuildJS = R"xxxx(
 			files.forEach(function(file) { self.addFile(file); });
 		}
 
+		addFile(file) {
+			this.files.push(file);
+		}
+
 		addFilters(filters) {
 			var self = this;
 			filters.forEach(function(filter) { self.addFilter(filter); });
-		}
-
-		addFile(file) {
-			this.files.push(file);
 		}
 
 		addFilter(filter) {
@@ -55,6 +59,27 @@ static const char* cppbuildJS = R"xxxx(
 			this.includePaths.push(path);
 		}
 
+		addLinkLibraries(paths) {
+			var self = this;
+			paths.forEach(function(path) { self.addLinkLibrary(path); });
+		}
+
+		addLinkLibrary(lib) {
+			this.linkLibraries.push(path);
+		}
+
+		setWebRootPath(path) {
+			this.wwwrootDir = path;
+		}
+
+		setCSSRootFile(file) {
+			this.cssRootFile = file;
+		}
+
+		setHtmlShellFile(file) {
+			this.htmlShellFile = file;
+		}
+
 		toTargetDefinition() {
 			return {
 				type: this.type,
@@ -62,7 +87,11 @@ static const char* cppbuildJS = R"xxxx(
 				defines: this.defines,
 				includePaths: this.includePaths,
 				files: this.files,
-				filters: this.filters
+				filters: this.filters,
+				linkLibraries: this.linkLibraries,
+				wwwRootDir: this.wwwRootDir,
+				cssRootFile: this.cssRootFile,
+				htmlShellFile: this.htmlShellFile
 			};
 		}
 	}
@@ -70,6 +99,18 @@ static const char* cppbuildJS = R"xxxx(
 	class Configuration
 	{
 		constructor(name, platform) {
+			if (platform === undefined) {
+				if (Environment.isX86()) {
+					platform = "win32";
+				}
+				else if (Environment.isARM64()) {
+					platform = "arm64";
+				}
+				else {
+					platform = "x64";
+				}
+			}
+
 			this.name = name;
 			this.platform = platform;
 		}
@@ -90,6 +131,24 @@ static const char* cppbuildJS = R"xxxx(
 	{
 		static addExecutable(name) {
 			var target = new Target("exe", name);
+			targetList.push(target);
+			return target;
+		}
+
+		static addWebsite(name) {
+			var target = new Target("website", name);
+			targetList.push(target);
+			return target;
+		}
+
+		static addWebComponent(name) {
+			var target = new Target("webcomponent", name);
+			targetList.push(target);
+			return target;
+		}
+
+		static addWebLibrary(name) {
+			var target = new Target("weblibrary", name);
 			targetList.push(target);
 			return target;
 		}
@@ -158,9 +217,6 @@ static const char* cppbuildJS = R"xxxx(
 		static combine(path1, path2) {
 		}
 
-		static normalizePathDelimiters(path) {
-		}
-
 		static forceSlash(path) {
 		}
 
@@ -227,7 +283,7 @@ static const char* cppbuildJS = R"xxxx(
 		}
 
 		static isARM64() {
-			return true;
+			return false;
 		}
 	}
 

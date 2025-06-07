@@ -14,26 +14,23 @@ enum class ProjectType
 class WebBuild
 {
 public:
-	WebBuild(const std::string& projectdir, const std::string& platform, const std::string& configuration);
+	WebBuild(const std::string& workDir, const std::string& target, const std::string& configuration);
+
+	std::string workDir;
+	std::string target;
+	std::string configuration;
 
 	std::string binDir;
 	std::string objDir;
-	std::string projectDir;
-	std::string wwwrootDir;
 
-	std::string projectName;
 	ProjectType projectType = ProjectType::website;
 	std::vector<std::string> sourceFiles;
-	std::vector<std::string> headerFiles;
-	std::vector<std::string> extraFiles;
-	std::vector<std::string> ignoreList;
 	std::vector<std::string> dependencies;
-	std::string platform;
-	std::string configuration;
 
+	std::string wwwrootDir;
 	std::string cssFile;
 	std::string shellFile;
-	std::string includePath;
+	std::vector<std::string> includePaths;
 
 	std::vector<std::string> outputFiles;
 
@@ -47,23 +44,21 @@ public:
 	void rebuild();
 
 private:
-	void loadProjectFile();
-	void findFiles(const std::string& folder);
-	void findFiles(const std::string& folder, const std::string& relativeFolder);
+	void loadTargets();
 	bool isCppFile(const std::string& filename);
 	void compile();
 	void link();
 	void linkCSS();
 	void package();
 
+	JsonValue getConfigDef(const JsonValue& config);
+	JsonValue getTargetDef(const JsonValue& config);
+
 	std::string getLibPrefix() const { return projectType == ProjectType::library ? "lib" : ""; }
 
 	std::string runCommand(const std::string& commandline, const std::string& errorMessage);
-	std::string processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, const std::string& includePath, int level = 0);
+	std::string processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level = 0);
 	void addFolder(ZipWriter* zip, std::string srcdir, std::string destdir);
-
-	std::string substituteVars(std::string str);
-	std::string substituteVar(std::string str, const std::string& name, const std::string& value);
 
 	enum class MakeTokenType
 	{

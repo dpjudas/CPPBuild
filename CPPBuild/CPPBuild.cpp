@@ -2,6 +2,7 @@
 #include "Precomp.h"
 #include "CPPBuild.h"
 #include "VSGenerator.h"
+#include "WebBuild.h"
 #include "IOData/Directory.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
@@ -29,7 +30,7 @@ void CPPBuild::configure(std::string sourcePath)
 	Directory::trySetHidden(cppbuildDir);
 	File::writeAllText(FilePath::combine(cppbuildDir, "config.json"), config.to_json());
 
-	generateWorkspace(workDir);
+	generateWorkspace();
 }
 
 void CPPBuild::validateConfig(const JsonValue& config)
@@ -62,7 +63,7 @@ JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
 	return JsonValue::parse(context.generateConfiguration());
 }
 
-void CPPBuild::generateWorkspace(std::string workDir)
+void CPPBuild::generateWorkspace()
 {
 	std::string cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
 
@@ -85,13 +86,27 @@ void CPPBuild::generateWorkspace(std::string workDir)
 		std::vector<std::string> includes;
 
 		for (const JsonValue& item : targetDef["files"].items())
-			sourceFiles.push_back(FilePath::combine(sourcePath, item.to_string()));
+		{
+			std::string name = FilePath::combine(sourcePath, item.to_string());
+			if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
+			{
+				sourceFiles.push_back(name);
+			}
+			else if (FilePath::hasExtension(name, "h") || FilePath::hasExtension(name, "hpp"))
+			{
+				headerFiles.push_back(name);
+			}
+			else
+			{
+				extraFiles.push_back(name);
+			}
+		}
 
 		for (const JsonValue& item : targetDef["defines"].items())
 			defines.push_back(item.to_string());
 
 		for (const JsonValue& item : targetDef["includes"].items())
-			includes.push_back(item.to_string());
+			includes.push_back(FilePath::combine(sourcePath, item.to_string()));
 
 		std::string projectName = targetDef["name"].to_string();
 		std::string outputExe = projectName + ".exe";
@@ -111,9 +126,9 @@ void CPPBuild::generateWorkspace(std::string workDir)
 			projConfig->general.nmakePreprocessorDefinitions = defines;
 			projConfig->general.nmakeIncludeSearchPath = includes;
 			projConfig->general.nmakeOutput = outputExe;
-			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir \"${SolutionDir}\" build " + projectName + " " + configName;
-			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir \"${SolutionDir}\" clean " + projectName + " " + configName;
-			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir \"${SolutionDir}\" rebuild " + projectName + " " + configName;
+			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
+			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
+			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) rebuild " + projectName + " " + configName;
 			project->configurations.push_back(std::move(projConfig));
 		}
 
@@ -125,14 +140,18 @@ void CPPBuild::generateWorkspace(std::string workDir)
 
 void CPPBuild::build(std::string target, std::string configuration)
 {
+	WebBuild webTarget(workDir, target, configuration);
+	webTarget.build();
 }
 
 void CPPBuild::clean(std::string target, std::string configuration)
 {
+	WebBuild webTarget(workDir, target, configuration);
+	webTarget.clean();
 }
 
 void CPPBuild::rebuild(std::string target, std::string configuration)
 {
-	clean(target, configuration);
-	build(target, configuration);
+	WebBuild webTarget(workDir, target, configuration);
+	webTarget.rebuild();
 }

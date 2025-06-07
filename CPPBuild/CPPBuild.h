@@ -10,7 +10,7 @@ public:
 	void configure(std::string sourcePath);
 	JsonValue runConfigureScript(const std::string& sourcePath);
 	void validateConfig(const JsonValue& config);
-	void generateWorkspace(std::string workDir);
+	void generateWorkspace();
 	void build(std::string target, std::string configuration);
 	void rebuild(std::string target, std::string configuration);
 	void clean(std::string target, std::string configuration);

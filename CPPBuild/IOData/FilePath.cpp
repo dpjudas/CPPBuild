@@ -148,6 +148,18 @@ std::string FilePath::combine(const std::string& path1, const std::string& path2
 #endif
 }
 
+std::string FilePath::combine(std::string path1, const std::initializer_list<std::string>& paths)
+{
+	if (paths.size() == 0)
+		return path1;
+
+	for (const std::string& path2 : paths)
+	{
+		path1 = combine(path1, path2);
+	}
+	return path1;
+}
+
 std::string FilePath::normalizePathDelimiters(std::string path)
 {
 #ifdef WIN32

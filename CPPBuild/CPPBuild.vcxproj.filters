@@ -6,7 +6,7 @@
     <ClCompile Include="Precomp.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="CSSTokenizer.cpp" />
-    <ClCompile Include="WebBuild.cpp" />
+    <ClCompile Include="WebTarget.cpp" />
     <ClCompile Include="IOData\DataBuffer.cpp">
       <Filter>IOData</Filter>
     </ClCompile>
@@ -55,7 +55,7 @@
     <ClInclude Include="VSGenerator.h" />
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="CSSTokenizer.h" />
-    <ClInclude Include="WebBuild.h" />
+    <ClInclude Include="WebTarget.h" />
     <ClInclude Include="IOData\DataBuffer.h">
       <Filter>IOData</Filter>
     </ClInclude>

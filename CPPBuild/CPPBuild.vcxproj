@@ -128,7 +128,7 @@
     <ClCompile Include="Text\UTF16.cpp" />
     <ClCompile Include="Text\UTF8Reader.cpp" />
     <ClCompile Include="VSGenerator.cpp" />
-    <ClCompile Include="WebBuild.cpp" />
+    <ClCompile Include="WebTarget.cpp" />
     <ClCompile Include="Zip\miniz.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NotUsing</PrecompiledHeader>
@@ -155,7 +155,7 @@
     <ClInclude Include="Text\UTF16.h" />
     <ClInclude Include="Text\UTF8Reader.h" />
     <ClInclude Include="VSGenerator.h" />
-    <ClInclude Include="WebBuild.h" />
+    <ClInclude Include="WebTarget.h" />
     <ClInclude Include="Zip\miniz.h" />
     <ClInclude Include="Zip\ZipReader.h" />
     <ClInclude Include="Zip\ZipWriter.h" />

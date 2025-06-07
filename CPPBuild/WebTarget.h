@@ -4,17 +4,17 @@
 
 class ZipWriter;
 
-enum class ProjectType
+enum class WebTargetType
 {
 	library,
 	component,
 	website
 };
 
-class WebBuild
+class WebTarget
 {
 public:
-	WebBuild(const std::string& workDir, const std::string& target, const std::string& configuration);
+	WebTarget(const std::string& workDir, const std::string& target, const std::string& configuration);
 
 	std::string workDir;
 	std::string target;
@@ -23,7 +23,7 @@ public:
 	std::string binDir;
 	std::string objDir;
 
-	ProjectType projectType = ProjectType::website;
+	WebTargetType targetType = WebTargetType::website;
 	std::vector<std::string> sourceFiles;
 	std::vector<std::string> dependencies;
 
@@ -54,7 +54,7 @@ private:
 	JsonValue getConfigDef(const JsonValue& config);
 	JsonValue getTargetDef(const JsonValue& config);
 
-	std::string getLibPrefix() const { return projectType == ProjectType::library ? "lib" : ""; }
+	std::string getLibPrefix() const { return targetType == WebTargetType::library ? "lib" : ""; }
 
 	std::string runCommand(const std::string& commandline, const std::string& errorMessage);
 	std::string processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level = 0);

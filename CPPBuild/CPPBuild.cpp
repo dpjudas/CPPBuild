@@ -2,7 +2,7 @@
 #include "Precomp.h"
 #include "CPPBuild.h"
 #include "VSGenerator.h"
-#include "WebBuild.h"
+#include "WebTarget.h"
 #include "IOData/Directory.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
@@ -140,18 +140,18 @@ void CPPBuild::generateWorkspace()
 
 void CPPBuild::build(std::string target, std::string configuration)
 {
-	WebBuild webTarget(workDir, target, configuration);
+	WebTarget webTarget(workDir, target, configuration);
 	webTarget.build();
 }
 
 void CPPBuild::clean(std::string target, std::string configuration)
 {
-	WebBuild webTarget(workDir, target, configuration);
+	WebTarget webTarget(workDir, target, configuration);
 	webTarget.clean();
 }
 
 void CPPBuild::rebuild(std::string target, std::string configuration)
 {
-	WebBuild webTarget(workDir, target, configuration);
+	WebTarget webTarget(workDir, target, configuration);
 	webTarget.rebuild();
 }

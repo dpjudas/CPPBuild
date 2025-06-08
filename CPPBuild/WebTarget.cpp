@@ -432,10 +432,11 @@ void WebTarget::loadTargets()
 {
 	std::string cppbuildDir = FilePath::combine(workDir, ".cppbuild");
 	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
-	std::string sourcePath = config["sourcePath"].to_string();
 
 	JsonValue configDef = getConfigDef(config);
 	JsonValue targetDef = getTargetDef(config);
+
+	std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
 
 	std::string platform = configDef["platform"].to_string();
 

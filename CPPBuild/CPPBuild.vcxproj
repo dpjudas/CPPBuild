@@ -138,6 +138,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
+    <ClInclude Include="CPPBuildJS.h" />
     <ClInclude Include="CSSTokenizer.h" />
     <ClInclude Include="IOData\DataBuffer.h" />
     <ClInclude Include="IOData\Directory.h" />

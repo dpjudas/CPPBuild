@@ -51,7 +51,7 @@ JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
 	std::string scriptFilename = FilePath::combine(sourcePath, "CPPBuild.js");
 	std::string configureScript = File::readAllText(scriptFilename);
 
-	ScriptContext context;
+	ScriptContext context(sourcePath);
 	ScriptValue result = context.eval(configureScript, scriptFilename, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_STRICT);
 
 	if (result.isException())
@@ -69,7 +69,6 @@ void CPPBuild::generateWorkspace()
 
 	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
 
-	std::string sourcePath = config["sourcePath"].to_string();
 	std::string solutionName = config["project"]["name"].to_string();
 
 	auto solution = std::make_unique<VSSolution>(solutionName, workDir);
@@ -79,6 +78,8 @@ void CPPBuild::generateWorkspace()
 
 	for (const JsonValue& targetDef : config["project"]["targets"].items())
 	{
+		std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
+
 		std::vector<std::string> sourceFiles;
 		std::vector<std::string> headerFiles;
 		std::vector<std::string> extraFiles;

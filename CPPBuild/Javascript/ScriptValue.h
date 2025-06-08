@@ -83,6 +83,18 @@ public:
 		return ScriptValue(context, JS_GetPropertyInt64(context, value, index));
 	}
 
+	void setPropertyStr(JSAtom name, ScriptValue newvalue)
+	{
+		checkContext();
+		JS_SetProperty(context, handle(), name, newvalue.release());
+	}
+
+	void setPropertyStr(const std::string& name, ScriptValue newvalue)
+	{
+		checkContext();
+		JS_SetPropertyStr(context, handle(), name.c_str(), newvalue.release());
+	}
+
 	bool isPromise() const
 	{
 		checkContext();

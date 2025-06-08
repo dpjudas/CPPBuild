@@ -107,6 +107,7 @@
     <ClInclude Include="Javascript\ScriptValue.h">
       <Filter>Javascript</Filter>
     </ClInclude>
+    <ClInclude Include="CPPBuildJS.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

@@ -19,7 +19,7 @@ private:
 class VSSolution
 {
 public:
-	VSSolution(const std::string& name, const std::string& location);
+	VSSolution(const std::string& name, const std::string& location, const std::string& solutionGuid);
 
 	void generate();
 
@@ -27,7 +27,7 @@ public:
 	std::string location;
 	std::string visualStudioVersion = "16.0.30621.155";
 	std::string minimumVisualStudioVersion = "10.0.40219.1";
-	std::string solutionGuid = "B61D85A2-54FA-468F-9672-7BF3012676B4";
+	std::string solutionGuid;
 	std::vector<std::unique_ptr<VSCppProject>> projects;
 	std::vector<std::unique_ptr<VSSolutionConfiguration>> configurations;
 };
@@ -103,12 +103,12 @@ public:
 class VSCppProject
 {
 public:
-	VSCppProject(const std::string& name, const std::string& location) : name(name), location(location) { }
+	VSCppProject(const std::string& name, const std::string& location, std::string projectGuid) : name(name), location(location), projectGuid(projectGuid) { }
 
 	std::string name = name;
 	std::string location = location;
 	std::string typeGuid = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942";
-	std::string projectGuid = "B9C229A1-BDC0-4C10-973A-694146B89016";
+	std::string projectGuid;
 	std::string vcProjectVersion = "16.0";
 	std::string windowsTargetPlatformVersion = "10.0";
 	std::vector<std::unique_ptr<VSCppProjectConfiguration>> configurations;

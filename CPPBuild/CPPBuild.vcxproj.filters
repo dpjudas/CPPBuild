@@ -49,6 +49,9 @@
     <ClCompile Include="Javascript\ScriptContext.cpp">
       <Filter>Javascript</Filter>
     </ClCompile>
+    <ClCompile Include="Guid\Guid.cpp">
+      <Filter>Guid</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -108,6 +111,9 @@
       <Filter>Javascript</Filter>
     </ClInclude>
     <ClInclude Include="CPPBuildJS.h" />
+    <ClInclude Include="Guid\Guid.h">
+      <Filter>Guid</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">
@@ -124,6 +130,9 @@
     </Filter>
     <Filter Include="Javascript">
       <UniqueIdentifier>{e85875f8-034d-45b5-84cb-4fba6bc32ca6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Guid">
+      <UniqueIdentifier>{f4e01054-3f1a-4572-89cb-262e8ad68969}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

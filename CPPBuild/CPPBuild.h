@@ -2,6 +2,13 @@
 
 class JsonValue;
 
+class VSGuids
+{
+public:
+	std::string solutionGuid;
+	std::map<std::string, std::string> projectGuids;
+};
+
 class CPPBuild
 {
 public:
@@ -14,6 +21,9 @@ public:
 	void build(std::string target, std::string configuration);
 	void rebuild(std::string target, std::string configuration);
 	void clean(std::string target, std::string configuration);
+
+	VSGuids loadSolutionGuids();
+	void saveSolutionGuids(const VSGuids& guids);
 
 	std::string workDir;
 	std::string cppbuildDir;

@@ -4,7 +4,7 @@
 #include "IOData/File.h"
 #include "IOData/FilePath.h"
 
-VSSolution::VSSolution(const std::string& name, const std::string& location) : name(name), location(location)
+VSSolution::VSSolution(const std::string& name, const std::string& location, const std::string& solutionGuid) : name(name), location(location), solutionGuid(solutionGuid)
 {
 }
 

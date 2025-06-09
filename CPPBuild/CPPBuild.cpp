@@ -120,6 +120,14 @@ void CPPBuild::generateWorkspace()
 
 	for (const JsonValue& targetDef : config["project"]["targets"].items())
 	{
+		std::string projectName = targetDef["name"].to_string();
+		auto& guid = guids.projectGuids[projectName];
+		if (guid.empty())
+			guid = Guid::makeGuid().toString();
+	}
+
+	for (const JsonValue& targetDef : config["project"]["targets"].items())
+	{
 		std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
 
 		std::vector<std::string> sourceFiles;
@@ -190,17 +198,28 @@ void CPPBuild::generateWorkspace()
 			outputFile = projectName + ".dll";
 		}
 
-		auto& guid = guids.projectGuids[projectName];
-		if (guid.empty())
-			guid = Guid::makeGuid().toString();
-
-		auto project = std::make_unique<VSCppProject>(projectName, cppbuildDir, guid);
+		auto project = std::make_unique<VSCppProject>(projectName, cppbuildDir, guids.projectGuids[projectName]);
 		project->sourceFiles = sourceFiles;
 		project->headerFiles = headerFiles;
 		project->extraFiles = extraFiles;
 
 		for (auto& it : filters)
 			project->filters.push_back(std::move(it.second));
+
+		for (const JsonValue& item : targetDef["linkLibraries"].items())
+		{
+			std::string libName = item.to_string();
+			auto it = guids.projectGuids.find(libName);
+			if (it != guids.projectGuids.end())
+			{
+				project->references.emplace_back(libName, cppbuildDir, it->second);
+			}
+			else
+			{
+				// External lib reference.
+				// To do: add this to linker flags
+			}
+		}
 
 		for (const JsonValue& configDef : config["project"]["configurations"].items())
 		{

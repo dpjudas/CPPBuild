@@ -220,6 +220,19 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		output.writeLine("    <None Include=\"" + file + "\" />");
 	}
 	output.writeLine("  </ItemGroup>");
+
+	if (!project->references.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& ref : project->references)
+		{
+			output.writeLine("    <ProjectReference Include=\"" + FilePath::combine(ref.location, ref.name + ".vcxproj") + "\">");
+			output.writeLine("      <Project>{" + ref.guid + "}</Project>");
+			output.writeLine("    </ProjectReference>");
+		}
+		output.writeLine("  </ItemGroup>");
+	}
+
 	output.writeLine("  <Import Project=\"$(VCTargetsPath)\\Microsoft.Cpp.targets\" />");
 	output.writeLine("  <ImportGroup Label=\"ExtensionTargets\">");
 	output.writeLine("  </ImportGroup>");

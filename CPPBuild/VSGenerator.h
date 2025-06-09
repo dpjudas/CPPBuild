@@ -102,6 +102,16 @@ public:
 	std::vector<std::string> extraFiles;
 };
 
+class VSCppProjectReference
+{
+public:
+	VSCppProjectReference(const std::string& name, const std::string& location, const std::string& guid) : name(name), location(location), guid(guid) {}
+
+	std::string name;
+	std::string location;
+	std::string guid;
+};
+
 class VSCppProject
 {
 public:
@@ -118,6 +128,7 @@ public:
 	std::vector<std::string> headerFiles;
 	std::vector<std::string> extraFiles;
 	std::vector<std::unique_ptr<VSCppProjectFilter>> filters;
+	std::vector<VSCppProjectReference> references;
 };
 
 class VSGenerator

@@ -1,12 +1,12 @@
 
 #include "Precomp.h"
 #include "Main.h"
-#include "Webserver/ActionModule.h"
-#include "Webserver/FileModule.h"
-#include "Webserver/Webserver.h"
-#include "IOData/Directory.h"
-#include "IOData/File.h"
-#include "IOData/FilePath.h"
+#include "Common/Webserver/ActionModule.h"
+#include "Common/Webserver/FileModule.h"
+#include "Common/Webserver/Webserver.h"
+#include "Common/IOData/Directory.h"
+#include "Common/IOData/File.h"
+#include "Common/IOData/FilePath.h"
 #include <iostream>
 
 int main()

@@ -1,15 +1,16 @@
 #pragma once
 
-#include "IOData/DataBuffer.h"
-#include "WebRequestUrl.h"
-#include "WebRequestVerb.h"
 #include "WebHeaderName.h"
+#include "Common/IOData/DataBuffer.h"
 
-class WebRequest
+class WebResponse
 {
 public:
-	WebRequestVerb verb = WebRequestVerb::get;
-	WebRequestUrl url;
+	struct
+	{
+		int code = 0;
+		std::string text;
+	} status;
 	std::map<WebHeaderName, std::string> headers;
 	std::shared_ptr<DataBuffer> content;
 

@@ -57,13 +57,13 @@ class Target
 		this.includePaths.push(path);
 	}
 
-	addLinkLibraries(paths) {
+	addLinkLibraries(libs) {
 		var self = this;
-		paths.forEach(function(path) { self.addLinkLibrary(path); });
+		libs.forEach(function(lib) { self.addLinkLibrary(lib); });
 	}
 
 	addLinkLibrary(lib) {
-		this.linkLibraries.push(path);
+		this.linkLibraries.push(lib);
 	}
 
 	setWebRootPath(path) {

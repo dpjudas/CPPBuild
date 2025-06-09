@@ -258,20 +258,6 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 	output.writeLine("  <ItemGroup>");
 	for (const auto& filter : project->filters)
 	{
-		for (const auto& file : filter->sourceFiles)
-		{
-			if (filter->name != "")
-			{
-				output.writeLine("    <Filter Include=\"" + file + "\">");
-				output.writeLine("      <UniqueIdentifier>{" + filter->guid + "}</UniqueIdentifier>");
-				output.writeLine("    </Filter>");
-			}
-		}
-	}
-	output.writeLine("  </ItemGroup>");
-	output.writeLine("  <ItemGroup>");
-	for (const auto& filter : project->filters)
-	{
 		for (const auto& file : filter->headerFiles)
 		{
 			if (filter->name == "")
@@ -290,7 +276,7 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 	output.writeLine("  <ItemGroup>");
 	for (const auto& filter : project->filters)
 	{
-		for (const auto& file : filter->headerFiles)
+		for (const auto& file : filter->extraFiles)
 		{
 			if (filter->name == "")
 			{
@@ -302,6 +288,17 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 				output.writeLine("      <Filter>" + filter->name + "</Filter>");
 				output.writeLine("    </None>");
 			}
+		}
+	}
+	output.writeLine("  </ItemGroup>");
+	output.writeLine("  <ItemGroup>");
+	for (const auto& filter : project->filters)
+	{
+		if (filter->name != "")
+		{
+			output.writeLine("    <Filter Include=\"" + filter->name + "\">");
+			output.writeLine("      <UniqueIdentifier>{" + filter->guid + "}</UniqueIdentifier>");
+			output.writeLine("    </Filter>");
 		}
 	}
 	output.writeLine("  </ItemGroup>");

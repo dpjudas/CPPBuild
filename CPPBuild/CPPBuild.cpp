@@ -128,20 +128,38 @@ void CPPBuild::generateWorkspace()
 		std::vector<std::string> defines;
 		std::vector<std::string> includes;
 
+		std::map<std::string, std::unique_ptr<VSCppProjectFilter>> filters;
+
 		for (const JsonValue& item : targetDef["files"].items())
 		{
+			VSCppProjectFilter* filter = nullptr;
+			std::string folder = FilePath::forceBackslash(FilePath::removeLastComponent(item.to_string()));
+			if (!folder.empty())
+			{
+				auto& item = filters[folder];
+				if (!item)
+					item = std::make_unique<VSCppProjectFilter>(folder, Guid::makeGuid().toString());
+				filter = item.get();
+			}
+
 			std::string name = FilePath::combine(sourcePath, item.to_string());
 			if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
 			{
 				sourceFiles.push_back(name);
+				if (filter)
+					filter->sourceFiles.push_back(name);
 			}
 			else if (FilePath::hasExtension(name, "h") || FilePath::hasExtension(name, "hpp"))
 			{
 				headerFiles.push_back(name);
+				if (filter)
+					filter->headerFiles.push_back(name);
 			}
 			else
 			{
 				extraFiles.push_back(name);
+				if (filter)
+					filter->extraFiles.push_back(name);
 			}
 		}
 
@@ -180,6 +198,9 @@ void CPPBuild::generateWorkspace()
 		project->sourceFiles = sourceFiles;
 		project->headerFiles = headerFiles;
 		project->extraFiles = extraFiles;
+
+		for (auto& it : filters)
+			project->filters.push_back(std::move(it.second));
 
 		for (const JsonValue& configDef : config["project"]["configurations"].items())
 		{

@@ -148,11 +148,29 @@ void CPPBuild::generateWorkspace()
 		for (const JsonValue& item : targetDef["defines"].items())
 			defines.push_back(item.to_string());
 
-		for (const JsonValue& item : targetDef["includes"].items())
+		for (const JsonValue& item : targetDef["includePaths"].items())
 			includes.push_back(FilePath::combine(sourcePath, item.to_string()));
 
+		std::string projectType = targetDef["type"].to_string();
 		std::string projectName = targetDef["name"].to_string();
-		std::string outputExe = projectName + ".exe";
+
+		std::string outputFile;
+		if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
+		{
+			// These project types can't be launched by visual studio.
+		}
+		else if (projectType == "application" || projectType == "console")
+		{
+			outputFile = projectName + ".exe";
+		}
+		else if (projectType == "lib")
+		{
+			outputFile = projectName + ".lib";
+		}
+		else if (projectType == "dll")
+		{
+			outputFile = projectName + ".dll";
+		}
 
 		auto& guid = guids.projectGuids[projectName];
 		if (guid.empty())
@@ -169,13 +187,61 @@ void CPPBuild::generateWorkspace()
 			std::string platform = configDef["platform"].to_string();
 
 			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, platform);
-			projConfig->general.configurationType = "Makefile";
-			projConfig->general.nmakePreprocessorDefinitions = defines;
-			projConfig->general.nmakeIncludeSearchPath = includes;
-			projConfig->general.nmakeOutput = outputExe;
-			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
-			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
-			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+			if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
+			{
+				projConfig->general.configurationType = "Makefile";
+				projConfig->general.nmakePreprocessorDefinitions = defines;
+				projConfig->general.nmakeIncludeSearchPath = includes;
+				projConfig->general.nmakeOutput = outputFile;
+				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
+				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
+				projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+			}
+			else if(projectType == "application")
+			{
+				projConfig->general.configurationType = "Application";
+				projConfig->clCompile.preprocessorDefinitions = defines;
+				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->link.subSystem = "Windows";
+			}
+			else if (projectType == "console")
+			{
+				projConfig->general.configurationType = "Application";
+				projConfig->clCompile.preprocessorDefinitions = defines;
+				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->link.subSystem = "Console";
+			}
+			else if (projectType == "lib")
+			{
+				projConfig->general.configurationType = "StaticLibrary";
+				projConfig->clCompile.preprocessorDefinitions = defines;
+				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->link.subSystem = "Windows";
+			}
+			else if (projectType == "dll")
+			{
+				projConfig->general.configurationType = "DynamicLibrary";
+				projConfig->clCompile.preprocessorDefinitions = defines;
+				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->link.subSystem = "Windows";
+			}
+
+			if (configName == "Debug")
+			{
+				projConfig->general.useDebugLibraries = "true";
+				projConfig->general.linkIncremental = "true";
+				projConfig->general.wholeProgramOptimization = "false";
+				projConfig->clCompile.runtimeLibrary = "MultiThreadedDebug";
+				projConfig->clCompile.intrinsicFunctions = "false";
+			}
+			else
+			{
+				projConfig->general.useDebugLibraries = "false";
+				projConfig->general.wholeProgramOptimization = "true";
+				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
+				projConfig->clCompile.intrinsicFunctions = "true";
+			}
+
 			project->configurations.push_back(std::move(projConfig));
 		}
 

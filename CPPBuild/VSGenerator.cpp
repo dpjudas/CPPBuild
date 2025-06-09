@@ -149,7 +149,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 			output.writeLine("    <NMakeIncludeSearchPath>" + nmakeIncludeSearchPath + "</NMakeIncludeSearchPath>");
 		}
 		output.writeLine("    <OutDir>" + configuration->general.outDir + "</OutDir>");
-		output.writeLine("    <IntDir>" + configuration->general.outDir + "</IntDir>");
+		output.writeLine("    <IntDir>" + configuration->general.intDir + "</IntDir>");
 		output.writeLine("  </PropertyGroup>");
 	}
 	for (const auto& configuration : project->configurations)
@@ -192,6 +192,8 @@ void VSGenerator::writeProject(const VSCppProject* project)
 			output.writeLine("      <ConformanceMode>" + configuration->clCompile.conformanceMode + "</ConformanceMode>");
 			output.writeLine("      <AdditionalIncludeDirectories>" + additionalIncludeDirectories + "</AdditionalIncludeDirectories>");
 			output.writeLine("      <RuntimeLibrary>" + configuration->clCompile.runtimeLibrary + "</RuntimeLibrary>");
+			output.writeLine("      <LanguageStandard>" + configuration->clCompile.languageStandard + "</LanguageStandard>");
+			output.writeLine("      <MultiProcessorCompilation>" + configuration->clCompile.multiProcessorCompilation + "</MultiProcessorCompilation>");
 			output.writeLine("    </ClCompile>");
 			output.writeLine("    <Link>");
 			output.writeLine("      <SubSystem>" + configuration->link.subSystem + "</SubSystem>");

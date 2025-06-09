@@ -128,8 +128,26 @@ var targetList = [];
 
 class Targets
 {
-	static addExecutable(name) {
-		var target = new Target(native.subdirectory, "exe", name);
+	static addApplication(name) {
+		var target = new Target(native.subdirectory, "application", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addConsole(name) {
+		var target = new Target(native.subdirectory, "console", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addStaticLibrary(name) {
+		var target = new Target(native.subdirectory, "lib", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addDynamicLibrary(name) {
+		var target = new Target(native.subdirectory, "dll", name);
 		targetList.push(target);
 		return target;
 	}

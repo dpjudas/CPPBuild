@@ -58,7 +58,7 @@ public:
 		std::string wholeProgramOptimization = "true";
 		std::string linkIncremental = "false";
 		std::string outDir = "$(SolutionDir)Build\\$(Configuration)\\$(Platform)\\bin\\";
-		std::string intDir = "$(SolutionDir)Build\\$(Configuration)\\$(Platform)\\obj\\";
+		std::string intDir = "$(SolutionDir)Build\\$(Configuration)\\$(Platform)\\obj\\$(ProjectName)\\";
 		std::string nmakeBuildCommandLine;
 		std::string nmakeOutput;
 		std::string nmakeCleanCommandLine;
@@ -77,6 +77,8 @@ public:
 		std::string conformanceMode = "true";
 		std::vector<std::string> additionalIncludeDirectories;
 		std::string runtimeLibrary = "MultiThreaded";
+		std::string languageStandard = "stdcpp20";
+		std::string multiProcessorCompilation = "true";
 	} clCompile;
 
 	struct

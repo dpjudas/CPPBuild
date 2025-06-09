@@ -442,7 +442,7 @@ void WebTarget::loadTargets()
 
 	std::string type = targetDef["type"].to_string();
 	binDir = FilePath::combine(workDir, { "Build", configuration, platform, "bin" });
-	objDir = FilePath::combine(workDir, { "Build", configuration, platform, "obj" });
+	objDir = FilePath::combine(workDir, { "Build", configuration, platform, "obj", target });
 
 	Directory::create(binDir);
 	Directory::create(objDir);
@@ -476,7 +476,7 @@ void WebTarget::loadTargets()
 	shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef["htmlShellFile"].to_string()));
 
 	std::string includePath;
-	for (const JsonValue& item : targetDef["includes"].items())
+	for (const JsonValue& item : targetDef["includePaths"].items())
 	{
 		std::string path = item.to_string();
 		if (path.empty())

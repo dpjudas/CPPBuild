@@ -25,15 +25,10 @@
             }
 
             function onRuntimeInitialized() {
-                Module.wasmLoadDone = true;
-                if (Module.wasmLoadDone && Module.jsLoadDone) {
-                    _main();
-                }
+                _main();
             }
 
             return {
-                jsLoadDone: false,
-                wasmLoadDone: false,
                 preRun: [],
                 postRun: [],
                 print: print,

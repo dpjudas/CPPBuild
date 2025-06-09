@@ -1,4 +1,11 @@
 
 body {
-    background: #808080;
+    background: #001540;
+}
+
+img {
+    position: absolute;
+    left: calc(50vw - 315px);
+    top: calc(50vh - 315px);
+    box-shadow: rgba(0,0,0,0.5) 0px 0px 5px;
 }

@@ -148,6 +148,17 @@ void CPPBuild::generateWorkspace()
 				if (!item)
 					item = std::make_unique<VSCppProjectFilter>(folder, Guid::makeGuid().toString());
 				filter = item.get();
+
+				std::string parent = folder;
+				while (true)
+				{
+					parent = FilePath::removeLastComponent(parent);
+					if (parent.empty())
+						break;
+					auto& parentitem = filters[parent];
+					if (!parentitem)
+						parentitem = std::make_unique<VSCppProjectFilter>(parent, Guid::makeGuid().toString());
+				}
 			}
 
 			std::string name = FilePath::combine(sourcePath, item.to_string());

@@ -475,7 +475,6 @@ void WebTarget::loadTargets()
 	cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef["cssRootFile"].to_string()));
 	shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef["htmlShellFile"].to_string()));
 
-	std::string includePath;
 	for (const JsonValue& item : targetDef["includePaths"].items())
 	{
 		std::string path = item.to_string();
@@ -484,16 +483,17 @@ void WebTarget::loadTargets()
 
 		std::string fullPath = FilePath::combine(sourcePath, path);
 		includePaths.push_back(fullPath);
-
-		if (!includePath.empty())
-			includePath.push_back(';');
-		includePath += fullPath;
 	}
 
 	// To do: use -gseparate-dwarf[=FILENAME] maybe
 
 	std::string flags = "-s DISABLE_EXCEPTION_CATCHING=0";
-	compileFlags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture -I " + includePath;
+	compileFlags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture";
+
+	for (const std::string& includePath : includePaths)
+	{
+		compileFlags += " -I \"" + includePath + "\"";
+	}
 
 	if (targetType == WebTargetType::component)
 	{

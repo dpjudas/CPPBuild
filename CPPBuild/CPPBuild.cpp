@@ -34,6 +34,44 @@ void CPPBuild::configure(std::string sourcePath)
 	generateWorkspace();
 }
 
+void CPPBuild::updateMakefile()
+{
+	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
+	configure(config["sourcePath"].to_string());
+}
+
+void CPPBuild::checkMakefile(std::string target, std::string configuration)
+{
+	bool needsUpdate = false;
+	try
+	{
+		int64_t makefileTime = File::getLastWriteTime(FilePath::combine(cppbuildDir, "config.json"));
+		JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
+
+		for (const JsonValue& targetDef : config["project"]["targets"].items())
+		{
+			std::string projectType = targetDef["type"].to_string();
+			std::string projectName = targetDef["name"].to_string();
+			std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
+
+			// To do: need to check all files that CPPBuild.js included
+			int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(sourcePath, "CPPBuild.js"));
+			if (makefileTime < srcFileTime)
+			{
+				needsUpdate = true;
+				break;
+			}
+		}
+	}
+	catch (...)
+	{
+		needsUpdate = true;
+	}
+
+	if (needsUpdate)
+		updateMakefile();
+}
+
 void CPPBuild::validateConfig(const JsonValue& config)
 {
 	std::string name = config["project"]["name"].to_string();
@@ -128,8 +166,12 @@ void CPPBuild::generateWorkspace()
 
 	for (const JsonValue& targetDef : config["project"]["targets"].items())
 	{
+		std::string projectType = targetDef["type"].to_string();
+		std::string projectName = targetDef["name"].to_string();
 		std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
 
+		bool isMakefileProject = projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary";
+		std::string customBuildFile;
 		std::vector<std::string> sourceFiles;
 		std::vector<std::string> headerFiles;
 		std::vector<std::string> extraFiles;
@@ -162,7 +204,13 @@ void CPPBuild::generateWorkspace()
 			}
 
 			std::string name = FilePath::combine(sourcePath, item.to_string());
-			if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
+			if (!isMakefileProject && customBuildFile.empty() && FilePath::lastComponent(name) == "CPPBuild.js")
+			{
+				customBuildFile = name;
+				if (filter)
+					filter->customBuildFile = name;
+			}
+			else if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
 			{
 				sourceFiles.push_back(name);
 				if (filter)
@@ -188,9 +236,6 @@ void CPPBuild::generateWorkspace()
 		for (const JsonValue& item : targetDef["includePaths"].items())
 			includes.push_back(FilePath::combine(sourcePath, item.to_string()));
 
-		std::string projectType = targetDef["type"].to_string();
-		std::string projectName = targetDef["name"].to_string();
-
 		std::string outputFile;
 		if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
 		{
@@ -213,6 +258,7 @@ void CPPBuild::generateWorkspace()
 		project->sourceFiles = sourceFiles;
 		project->headerFiles = headerFiles;
 		project->extraFiles = extraFiles;
+		project->customBuildFile.file = customBuildFile;
 
 		for (auto& it : filters)
 			project->filters.push_back(std::move(it.second));
@@ -238,7 +284,7 @@ void CPPBuild::generateWorkspace()
 			std::string platform = configDef["platform"].to_string();
 
 			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, platform);
-			if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
+			if (isMakefileProject)
 			{
 				projConfig->general.configurationType = "Makefile";
 				projConfig->general.nmakePreprocessorDefinitions = defines;
@@ -293,6 +339,13 @@ void CPPBuild::generateWorkspace()
 				projConfig->clCompile.intrinsicFunctions = "true";
 			}
 
+			if (!project->customBuildFile.file.empty())
+			{
+				// To do: fill customBuildFile.additionalInputs with everything included by javascript
+				projConfig->customBuildFile.command = cppbuildexe + " -workdir $(SolutionDir) update-makefile";
+				projConfig->customBuildFile.outputs.push_back(FilePath::combine(cppbuildDir, "config.json"));
+			}
+
 			project->configurations.push_back(std::move(projConfig));
 		}
 
@@ -305,18 +358,21 @@ void CPPBuild::generateWorkspace()
 
 void CPPBuild::build(std::string target, std::string configuration)
 {
+	checkMakefile(target, configuration);
 	WebTarget webTarget(workDir, target, configuration);
 	webTarget.build();
 }
 
 void CPPBuild::clean(std::string target, std::string configuration)
 {
+	checkMakefile(target, configuration);
 	WebTarget webTarget(workDir, target, configuration);
 	webTarget.clean();
 }
 
 void CPPBuild::rebuild(std::string target, std::string configuration)
 {
+	checkMakefile(target, configuration);
 	WebTarget webTarget(workDir, target, configuration);
 	webTarget.rebuild();
 }

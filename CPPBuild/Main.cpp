@@ -33,6 +33,11 @@ int main(int argc, char** argv)
 			app.configure(sourcePath);
 			return 0;
 		}
+		if (args.size() == 2 && args[1] == "update-makefile")
+		{
+			app.updateMakefile();
+			return 0;
+		}
 		else if (args.size() == 4 && args[1] == "build")
 		{
 			app.build(args[2], args[3]);

@@ -25,8 +25,8 @@ public:
 
 	std::string name;
 	std::string location;
-	std::string visualStudioVersion = "16.0.30621.155";
-	std::string minimumVisualStudioVersion = "10.0.40219.1";
+	std::string visualStudioVersion;// = "17.14.36203.30 d17.14";
+	std::string minimumVisualStudioVersion;// = "10.0.40219.1";
 	std::string solutionGuid;
 	std::vector<std::unique_ptr<VSCppProject>> projects;
 	std::vector<std::unique_ptr<VSSolutionConfiguration>> configurations;
@@ -88,6 +88,15 @@ public:
 		std::string optimizeReferences = "true";
 		std::string generateDebugInformation = "true";
 	} link;
+
+	struct
+	{
+		std::string message = "Running CPPBuild generate";
+		std::string command;
+		std::vector<std::string> additionalInputs;
+		std::vector<std::string> outputs;
+		std::string linkObjects = "false";
+	} customBuildFile;
 };
 
 class VSCppProjectFilter
@@ -100,6 +109,7 @@ public:
 	std::vector<std::string> sourceFiles;
 	std::vector<std::string> headerFiles;
 	std::vector<std::string> extraFiles;
+	std::string customBuildFile;
 };
 
 class VSCppProjectReference
@@ -121,7 +131,7 @@ public:
 	std::string location = location;
 	std::string typeGuid = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942";
 	std::string projectGuid;
-	std::string vcProjectVersion = "16.0";
+	std::string vcProjectVersion = "17.0";
 	std::string windowsTargetPlatformVersion = "10.0";
 	std::vector<std::unique_ptr<VSCppProjectConfiguration>> configurations;
 	std::vector<std::string> sourceFiles;
@@ -129,6 +139,12 @@ public:
 	std::vector<std::string> extraFiles;
 	std::vector<std::unique_ptr<VSCppProjectFilter>> filters;
 	std::vector<VSCppProjectReference> references;
+
+	struct
+	{
+		std::string file;
+		std::string useUtf8Encoding = "Always";
+	} customBuildFile;
 };
 
 class VSGenerator

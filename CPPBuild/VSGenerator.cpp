@@ -24,9 +24,11 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 {
 	VSLineWriter output;
 	output.writeLine("Microsoft Visual Studio Solution File, Format Version 12.00");
-	output.writeLine("# Visual Studio Version 16");
-	output.writeLine("VisualStudioVersion = " + solution->visualStudioVersion);
-	output.writeLine("MinimumVisualStudioVersion = " + solution->minimumVisualStudioVersion);
+	output.writeLine("# Visual Studio Version 17");
+	if (!solution->visualStudioVersion.empty())
+		output.writeLine("VisualStudioVersion = " + solution->visualStudioVersion);
+	if (!solution->minimumVisualStudioVersion.empty())
+		output.writeLine("MinimumVisualStudioVersion = " + solution->minimumVisualStudioVersion);
 	for (const auto& project : solution->projects)
 	{
 		output.writeLine("Project(\"" + project->typeGuid + "\") = \"" + project->name + "\", \"" + FilePath::combine(project->location, project->name + ".vcxproj") + "\", \"" + project->projectGuid + "\")");
@@ -202,24 +204,74 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		}
 		output.writeLine("  </ItemDefinitionGroup>");
 	}
-	output.writeLine("  <ItemGroup>");
-	for (const auto& file : project->sourceFiles)
+
+	if (!project->sourceFiles.empty())
 	{
-		output.writeLine("    <ClCompile Include=\"" + file + "\" />");
+		output.writeLine("  <ItemGroup>");
+		for (const auto& file : project->sourceFiles)
+		{
+			output.writeLine("    <ClCompile Include=\"" + file + "\" />");
+		}
+		output.writeLine("  </ItemGroup>");
 	}
-	output.writeLine("  </ItemGroup>");
-	output.writeLine("  <ItemGroup>");
-	for (const auto& file : project->headerFiles)
+
+	if (!project->headerFiles.empty())
 	{
-		output.writeLine("    <ClInclude Include=\"" + file + "\" />");
+		output.writeLine("  <ItemGroup>");
+		for (const auto& file : project->headerFiles)
+		{
+			output.writeLine("    <ClInclude Include=\"" + file + "\" />");
+		}
+		output.writeLine("  </ItemGroup>");
 	}
-	output.writeLine("  </ItemGroup>");
-	output.writeLine("  <ItemGroup>");
-	for (const auto& file : project->extraFiles)
+
+	if (!project->customBuildFile.file.empty())
 	{
-		output.writeLine("    <None Include=\"" + file + "\" />");
+		output.writeLine("  <ItemGroup>");
+		output.writeLine("    <CustomBuild Include=\"" + project->customBuildFile.file + "\">");
+		output.writeLine("      <UseUtf8Encoding>" + project->customBuildFile.useUtf8Encoding + "</UseUtf8Encoding>");
+		for (const auto& configuration : project->configurations)
+		{
+			std::string additionalInputs, outputs;
+
+			for (const auto& value : configuration->customBuildFile.additionalInputs)
+			{
+				if (!additionalInputs.empty())
+					additionalInputs += ";";
+				additionalInputs += value;
+			}
+			if (!additionalInputs.empty())
+			{
+				additionalInputs += ";";
+				additionalInputs += "%(AdditionalIncludeDirectories)";
+			}
+
+			for (const auto& value : configuration->customBuildFile.outputs)
+			{
+				if (!outputs.empty())
+					outputs += ";";
+				outputs += value;
+			}
+
+			output.writeLine("      <Message Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + configuration->customBuildFile.message + "</Message>");
+			output.writeLine("      <Command Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + configuration->customBuildFile.command + "</Command>");
+			output.writeLine("      <AdditionalInputs Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + additionalInputs + "</AdditionalInputs>");
+			output.writeLine("      <Outputs Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + outputs + "</Outputs>");
+			output.writeLine("      <LinkObjects Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + configuration->customBuildFile.linkObjects + "</LinkObjects>");
+		}
+		output.writeLine("    </CustomBuild>");
+		output.writeLine("  </ItemGroup>");
 	}
-	output.writeLine("  </ItemGroup>");
+
+	if (!project->extraFiles.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& file : project->extraFiles)
+		{
+			output.writeLine("    <None Include=\"" + file + "\" />");
+		}
+		output.writeLine("  </ItemGroup>");
+	}
 
 	if (!project->references.empty())
 	{
@@ -250,60 +302,95 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 	VSLineWriter output;
 	output.writeLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
 	output.writeLine("<Project ToolsVersion=\"4.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">");
-	output.writeLine("  <ItemGroup>");
-	for (const auto& filter : project->filters)
+
+	if (!project->sourceFiles.empty())
 	{
-		for (const auto& file : filter->sourceFiles)
+		output.writeLine("  <ItemGroup>");
+		for (const auto& filter : project->filters)
 		{
-			if (filter->name == "")
+			for (const auto& file : filter->sourceFiles)
 			{
-				output.writeLine("    <ClCompile Include=\"" + file + "\" />");
-			}
-			else
-			{
-				output.writeLine("    <ClCompile Include=\"" + file + "\">");
-				output.writeLine("      <Filter>" + filter->name + "</Filter>");
-				output.writeLine("    </ClCompile>");
+				if (filter->name == "")
+				{
+					output.writeLine("    <ClCompile Include=\"" + file + "\" />");
+				}
+				else
+				{
+					output.writeLine("    <ClCompile Include=\"" + file + "\">");
+					output.writeLine("      <Filter>" + filter->name + "</Filter>");
+					output.writeLine("    </ClCompile>");
+				}
 			}
 		}
+		output.writeLine("  </ItemGroup>");
 	}
-	output.writeLine("  </ItemGroup>");
-	output.writeLine("  <ItemGroup>");
-	for (const auto& filter : project->filters)
+
+	if (!project->headerFiles.empty())
 	{
-		for (const auto& file : filter->headerFiles)
+		output.writeLine("  <ItemGroup>");
+		for (const auto& filter : project->filters)
 		{
-			if (filter->name == "")
+			for (const auto& file : filter->headerFiles)
 			{
-				output.writeLine("    <ClInclude Include=\"" + file + "\" />");
-			}
-			else
-			{
-				output.writeLine("    <ClInclude Include=\"" + file + "\">");
-				output.writeLine("      <Filter>" + filter->name + "</Filter>");
-				output.writeLine("    </ClInclude>");
+				if (filter->name == "")
+				{
+					output.writeLine("    <ClInclude Include=\"" + file + "\" />");
+				}
+				else
+				{
+					output.writeLine("    <ClInclude Include=\"" + file + "\">");
+					output.writeLine("      <Filter>" + filter->name + "</Filter>");
+					output.writeLine("    </ClInclude>");
+				}
 			}
 		}
+		output.writeLine("  </ItemGroup>");
 	}
-	output.writeLine("  </ItemGroup>");
-	output.writeLine("  <ItemGroup>");
-	for (const auto& filter : project->filters)
+
+	if (!project->customBuildFile.file.empty())
 	{
-		for (const auto& file : filter->extraFiles)
+		output.writeLine("  <ItemGroup>");
+		for (const auto& filter : project->filters)
 		{
-			if (filter->name == "")
+			if (!filter->customBuildFile.empty())
 			{
-				output.writeLine("    <None Include=\"" + file + "\" />");
-			}
-			else
-			{
-				output.writeLine("    <None Include=\"" + file + "\">");
-				output.writeLine("      <Filter>" + filter->name + "</Filter>");
-				output.writeLine("    </None>");
+				if (filter->name == "")
+				{
+					output.writeLine("    <CustomBuild Include=\"" + filter->customBuildFile + "\" />");
+				}
+				else
+				{
+					output.writeLine("    <CustomBuild Include=\"" + filter->customBuildFile + "\">");
+					output.writeLine("      <Filter>" + filter->name + "</Filter>");
+					output.writeLine("    </CustomBuild>");
+				}
 			}
 		}
+		output.writeLine("  </ItemGroup>");
 	}
-	output.writeLine("  </ItemGroup>");
+
+	if (!project->extraFiles.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& filter : project->filters)
+		{
+			for (const auto& file : filter->extraFiles)
+			{
+				if (filter->name == "")
+				{
+					output.writeLine("    <None Include=\"" + file + "\" />");
+				}
+				else
+				{
+					output.writeLine("    <None Include=\"" + file + "\">");
+					output.writeLine("      <Filter>" + filter->name + "</Filter>");
+					output.writeLine("    </None>");
+				}
+			}
+		}
+		output.writeLine("  </ItemGroup>");
+	}
+
 	output.writeLine("  <ItemGroup>");
 	for (const auto& filter : project->filters)
 	{
@@ -315,8 +402,8 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 		}
 	}
 	output.writeLine("  </ItemGroup>");
-	output.writeLine("</Project>");
 
+	output.writeLine("</Project>");
 	output.save(FilePath::combine(project->location, project->name + ".vcxproj.filters"));
 }
 

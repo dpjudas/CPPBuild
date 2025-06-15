@@ -15,6 +15,8 @@ public:
 	CPPBuild(std::string workDir);
 
 	void configure(std::string sourcePath);
+	void updateMakefile();
+	void checkMakefile(std::string target, std::string configuration);
 	JsonValue runConfigureScript(const std::string& sourcePath);
 	void validateConfig(const JsonValue& config);
 	void generateWorkspace();

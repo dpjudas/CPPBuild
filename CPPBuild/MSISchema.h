@@ -22,9 +22,47 @@ public:
 		return "CREATE TABLE `ActionText` (`Action` CHAR(72) NOT NULL, `Description` LONGCHAR LOCALIZABLE, `Template` LONGCHAR LOCALIZABLE PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ActionText");
+		view->setString(1, "Description");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Localized description displayed in progress dialog and log when action is executing.");
+		view->execute();
+		view->setString(0, "ActionText");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of action to be described.");
+		view->execute();
+		view->setString(0, "ActionText");
+		view->setString(1, "Template");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Template");
+		view->setString(8, "");
+		view->setString(9, "Optional localized format template used to format action data records for display during action execution.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIActionText>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ActionText` (`Action`, `Description`, `Template`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -48,9 +86,47 @@ public:
 		return "CREATE TABLE `AdminExecuteSequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "AdminExecuteSequence");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of action to invoke, either in the engine or the handler DLL.");
+		view->execute();
+		view->setString(0, "AdminExecuteSequence");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Optional expression which skips the action if evaluates to expFalse.If the expression syntax is invalid, the engine will terminate, returning iesBadActionData.");
+		view->execute();
+		view->setString(0, "AdminExecuteSequence");
+		view->setString(1, "Sequence");
+		view->setString(2, "Y");
+		view->setInteger(3, -4);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Number that determines the sort order in which the actions are to be executed.  Leave blank to suppress action.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAdminExecuteSequence>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `AdminExecuteSequence` (`Action`, `Condition`, `Sequence`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -74,9 +150,47 @@ public:
 		return "CREATE TABLE `AdminUISequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "AdminUISequence");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of action to invoke, either in the engine or the handler DLL.");
+		view->execute();
+		view->setString(0, "AdminUISequence");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Optional expression which skips the action if evaluates to expFalse.If the expression syntax is invalid, the engine will terminate, returning iesBadActionData.");
+		view->execute();
+		view->setString(0, "AdminUISequence");
+		view->setString(1, "Sequence");
+		view->setString(2, "Y");
+		view->setInteger(3, -4);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Number that determines the sort order in which the actions are to be executed.  Leave blank to suppress action.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAdminUISequence>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `AdminUISequence` (`Action`, `Condition`, `Sequence`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -100,9 +214,47 @@ public:
 		return "CREATE TABLE `AdvtExecuteSequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "AdvtExecuteSequence");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of action to invoke, either in the engine or the handler DLL.");
+		view->execute();
+		view->setString(0, "AdvtExecuteSequence");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Optional expression which skips the action if evaluates to expFalse.If the expression syntax is invalid, the engine will terminate, returning iesBadActionData.");
+		view->execute();
+		view->setString(0, "AdvtExecuteSequence");
+		view->setString(1, "Sequence");
+		view->setString(2, "Y");
+		view->setInteger(3, -4);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Number that determines the sort order in which the actions are to be executed.  Leave blank to suppress action.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAdvtExecuteSequence>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `AdvtExecuteSequence` (`Action`, `Condition`, `Sequence`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -126,9 +278,47 @@ public:
 		return "CREATE TABLE `AdvtUISequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "AdvtUISequence");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of action to invoke, either in the engine or the handler DLL.");
+		view->execute();
+		view->setString(0, "AdvtUISequence");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Optional expression which skips the action if evaluates to expFalse.If the expression syntax is invalid, the engine will terminate, returning iesBadActionData.");
+		view->execute();
+		view->setString(0, "AdvtUISequence");
+		view->setString(1, "Sequence");
+		view->setString(2, "Y");
+		view->setInteger(3, -4);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Number that determines the sort order in which the actions are to be executed.  Leave blank to suppress action.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAdvtUISequence>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `AdvtUISequence` (`Action`, `Condition`, `Sequence`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -156,9 +346,91 @@ public:
 		return "CREATE TABLE `AppId` (`AppId` CHAR(38) NOT NULL, `RemoteServerName` CHAR(255), `LocalService` CHAR(255), `ServiceParameters` CHAR(255), `DllSurrogate` CHAR(255), `ActivateAtStorage` SHORT, `RunAsInteractiveUser` SHORT PRIMARY KEY `AppId`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "AppId");
+		view->setString(1, "AppId");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+		view->setString(0, "AppId");
+		view->setString(1, "ActivateAtStorage");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 1);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+		view->setString(0, "AppId");
+		view->setString(1, "DllSurrogate");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+		view->setString(0, "AppId");
+		view->setString(1, "LocalService");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+		view->setString(0, "AppId");
+		view->setString(1, "RemoteServerName");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+		view->setString(0, "AppId");
+		view->setString(1, "RunAsInteractiveUser");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 1);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+		view->setString(0, "AppId");
+		view->setString(1, "ServiceParameters");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAppId>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `AppId` (`AppId`, `RemoteServerName`, `LocalService`, `ServiceParameters`, `DllSurrogate`, `ActivateAtStorage`, `RunAsInteractiveUser`) VALUES(?, ?, ?, ?, ?, ?, ?)", 7);
 		for (auto& row : rows)
 		{
@@ -185,9 +457,36 @@ public:
 		return "CREATE TABLE `AppSearch` (`Property` CHAR(72) NOT NULL, `Signature_` CHAR(72) NOT NULL PRIMARY KEY `Property`, `Signature_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "AppSearch");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The property associated with a Signature");
+		view->execute();
+		view->setString(0, "AppSearch");
+		view->setString(1, "Signature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Signature;RegLocator;IniLocator;DrLocator;CompLocator");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The Signature_ represents a unique file signature and is also the foreign key in the Signature,  RegLocator, IniLocator, CompLocator and the DrLocator tables.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAppSearch>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `AppSearch` (`Property`, `Signature_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -216,9 +515,113 @@ public:
 		return "CREATE TABLE `BBControl` (`Billboard_` CHAR(50) NOT NULL, `BBControl` CHAR(50) NOT NULL, `Type` CHAR(50) NOT NULL, `X` SHORT NOT NULL, `Y` SHORT NOT NULL, `Width` SHORT NOT NULL, `Height` SHORT NOT NULL, `Attributes` LONG, `Text` CHAR(50) LOCALIZABLE PRIMARY KEY `Billboard_`, `BBControl`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "BBControl");
+		view->setString(1, "Type");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The type of the control.");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "Y");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Vertical coordinate of the upper left corner of the bounding rectangle of the control.");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "Text");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "A string used to set the initial text contained within a control (if appropriate).");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "BBControl");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of the control. This name must be unique within a billboard, but can repeat on different billboard.");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "Attributes");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A 32-bit word that specifies the attribute flags to be applied to this control.");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "Billboard_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Billboard");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "External key to the Billboard table, name of the billboard.");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "Height");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Height of the bounding rectangle of the control.");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "Width");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Width of the bounding rectangle of the control.");
+		view->execute();
+		view->setString(0, "BBControl");
+		view->setString(1, "X");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Horizontal coordinate of the upper left corner of the bounding rectangle of the control.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIBBControl>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `BBControl` (`Billboard_`, `BBControl`, `Type`, `X`, `Y`, `Width`, `Height`, `Attributes`, `Text`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", 9);
 		for (auto& row : rows)
 		{
@@ -249,9 +652,58 @@ public:
 		return "CREATE TABLE `Billboard` (`Billboard` CHAR(50) NOT NULL, `Feature_` CHAR(38) NOT NULL, `Action` CHAR(50), `Ordering` SHORT PRIMARY KEY `Billboard`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Billboard");
+		view->setString(1, "Action");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The name of an action. The billboard is displayed during the progress messages received from this action.");
+		view->execute();
+		view->setString(0, "Billboard");
+		view->setString(1, "Billboard");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of the billboard.");
+		view->execute();
+		view->setString(0, "Billboard");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "An external key to the Feature Table. The billboard is shown only if this feature is being installed.");
+		view->execute();
+		view->setString(0, "Billboard");
+		view->setString(1, "Ordering");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A positive integer. If there is more than one billboard corresponding to an action they will be shown in the order defined by this column.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIBillboard>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Billboard` (`Billboard`, `Feature_`, `Action`, `Ordering`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -275,9 +727,36 @@ public:
 		return "CREATE TABLE `Binary` (`Name` CHAR(72) NOT NULL, `Data` OBJECT NOT NULL PRIMARY KEY `Name`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Binary");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Unique key identifying the binary data.");
+		view->execute();
+		view->setString(0, "Binary");
+		view->setString(1, "Data");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "The unformatted binary data.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIBinary>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Binary` (`Name`, `Data`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -299,9 +778,36 @@ public:
 		return "CREATE TABLE `BindImage` (`File_` CHAR(72) NOT NULL, `Path` CHAR(255) PRIMARY KEY `File_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "BindImage");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The index into the File table. This must be an executable file.");
+		view->execute();
+		view->setString(0, "BindImage");
+		view->setString(1, "Path");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Paths");
+		view->setString(8, "");
+		view->setString(9, "A list of ;  delimited paths that represent the paths to be searched for the import DLLS. The list is usually a list of properties each enclosed within square brackets [] .");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIBindImage>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `BindImage` (`File_`, `Path`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -322,9 +828,25 @@ public:
 		return "CREATE TABLE `CCPSearch` (`Signature_` CHAR(72) NOT NULL PRIMARY KEY `Signature_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "CCPSearch");
+		view->setString(1, "Signature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Signature;RegLocator;IniLocator;DrLocator;CompLocator");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The Signature_ represents a unique file signature and is also the foreign key in the Signature,  RegLocator, IniLocator, CompLocator and the DrLocator tables.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSICCPSearch>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `CCPSearch` (`Signature_`) VALUES(?)", 1);
 		for (auto& row : rows)
 		{
@@ -345,9 +867,36 @@ public:
 		return "CREATE TABLE `CheckBox` (`Property` CHAR(72) NOT NULL, `Value` CHAR(64) PRIMARY KEY `Property`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "CheckBox");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A named property to be tied to the item.");
+		view->execute();
+		view->setString(0, "CheckBox");
+		view->setString(1, "Value");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value string associated with the item.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSICheckBox>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `CheckBox` (`Property`, `Value`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -380,9 +929,157 @@ public:
 		return "CREATE TABLE `Class` (`CLSID` CHAR(38) NOT NULL, `Context` CHAR(32) NOT NULL, `Component_` CHAR(72) NOT NULL, `ProgId_Default` CHAR(255), `Description` CHAR(255) LOCALIZABLE, `AppId_` CHAR(38), `FileTypeMask` CHAR(255), `Icon_` CHAR(72), `IconIndex` SHORT, `DefInprocHandler` CHAR(32), `Argument` CHAR(255), `Feature_` CHAR(38) NOT NULL, `Attributes` SHORT PRIMARY KEY `CLSID`, `Context`, `Component_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Class");
+		view->setString(1, "Description");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Localized description for the Class.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "Attributes");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Class registration attributes.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Feature Table, specifying the feature to validate or install in order for the CLSID factory to be operational.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "AppId_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "AppId");
+		view->setInteger(6, 1);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "Optional AppID containing DCOM information for associated application (string GUID).");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "Argument");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "optional argument for LocalServers.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "CLSID");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "The CLSID of an OLE factory.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Component Table, specifying the component for which to return a path when called through LocateComponent.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "Context");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The numeric server context for this server. CLSCTX_xxxx");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "DefInprocHandler");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "1;2;3");
+		view->setString(9, "Optional default inproc handler.  Only optionally provided if Context=CLSCTX_LOCAL_SERVER.  Typically \"ole32.dll\" or \"mapi32.dll\"");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "FileTypeMask");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Optional string containing information for the HKCRthis CLSID) key. If multiple patterns exist, they must be delimited by a semicolon, and numeric subkeys will be generated: 0,1,2...");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "Icon_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Icon");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Optional foreign key into the Icon Table, specifying the icon file associated with this CLSID. Will be written under the DefaultIcon key.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "IconIndex");
+		view->setString(2, "Y");
+		view->setInteger(3, -32767);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Optional icon index.");
+		view->execute();
+		view->setString(0, "Class");
+		view->setString(1, "ProgId_Default");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "ProgId");
+		view->setInteger(6, 1);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Optional ProgId associated with this CLSID.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIClass>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Class` (`CLSID`, `Context`, `Component_`, `ProgId_Default`, `Description`, `AppId_`, `FileTypeMask`, `Icon_`, `IconIndex`, `DefInprocHandler`, `Argument`, `Feature_`, `Attributes`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 13);
 		for (auto& row : rows)
 		{
@@ -417,9 +1114,58 @@ public:
 		return "CREATE TABLE `ComboBox` (`Property` CHAR(72) NOT NULL, `Order` SHORT NOT NULL, `Value` CHAR(64) NOT NULL, `Text` CHAR(64) LOCALIZABLE PRIMARY KEY `Property`, `Order`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ComboBox");
+		view->setString(1, "Text");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The visible text to be assigned to the item. Optional. If this entry or the entire column is missing, the text is the same as the value.");
+		view->execute();
+		view->setString(0, "ComboBox");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A named property to be tied to this item. All the items tied to the same property become part of the same combobox.");
+		view->execute();
+		view->setString(0, "ComboBox");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value string associated with this item. Selecting the line will set the associated property to this value.");
+		view->execute();
+		view->setString(0, "ComboBox");
+		view->setString(1, "Order");
+		view->setString(2, "N");
+		view->setInteger(3, 1);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A positive integer used to determine the ordering of the items within one list.	The integers do not have to be consecutive.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIComboBox>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ComboBox` (`Property`, `Order`, `Value`, `Text`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -444,9 +1190,47 @@ public:
 		return "CREATE TABLE `CompLocator` (`Signature_` CHAR(72) NOT NULL, `ComponentId` CHAR(38) NOT NULL, `Type` SHORT PRIMARY KEY `Signature_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "CompLocator");
+		view->setString(1, "Type");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 1);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A boolean value that determines if the registry value is a filename or a directory location.");
+		view->execute();
+		view->setString(0, "CompLocator");
+		view->setString(1, "Signature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The table key. The Signature_ represents a unique file signature and is also the foreign key in the Signature table.");
+		view->execute();
+		view->setString(0, "CompLocator");
+		view->setString(1, "ComponentId");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "A string GUID unique to this component, version, and language.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSICompLocator>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `CompLocator` (`Signature_`, `ComponentId`, `Type`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -469,9 +1253,36 @@ public:
 		return "CREATE TABLE `Complus` (`Component_` CHAR(72) NOT NULL, `ExpType` SHORT PRIMARY KEY `Component_`, `ExpType`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Complus");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key referencing Component that controls the ComPlus component.");
+		view->execute();
+		view->setString(0, "Complus");
+		view->setString(1, "ExpType");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "ComPlus component attributes.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIComplus>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Complus` (`Component_`, `ExpType`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -497,9 +1308,80 @@ public:
 		return "CREATE TABLE `Component` (`Component` CHAR(72) NOT NULL, `ComponentId` CHAR(38), `Directory_` CHAR(72) NOT NULL, `Attributes` SHORT NOT NULL, `Condition` CHAR(255), `KeyPath` CHAR(72) PRIMARY KEY `Component`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Component");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "A conditional statement that will disable this component if the specified condition evaluates to the 'True' state. If a component is disabled, it will not be installed, regardless of the 'Action' state associated with the component.");
+		view->execute();
+		view->setString(0, "Component");
+		view->setString(1, "Attributes");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Remote execution option, one of irsEnum");
+		view->execute();
+		view->setString(0, "Component");
+		view->setString(1, "Component");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key used to identify a particular component record.");
+		view->execute();
+		view->setString(0, "Component");
+		view->setString(1, "ComponentId");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "A string GUID unique to this component, version, and language.");
+		view->execute();
+		view->setString(0, "Component");
+		view->setString(1, "Directory_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Directory");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required key of a Directory table record. This is actually a property name whose value contains the actual path, set either by the AppSearch action or with the default setting obtained from the Directory table.");
+		view->execute();
+		view->setString(0, "Component");
+		view->setString(1, "KeyPath");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File;Registry;ODBCDataSource");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Either the primary key into the File table, Registry table, or ODBCDataSource table. This extract path is stored when the component is installed, and is used to detect the presence of the component and to return the path to it.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIComponent>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Component` (`Component`, `ComponentId`, `Directory_`, `Attributes`, `Condition`, `KeyPath`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -526,9 +1408,47 @@ public:
 		return "CREATE TABLE `Condition` (`Feature_` CHAR(38) NOT NULL, `Level` SHORT NOT NULL, `Condition` CHAR(255) PRIMARY KEY `Feature_`, `Level`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Condition");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Expression evaluated to determine if Level in the Feature table is to change.");
+		view->execute();
+		view->setString(0, "Condition");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to a Feature entry in Feature table.");
+		view->execute();
+		view->setString(0, "Condition");
+		view->setString(1, "Level");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "New selection Level to set in Feature table if Condition evaluates to TRUE.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSICondition>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Condition` (`Feature_`, `Level`, `Condition`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -561,9 +1481,146 @@ public:
 		return "CREATE TABLE `Control` (`Dialog_` CHAR(72) NOT NULL, `Control` CHAR(50) NOT NULL, `Type` CHAR(20) NOT NULL, `X` SHORT NOT NULL, `Y` SHORT NOT NULL, `Width` SHORT NOT NULL, `Height` SHORT NOT NULL, `Attributes` LONG, `Property` CHAR(72), `Text` LONGCHAR LOCALIZABLE, `Control_Next` CHAR(50), `Help` CHAR(50) LOCALIZABLE PRIMARY KEY `Dialog_`, `Control`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Control");
+		view->setString(1, "Type");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The type of the control.");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Y");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Vertical coordinate of the upper left corner of the bounding rectangle of the control.");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Text");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "A string used to set the initial text contained within a control (if appropriate).");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Property");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The name of a defined property to be linked to this control. ");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Attributes");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A 32-bit word that specifies the attribute flags to be applied to this control.");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Height");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Height of the bounding rectangle of the control.");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Width");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Width of the bounding rectangle of the control.");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "X");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Horizontal coordinate of the upper left corner of the bounding rectangle of the control.");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Control");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of the control. This name must be unique within a dialog, but can repeat on different dialogs. ");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Control_Next");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Control");
+		view->setInteger(6, 2);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The name of an other control on the same dialog. This link defines the tab order of the controls. The links have to form one or more cycles!");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Dialog_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Dialog");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "External key to the Dialog table, name of the dialog.");
+		view->execute();
+		view->setString(0, "Control");
+		view->setString(1, "Help");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The help strings used with the button. The text is optional. ");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIControl>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Control` (`Dialog_`, `Control`, `Type`, `X`, `Y`, `Width`, `Height`, `Attributes`, `Property`, `Text`, `Control_Next`, `Help`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 12);
 		for (auto& row : rows)
 		{
@@ -597,9 +1654,58 @@ public:
 		return "CREATE TABLE `ControlCondition` (`Dialog_` CHAR(72) NOT NULL, `Control_` CHAR(50) NOT NULL, `Action` CHAR(50) NOT NULL, `Condition` CHAR(255) NOT NULL PRIMARY KEY `Dialog_`, `Control_`, `Action`, `Condition`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ControlCondition");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "Default;Disable;Enable;Hide;Show");
+		view->setString(9, "The desired action to be taken on the specified control.");
+		view->execute();
+		view->setString(0, "ControlCondition");
+		view->setString(1, "Condition");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "A standard conditional statement that specifies under which conditions the action should be triggered.");
+		view->execute();
+		view->setString(0, "ControlCondition");
+		view->setString(1, "Dialog_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Dialog");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A foreign key to the Dialog table, name of the dialog.");
+		view->execute();
+		view->setString(0, "ControlCondition");
+		view->setString(1, "Control_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Control");
+		view->setInteger(6, 2);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A foreign key to the Control table, name of the control.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIControlCondition>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ControlCondition` (`Dialog_`, `Control_`, `Action`, `Condition`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -627,9 +1733,80 @@ public:
 		return "CREATE TABLE `ControlEvent` (`Dialog_` CHAR(72) NOT NULL, `Control_` CHAR(50) NOT NULL, `Event` CHAR(50) NOT NULL, `Argument` CHAR(255) NOT NULL, `Condition` CHAR(255), `Ordering` SHORT PRIMARY KEY `Dialog_`, `Control_`, `Event`, `Argument`, `Condition`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ControlEvent");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "A standard conditional statement that specifies under which conditions an event should be triggered.");
+		view->execute();
+		view->setString(0, "ControlEvent");
+		view->setString(1, "Ordering");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "An integer used to order several events tied to the same control. Can be left blank.");
+		view->execute();
+		view->setString(0, "ControlEvent");
+		view->setString(1, "Argument");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "A value to be used as a modifier when triggering a particular event.");
+		view->execute();
+		view->setString(0, "ControlEvent");
+		view->setString(1, "Dialog_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Dialog");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A foreign key to the Dialog table, name of the dialog.");
+		view->execute();
+		view->setString(0, "ControlEvent");
+		view->setString(1, "Control_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Control");
+		view->setInteger(6, 2);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A foreign key to the Control table, name of the control");
+		view->execute();
+		view->setString(0, "ControlEvent");
+		view->setString(1, "Event");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "An identifier that specifies the type of the event that should take place when the user interacts with control specified by the first two entries.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIControlEvent>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ControlEvent` (`Dialog_`, `Control_`, `Event`, `Argument`, `Condition`, `Ordering`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -655,9 +1832,36 @@ public:
 		return "CREATE TABLE `CreateFolder` (`Directory_` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL PRIMARY KEY `Directory_`, `Component_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "CreateFolder");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table.");
+		view->execute();
+		view->setString(0, "CreateFolder");
+		view->setString(1, "Directory_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Directory");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, could be foreign key into the Directory table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSICreateFolder>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `CreateFolder` (`Directory_`, `Component_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -682,9 +1886,69 @@ public:
 		return "CREATE TABLE `CustomAction` (`Action` CHAR(72) NOT NULL, `Type` SHORT NOT NULL, `Source` CHAR(72), `Target` CHAR(255), `ExtendedType` LONG PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "CustomAction");
+		view->setString(1, "Type");
+		view->setString(2, "N");
+		view->setInteger(3, 1);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The numeric custom action type, consisting of source location, code type, entry, option flags.");
+		view->execute();
+		view->setString(0, "CustomAction");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, name of action, normally appears in sequence table unless private use.");
+		view->execute();
+		view->setString(0, "CustomAction");
+		view->setString(1, "Source");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "CustomSource");
+		view->setString(8, "");
+		view->setString(9, "The table reference of the source of the code.");
+		view->execute();
+		view->setString(0, "CustomAction");
+		view->setString(1, "Target");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Excecution parameter, depends on the type of custom action");
+		view->execute();
+		view->setString(0, "CustomAction");
+		view->setString(1, "ExtendedType");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The numeric custom action type info flags.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSICustomAction>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `CustomAction` (`Action`, `Type`, `Source`, `Target`, `ExtendedType`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -717,9 +1981,124 @@ public:
 		return "CREATE TABLE `Dialog` (`Dialog` CHAR(72) NOT NULL, `HCentering` SHORT NOT NULL, `VCentering` SHORT NOT NULL, `Width` SHORT NOT NULL, `Height` SHORT NOT NULL, `Attributes` LONG, `Title` CHAR(128) LOCALIZABLE, `Control_First` CHAR(50) NOT NULL, `Control_Default` CHAR(50), `Control_Cancel` CHAR(50) PRIMARY KEY `Dialog`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Dialog");
+		view->setString(1, "Attributes");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A 32-bit word that specifies the attribute flags to be applied to this dialog.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "Height");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Height of the bounding rectangle of the dialog.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "Width");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Width of the bounding rectangle of the dialog.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "Dialog");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of the dialog.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "Control_Cancel");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Control");
+		view->setInteger(6, 2);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Defines the cancel control. Hitting escape or clicking on the close icon on the dialog is equivalent to pushing this button.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "Control_Default");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Control");
+		view->setInteger(6, 2);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Defines the default control. Hitting return is equivalent to pushing this button.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "Control_First");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Control");
+		view->setInteger(6, 2);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Defines the control that has the focus when the dialog is created.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "HCentering");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 100);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Horizontal position of the dialog on a 0-100 scale. 0 means left end, 100 means right end of the screen, 50 center.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "Title");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "A text string specifying the title to be displayed in the title bar of the dialog's window.");
+		view->execute();
+		view->setString(0, "Dialog");
+		view->setString(1, "VCentering");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 100);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Vertical position of the dialog on a 0-100 scale. 0 means top end, 100 means bottom end of the screen, 50 center.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIDialog>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Dialog` (`Dialog`, `HCentering`, `VCentering`, `Width`, `Height`, `Attributes`, `Title`, `Control_First`, `Control_Default`, `Control_Cancel`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
 		for (auto& row : rows)
 		{
@@ -750,9 +2129,47 @@ public:
 		return "CREATE TABLE `Directory` (`Directory` CHAR(72) NOT NULL, `Directory_Parent` CHAR(72), `DefaultDir` CHAR(255) NOT NULL LOCALIZABLE PRIMARY KEY `Directory`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Directory");
+		view->setString(1, "Directory");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Unique identifier for directory entry, primary key. If a property by this name is defined, it contains the full path to the directory.");
+		view->execute();
+		view->setString(0, "Directory");
+		view->setString(1, "DefaultDir");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "DefaultDir");
+		view->setString(8, "");
+		view->setString(9, "The default sub-path under parent's path.");
+		view->execute();
+		view->setString(0, "Directory");
+		view->setString(1, "Directory_Parent");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Directory");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to the entry in this table specifying the default parent directory. A record parented to itself or with a Null parent represents a root of the install tree.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIDirectory>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Directory` (`Directory`, `Directory_Parent`, `DefaultDir`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -777,9 +2194,58 @@ public:
 		return "CREATE TABLE `DrLocator` (`Signature_` CHAR(72) NOT NULL, `Parent` CHAR(72), `Path` CHAR(255), `Depth` SHORT PRIMARY KEY `Signature_`, `Parent`, `Path`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "DrLocator");
+		view->setString(1, "Signature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The Signature_ represents a unique file signature and is also the foreign key in the Signature table.");
+		view->execute();
+		view->setString(0, "DrLocator");
+		view->setString(1, "Path");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "AnyPath");
+		view->setString(8, "");
+		view->setString(9, "The path on the user system. This is a either a subpath below the value of the Parent or a full path. The path may contain properties enclosed within [ ] that will be expanded.");
+		view->execute();
+		view->setString(0, "DrLocator");
+		view->setString(1, "Depth");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The depth below the path to which the Signature_ is recursively searched. If absent, the depth is assumed to be 0.");
+		view->execute();
+		view->setString(0, "DrLocator");
+		view->setString(1, "Parent");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The parent file signature. It is also a foreign key in the Signature table. If null and the Path column does not expand to a full path, then all the fixed drives of the user system are searched using the Path.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIDrLocator>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `DrLocator` (`Signature_`, `Parent`, `Path`, `Depth`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -806,9 +2272,69 @@ public:
 		return "CREATE TABLE `DuplicateFile` (`FileKey` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `File_` CHAR(72) NOT NULL, `DestName` CHAR(255) LOCALIZABLE, `DestFolder` CHAR(72) PRIMARY KEY `FileKey`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "DuplicateFile");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key referencing the source file to be duplicated.");
+		view->execute();
+		view->setString(0, "DuplicateFile");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key referencing Component that controls the duplicate file.");
+		view->execute();
+		view->setString(0, "DuplicateFile");
+		view->setString(1, "DestFolder");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of a property whose value is assumed to resolve to the full pathname to a destination folder.");
+		view->execute();
+		view->setString(0, "DuplicateFile");
+		view->setString(1, "DestName");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "Filename to be given to the duplicate file.");
+		view->execute();
+		view->setString(0, "DuplicateFile");
+		view->setString(1, "FileKey");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key used to identify a particular file entry");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIDuplicateFile>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `DuplicateFile` (`FileKey`, `Component_`, `File_`, `DestName`, `DestFolder`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -835,9 +2361,58 @@ public:
 		return "CREATE TABLE `Environment` (`Environment` CHAR(72) NOT NULL, `Name` CHAR(255) NOT NULL LOCALIZABLE, `Value` CHAR(255) LOCALIZABLE, `Component_` CHAR(72) NOT NULL PRIMARY KEY `Environment`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Environment");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The name of the environmental value.");
+		view->execute();
+		view->setString(0, "Environment");
+		view->setString(1, "Value");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value to set in the environmental settings.");
+		view->execute();
+		view->setString(0, "Environment");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table referencing component that controls the installing of the environmental value.");
+		view->execute();
+		view->setString(0, "Environment");
+		view->setString(1, "Environment");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Unique identifier for the environmental variable setting");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIEnvironment>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Environment` (`Environment`, `Name`, `Value`, `Component_`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -861,9 +2436,36 @@ public:
 		return "CREATE TABLE `Error` (`Error` SHORT NOT NULL, `Message` LONGCHAR LOCALIZABLE PRIMARY KEY `Error`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Error");
+		view->setString(1, "Error");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Integer error number, obtained from header file IError(...) macros.");
+		view->execute();
+		view->setString(0, "Error");
+		view->setString(1, "Message");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Template");
+		view->setString(8, "");
+		view->setString(9, "Error formatting template, obtained from user ed. or localizers.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIError>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Error` (`Error`, `Message`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -887,9 +2489,58 @@ public:
 		return "CREATE TABLE `EventMapping` (`Dialog_` CHAR(72) NOT NULL, `Control_` CHAR(50) NOT NULL, `Event` CHAR(50) NOT NULL, `Attribute` CHAR(50) NOT NULL PRIMARY KEY `Dialog_`, `Control_`, `Event`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "EventMapping");
+		view->setString(1, "Dialog_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Dialog");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A foreign key to the Dialog table, name of the Dialog.");
+		view->execute();
+		view->setString(0, "EventMapping");
+		view->setString(1, "Control_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Control");
+		view->setInteger(6, 2);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A foreign key to the Control table, name of the control.");
+		view->execute();
+		view->setString(0, "EventMapping");
+		view->setString(1, "Event");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "An identifier that specifies the type of the event that the control subscribes to.");
+		view->execute();
+		view->setString(0, "EventMapping");
+		view->setString(1, "Attribute");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The name of the control attribute, that is set when this event is received.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIEventMapping>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `EventMapping` (`Dialog_`, `Control_`, `Event`, `Attribute`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -916,9 +2567,69 @@ public:
 		return "CREATE TABLE `Extension` (`Extension` CHAR(255) NOT NULL, `Component_` CHAR(72) NOT NULL, `ProgId_` CHAR(255), `MIME_` CHAR(64), `Feature_` CHAR(38) NOT NULL PRIMARY KEY `Extension`, `Component_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Extension");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Feature Table, specifying the feature to validate or install in order for the CLSID factory to be operational.");
+		view->execute();
+		view->setString(0, "Extension");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Component Table, specifying the component for which to return a path when called through LocateComponent.");
+		view->execute();
+		view->setString(0, "Extension");
+		view->setString(1, "Extension");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The extension associated with the table row.");
+		view->execute();
+		view->setString(0, "Extension");
+		view->setString(1, "MIME_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "MIME");
+		view->setInteger(6, 1);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Optional Context identifier, typically \"type/format\" associated with the extension");
+		view->execute();
+		view->setString(0, "Extension");
+		view->setString(1, "ProgId_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "ProgId");
+		view->setInteger(6, 1);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Optional ProgId associated with this extension.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIExtension>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Extension` (`Extension`, `Component_`, `ProgId_`, `MIME_`, `Feature_`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -949,9 +2660,102 @@ public:
 		return "CREATE TABLE `Feature` (`Feature` CHAR(38) NOT NULL, `Feature_Parent` CHAR(38), `Title` CHAR(64) LOCALIZABLE, `Description` CHAR(255) LOCALIZABLE, `Display` SHORT, `Level` SHORT NOT NULL, `Directory_` CHAR(72), `Attributes` SHORT NOT NULL PRIMARY KEY `Feature`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Feature");
+		view->setString(1, "Description");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Longer descriptive text describing a visible feature item.");
+		view->execute();
+		view->setString(0, "Feature");
+		view->setString(1, "Attributes");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "0;1;2;4;5;6;8;9;10;16;17;18;20;21;22;24;25;26;32;33;34;36;37;38;48;49;50;52;53;54");
+		view->setString(9, "Feature attributes");
+		view->execute();
+		view->setString(0, "Feature");
+		view->setString(1, "Feature");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key used to identify a particular feature record.");
+		view->execute();
+		view->setString(0, "Feature");
+		view->setString(1, "Directory_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Directory");
+		view->setInteger(6, 1);
+		view->setString(7, "UpperCase");
+		view->setString(8, "");
+		view->setString(9, "The name of the Directory that can be configured by the UI. A non-null value will enable the browse button.");
+		view->execute();
+		view->setString(0, "Feature");
+		view->setString(1, "Level");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The install level at which record will be initially selected. An install level of 0 will disable an item and prevent its display.");
+		view->execute();
+		view->setString(0, "Feature");
+		view->setString(1, "Title");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Short text identifying a visible feature item.");
+		view->execute();
+		view->setString(0, "Feature");
+		view->setString(1, "Display");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Numeric sort order, used to force a specific display ordering.");
+		view->execute();
+		view->setString(0, "Feature");
+		view->setString(1, "Feature_Parent");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Optional key of a parent record in the same table. If the parent is not selected, then the record will not be installed. Null indicates a root item.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIFeature>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Feature` (`Feature`, `Feature_Parent`, `Title`, `Description`, `Display`, `Level`, `Directory_`, `Attributes`) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", 8);
 		for (auto& row : rows)
 		{
@@ -979,9 +2783,36 @@ public:
 		return "CREATE TABLE `FeatureComponents` (`Feature_` CHAR(38) NOT NULL, `Component_` CHAR(72) NOT NULL PRIMARY KEY `Feature_`, `Component_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "FeatureComponents");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into Feature table.");
+		view->execute();
+		view->setString(0, "FeatureComponents");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into Component table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIFeatureComponents>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `FeatureComponents` (`Feature_`, `Component_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1009,9 +2840,102 @@ public:
 		return "CREATE TABLE `File` (`File` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL LOCALIZABLE, `FileSize` LONG NOT NULL, `Version` CHAR(72), `Language` CHAR(20), `Attributes` SHORT, `Sequence` SHORT NOT NULL PRIMARY KEY `File`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "File");
+		view->setString(1, "Sequence");
+		view->setString(2, "N");
+		view->setInteger(3, 1);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Sequence with respect to the media images; order must track cabinet order.");
+		view->execute();
+		view->setString(0, "File");
+		view->setString(1, "Attributes");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Integer containing bit flags representing file attributes (with the decimal value of each bit position in parentheses)");
+		view->execute();
+		view->setString(0, "File");
+		view->setString(1, "File");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token, must match identifier in cabinet.  For uncompressed files, this field is ignored.");
+		view->execute();
+		view->setString(0, "File");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key referencing Component that controls the file.");
+		view->execute();
+		view->setString(0, "File");
+		view->setString(1, "FileName");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "File name used for installation, may be localized.  This may contain a \"short name|long name\" pair.");
+		view->execute();
+		view->setString(0, "File");
+		view->setString(1, "FileSize");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Size of file in bytes (long integer).");
+		view->execute();
+		view->setString(0, "File");
+		view->setString(1, "Language");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Language");
+		view->setString(8, "");
+		view->setString(9, "List of decimal language Ids, comma-separated if more than one.");
+		view->execute();
+		view->setString(0, "File");
+		view->setString(1, "Version");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Version");
+		view->setString(8, "");
+		view->setString(9, "Version string for versioned files;  Blank for unversioned files.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIFile>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `File` (`File`, `Component_`, `FileName`, `FileSize`, `Version`, `Language`, `Attributes`, `Sequence`) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", 8);
 		for (auto& row : rows)
 		{
@@ -1039,9 +2963,36 @@ public:
 		return "CREATE TABLE `FileSFPCatalog` (`File_` CHAR(72) NOT NULL, `SFPCatalog_` CHAR(255) NOT NULL PRIMARY KEY `File_`, `SFPCatalog_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "FileSFPCatalog");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "File associated with the catalog");
+		view->execute();
+		view->setString(0, "FileSFPCatalog");
+		view->setString(1, "SFPCatalog_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "SFPCatalog");
+		view->setInteger(6, 1);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "Catalog associated with the file");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIFileSFPCatalog>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `FileSFPCatalog` (`File_`, `SFPCatalog_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1063,9 +3014,36 @@ public:
 		return "CREATE TABLE `Font` (`File_` CHAR(72) NOT NULL, `FontTitle` CHAR(128) PRIMARY KEY `File_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Font");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, foreign key into File table referencing font file.");
+		view->execute();
+		view->setString(0, "Font");
+		view->setString(1, "FontTitle");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Font name.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIFont>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Font` (`File_`, `FontTitle`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1087,9 +3065,36 @@ public:
 		return "CREATE TABLE `Icon` (`Name` CHAR(72) NOT NULL, `Data` OBJECT NOT NULL PRIMARY KEY `Name`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Icon");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key. Name of the icon file.");
+		view->execute();
+		view->setString(0, "Icon");
+		view->setString(1, "Data");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "Binary stream. The binary icon data in PE (.DLL or .EXE) or icon (.ICO) format.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIIcon>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Icon` (`Name`, `Data`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1117,9 +3122,102 @@ public:
 		return "CREATE TABLE `IniFile` (`IniFile` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL LOCALIZABLE, `DirProperty` CHAR(72), `Section` CHAR(96) NOT NULL LOCALIZABLE, `Key` CHAR(128) NOT NULL LOCALIZABLE, `Value` CHAR(255) NOT NULL LOCALIZABLE, `Action` SHORT NOT NULL, `Component_` CHAR(72) NOT NULL PRIMARY KEY `IniFile`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "IniFile");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "0;1;3");
+		view->setString(9, "The type of modification to be made, one of iifEnum");
+		view->execute();
+		view->setString(0, "IniFile");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value to be written.");
+		view->execute();
+		view->setString(0, "IniFile");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table referencing component that controls the installing of the .INI value.");
+		view->execute();
+		view->setString(0, "IniFile");
+		view->setString(1, "FileName");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "The .INI file name in which to write the information");
+		view->execute();
+		view->setString(0, "IniFile");
+		view->setString(1, "IniFile");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+		view->setString(0, "IniFile");
+		view->setString(1, "DirProperty");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Directory table denoting the directory where the .INI file is.");
+		view->execute();
+		view->setString(0, "IniFile");
+		view->setString(1, "Key");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The .INI file key below Section.");
+		view->execute();
+		view->setString(0, "IniFile");
+		view->setString(1, "Section");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The .INI file Section.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIIniFile>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `IniFile` (`IniFile`, `FileName`, `DirProperty`, `Section`, `Key`, `Value`, `Action`, `Component_`) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", 8);
 		for (auto& row : rows)
 		{
@@ -1151,9 +3249,80 @@ public:
 		return "CREATE TABLE `IniLocator` (`Signature_` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL, `Section` CHAR(96) NOT NULL, `Key` CHAR(128) NOT NULL, `Field` SHORT, `Type` SHORT PRIMARY KEY `Signature_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "IniLocator");
+		view->setString(1, "Type");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "An integer value that determines if the .INI value read is a filename or a directory location or to be used as is w/o interpretation.");
+		view->execute();
+		view->setString(0, "IniLocator");
+		view->setString(1, "Signature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The table key. The Signature_ represents a unique file signature and is also the foreign key in the Signature table.");
+		view->execute();
+		view->setString(0, "IniLocator");
+		view->setString(1, "FileName");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "The .INI file name.");
+		view->execute();
+		view->setString(0, "IniLocator");
+		view->setString(1, "Key");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Key value (followed by an equals sign in INI file).");
+		view->execute();
+		view->setString(0, "IniLocator");
+		view->setString(1, "Section");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Section name within in file (within square brackets in INI file).");
+		view->execute();
+		view->setString(0, "IniLocator");
+		view->setString(1, "Field");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The field in the .INI line. If Field is null or 0 the entire line is read.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIIniLocator>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `IniLocator` (`Signature_`, `FileName`, `Section`, `Key`, `Field`, `Type`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -1180,9 +3349,47 @@ public:
 		return "CREATE TABLE `InstallExecuteSequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "InstallExecuteSequence");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of action to invoke, either in the engine or the handler DLL.");
+		view->execute();
+		view->setString(0, "InstallExecuteSequence");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Optional expression which skips the action if evaluates to expFalse.If the expression syntax is invalid, the engine will terminate, returning iesBadActionData.");
+		view->execute();
+		view->setString(0, "InstallExecuteSequence");
+		view->setString(1, "Sequence");
+		view->setString(2, "Y");
+		view->setInteger(3, -4);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Number that determines the sort order in which the actions are to be executed.  Leave blank to suppress action.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIInstallExecuteSequence>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `InstallExecuteSequence` (`Action`, `Condition`, `Sequence`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -1206,9 +3413,47 @@ public:
 		return "CREATE TABLE `InstallUISequence` (`Action` CHAR(72) NOT NULL, `Condition` CHAR(255), `Sequence` SHORT PRIMARY KEY `Action`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "InstallUISequence");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of action to invoke, either in the engine or the handler DLL.");
+		view->execute();
+		view->setString(0, "InstallUISequence");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Optional expression which skips the action if evaluates to expFalse.If the expression syntax is invalid, the engine will terminate, returning iesBadActionData.");
+		view->execute();
+		view->setString(0, "InstallUISequence");
+		view->setString(1, "Sequence");
+		view->setString(2, "Y");
+		view->setInteger(3, -4);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Number that determines the sort order in which the actions are to be executed.  Leave blank to suppress action.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIInstallUISequence>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `InstallUISequence` (`Action`, `Condition`, `Sequence`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -1231,9 +3476,36 @@ public:
 		return "CREATE TABLE `IsolatedComponent` (`Component_Shared` CHAR(72) NOT NULL, `Component_Application` CHAR(72) NOT NULL PRIMARY KEY `Component_Shared`, `Component_Application`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "IsolatedComponent");
+		view->setString(1, "Component_Application");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Key to Component table item for application");
+		view->execute();
+		view->setString(0, "IsolatedComponent");
+		view->setString(1, "Component_Shared");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Key to Component table item to be isolated");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIIsolatedComponent>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `IsolatedComponent` (`Component_Shared`, `Component_Application`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1255,9 +3527,36 @@ public:
 		return "CREATE TABLE `LaunchCondition` (`Condition` CHAR(255) NOT NULL, `Description` CHAR(255) NOT NULL LOCALIZABLE PRIMARY KEY `Condition`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "LaunchCondition");
+		view->setString(1, "Description");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Localizable text to display when condition fails and install must abort.");
+		view->execute();
+		view->setString(0, "LaunchCondition");
+		view->setString(1, "Condition");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Expression which must evaluate to TRUE in order for install to commence.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSILaunchCondition>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `LaunchCondition` (`Condition`, `Description`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1281,9 +3580,58 @@ public:
 		return "CREATE TABLE `ListBox` (`Property` CHAR(72) NOT NULL, `Order` SHORT NOT NULL, `Value` CHAR(64) NOT NULL, `Text` CHAR(64) LOCALIZABLE PRIMARY KEY `Property`, `Order`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ListBox");
+		view->setString(1, "Text");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The visible text to be assigned to the item. Optional. If this entry or the entire column is missing, the text is the same as the value.");
+		view->execute();
+		view->setString(0, "ListBox");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A named property to be tied to this item. All the items tied to the same property become part of the same listbox.");
+		view->execute();
+		view->setString(0, "ListBox");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value string associated with this item. Selecting the line will set the associated property to this value.");
+		view->execute();
+		view->setString(0, "ListBox");
+		view->setString(1, "Order");
+		view->setString(2, "N");
+		view->setInteger(3, 1);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A positive integer used to determine the ordering of the items within one list..The integers do not have to be consecutive.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIListBox>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ListBox` (`Property`, `Order`, `Value`, `Text`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -1310,9 +3658,69 @@ public:
 		return "CREATE TABLE `ListView` (`Property` CHAR(72) NOT NULL, `Order` SHORT NOT NULL, `Value` CHAR(64) NOT NULL, `Text` CHAR(64) LOCALIZABLE, `Binary_` CHAR(72) PRIMARY KEY `Property`, `Order`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ListView");
+		view->setString(1, "Text");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The visible text to be assigned to the item. Optional. If this entry or the entire column is missing, the text is the same as the value.");
+		view->execute();
+		view->setString(0, "ListView");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A named property to be tied to this item. All the items tied to the same property become part of the same listview.");
+		view->execute();
+		view->setString(0, "ListView");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value string associated with this item. Selecting the line will set the associated property to this value.");
+		view->execute();
+		view->setString(0, "ListView");
+		view->setString(1, "Order");
+		view->setString(2, "N");
+		view->setInteger(3, 1);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A positive integer used to determine the ordering of the items within one list..The integers do not have to be consecutive.");
+		view->execute();
+		view->setString(0, "ListView");
+		view->setString(1, "Binary_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Binary");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The name of the icon to be displayed with the icon. The binary information is looked up from the Binary Table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIListView>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ListView` (`Property`, `Order`, `Value`, `Text`, `Binary_`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -1340,9 +3748,69 @@ public:
 		return "CREATE TABLE `LockPermissions` (`LockObject` CHAR(72) NOT NULL, `Table` CHAR(32) NOT NULL, `Domain` CHAR(255), `User` CHAR(255) NOT NULL, `Permission` LONG PRIMARY KEY `LockObject`, `Table`, `Domain`, `User`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "LockPermissions");
+		view->setString(1, "Table");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "CreateFolder;File;Registry");
+		view->setString(9, "Reference to another table name");
+		view->execute();
+		view->setString(0, "LockPermissions");
+		view->setString(1, "Domain");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Domain name for user whose permissions are being set. (usually a property)");
+		view->execute();
+		view->setString(0, "LockPermissions");
+		view->setString(1, "LockObject");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into Registry, File or CreateFolder table");
+		view->execute();
+		view->setString(0, "LockPermissions");
+		view->setString(1, "Permission");
+		view->setString(2, "Y");
+		view->setInteger(3, -2147483647);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Permission Access mask.  Full Control = 268435456 (GENERIC_ALL = 0x10000000)");
+		view->execute();
+		view->setString(0, "LockPermissions");
+		view->setString(1, "User");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "User for permissions to be set.  (usually a property)");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSILockPermissions>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `LockPermissions` (`LockObject`, `Table`, `Domain`, `User`, `Permission`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -1368,9 +3836,47 @@ public:
 		return "CREATE TABLE `MIME` (`ContentType` CHAR(64) NOT NULL, `Extension_` CHAR(255) NOT NULL, `CLSID` CHAR(38) PRIMARY KEY `ContentType`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MIME");
+		view->setString(1, "CLSID");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "Optional associated CLSID.");
+		view->execute();
+		view->setString(0, "MIME");
+		view->setString(1, "ContentType");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Primary key. Context identifier, typically \"type/format\".");
+		view->execute();
+		view->setString(0, "MIME");
+		view->setString(1, "Extension_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Extension");
+		view->setInteger(6, 1);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Optional associated extension (without dot)");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIMIME>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MIME` (`ContentType`, `Extension_`, `CLSID`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -1397,9 +3903,80 @@ public:
 		return "CREATE TABLE `Media` (`DiskId` SHORT NOT NULL, `LastSequence` SHORT NOT NULL, `DiskPrompt` CHAR(64) LOCALIZABLE, `Cabinet` CHAR(255), `VolumeLabel` CHAR(32), `Source` CHAR(72) PRIMARY KEY `DiskId`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Media");
+		view->setString(1, "Source");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Property");
+		view->setString(8, "");
+		view->setString(9, "The property defining the location of the cabinet file.");
+		view->execute();
+		view->setString(0, "Media");
+		view->setString(1, "Cabinet");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Cabinet");
+		view->setString(8, "");
+		view->setString(9, "If some or all of the files stored on the media are compressed in a cabinet, the name of that cabinet.");
+		view->execute();
+		view->setString(0, "Media");
+		view->setString(1, "DiskId");
+		view->setString(2, "N");
+		view->setInteger(3, 1);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Primary key, integer to determine sort order for table.");
+		view->execute();
+		view->setString(0, "Media");
+		view->setString(1, "DiskPrompt");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Disk name: the visible text actually printed on the disk.  This will be used to prompt the user when this disk needs to be inserted.");
+		view->execute();
+		view->setString(0, "Media");
+		view->setString(1, "LastSequence");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "File sequence number for the last file for this media.");
+		view->execute();
+		view->setString(0, "Media");
+		view->setString(1, "VolumeLabel");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The label attributed to the volume.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIMedia>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Media` (`DiskId`, `LastSequence`, `DiskPrompt`, `Cabinet`, `VolumeLabel`, `Source`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -1430,9 +4007,91 @@ public:
 		return "CREATE TABLE `MoveFile` (`FileKey` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `SourceName` CHAR(255) LOCALIZABLE, `DestName` CHAR(255) LOCALIZABLE, `SourceFolder` CHAR(72), `DestFolder` CHAR(72) NOT NULL, `Options` SHORT NOT NULL PRIMARY KEY `FileKey`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MoveFile");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "If this component is not \"selected\" for installation or removal, no action will be taken on the associated MoveFile entry");
+		view->execute();
+		view->setString(0, "MoveFile");
+		view->setString(1, "DestFolder");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of a property whose value is assumed to resolve to the full path to the destination directory");
+		view->execute();
+		view->setString(0, "MoveFile");
+		view->setString(1, "DestName");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "Name to be given to the original file after it is moved or copied.  If blank, the destination file will be given the same name as the source file");
+		view->execute();
+		view->setString(0, "MoveFile");
+		view->setString(1, "FileKey");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key that uniquely identifies a particular MoveFile record");
+		view->execute();
+		view->setString(0, "MoveFile");
+		view->setString(1, "Options");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 1);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Integer value specifying the MoveFile operating mode, one of imfoEnum");
+		view->execute();
+		view->setString(0, "MoveFile");
+		view->setString(1, "SourceFolder");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of a property whose value is assumed to resolve to the full path to the source directory");
+		view->execute();
+		view->setString(0, "MoveFile");
+		view->setString(1, "SourceName");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Name of the source file(s) to be moved or copied.  Can contain the '*' or '?' wildcards.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIMoveFile>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MoveFile` (`FileKey`, `Component_`, `SourceName`, `DestName`, `SourceFolder`, `DestFolder`, `Options`) VALUES(?, ?, ?, ?, ?, ?, ?)", 7);
 		for (auto& row : rows)
 		{
@@ -1462,9 +4121,69 @@ public:
 		return "CREATE TABLE `MsiAssembly` (`Component_` CHAR(72) NOT NULL, `Feature_` CHAR(38) NOT NULL, `File_Manifest` CHAR(72), `File_Application` CHAR(72), `Attributes` SHORT PRIMARY KEY `Component_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiAssembly");
+		view->setString(1, "Attributes");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Assembly attributes");
+		view->execute();
+		view->setString(0, "MsiAssembly");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into Feature table.");
+		view->execute();
+		view->setString(0, "MsiAssembly");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into Component table.");
+		view->execute();
+		view->setString(0, "MsiAssembly");
+		view->setString(1, "File_Application");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into File table, denoting the application context for private assemblies. Null for global assemblies.");
+		view->execute();
+		view->setString(0, "MsiAssembly");
+		view->setString(1, "File_Manifest");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the File table denoting the manifest file for the assembly.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAssembly>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiAssembly` (`Component_`, `Feature_`, `File_Manifest`, `File_Application`, `Attributes`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -1490,9 +4209,47 @@ public:
 		return "CREATE TABLE `MsiAssemblyName` (`Component_` CHAR(72) NOT NULL, `Name` CHAR(255) NOT NULL, `Value` CHAR(255) NOT NULL PRIMARY KEY `Component_`, `Name`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiAssemblyName");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The name part of the name-value pairs for the assembly name.");
+		view->execute();
+		view->setString(0, "MsiAssemblyName");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The value part of the name-value pairs for the assembly name.");
+		view->execute();
+		view->setString(0, "MsiAssemblyName");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into Component table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIAssemblyName>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiAssemblyName` (`Component_`, `Name`, `Value`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -1515,9 +4272,36 @@ public:
 		return "CREATE TABLE `MsiDigitalCertificate` (`DigitalCertificate` CHAR(72) NOT NULL, `CertData` OBJECT NOT NULL PRIMARY KEY `DigitalCertificate`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiDigitalCertificate");
+		view->setString(1, "CertData");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "A certificate context blob for a signer certificate");
+		view->execute();
+		view->setString(0, "MsiDigitalCertificate");
+		view->setString(1, "DigitalCertificate");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A unique identifier for the row");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIDigitalCertificate>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiDigitalCertificate` (`DigitalCertificate`, `CertData`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1541,9 +4325,58 @@ public:
 		return "CREATE TABLE `MsiDigitalSignature` (`Table` CHAR(32) NOT NULL, `SignObject` CHAR(72) NOT NULL, `DigitalCertificate_` CHAR(72) NOT NULL, `Hash` OBJECT PRIMARY KEY `Table`, `SignObject`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiDigitalSignature");
+		view->setString(1, "Table");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "Media");
+		view->setString(9, "Reference to another table name (only Media table is supported)");
+		view->execute();
+		view->setString(0, "MsiDigitalSignature");
+		view->setString(1, "DigitalCertificate_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "MsiDigitalCertificate");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key to MsiDigitalCertificate table identifying the signer certificate");
+		view->execute();
+		view->setString(0, "MsiDigitalSignature");
+		view->setString(1, "Hash");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "The encoded hash blob from the digital signature");
+		view->execute();
+		view->setString(0, "MsiDigitalSignature");
+		view->setString(1, "SignObject");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Foreign key to Media table");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIDigitalSignature>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiDigitalSignature` (`Table`, `SignObject`, `DigitalCertificate_`, `Hash`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -1570,9 +4403,69 @@ public:
 		return "CREATE TABLE `MsiEmbeddedChainer` (`MsiEmbeddedChainer` CHAR(72) NOT NULL, `Condition` CHAR(255), `CommandLine` CHAR(255), `Source` CHAR(72) NOT NULL, `Type` SHORT NOT NULL PRIMARY KEY `MsiEmbeddedChainer`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiEmbeddedChainer");
+		view->setString(1, "Type");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "2;18;50");
+		view->setString(9, "Used to differentiate among the various possible sources");
+		view->execute();
+		view->setString(0, "MsiEmbeddedChainer");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Condition");
+		view->setString(8, "");
+		view->setString(9, "Optional expression which skips the action if evaluates to expFalse.If the expression syntax is invalid, the engine will terminate, returning iesBadActionData.");
+		view->execute();
+		view->setString(0, "MsiEmbeddedChainer");
+		view->setString(1, "Source");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "CustomSource");
+		view->setString(8, "");
+		view->setString(9, "The table reference of the source of the code");
+		view->execute();
+		view->setString(0, "MsiEmbeddedChainer");
+		view->setString(1, "MsiEmbeddedChainer");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary Key that uniquely identifies the row");
+		view->execute();
+		view->setString(0, "MsiEmbeddedChainer");
+		view->setString(1, "CommandLine");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Properties to pass in commandline");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIEmbeddedChainer>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiEmbeddedChainer` (`MsiEmbeddedChainer`, `Condition`, `CommandLine`, `Source`, `Type`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -1600,9 +4493,69 @@ public:
 		return "CREATE TABLE `MsiEmbeddedUI` (`MsiEmbeddedUI` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL, `Attributes` SHORT NOT NULL, `MessageFilter` LONG, `Data` OBJECT NOT NULL PRIMARY KEY `MsiEmbeddedUI`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiEmbeddedUI");
+		view->setString(1, "Attributes");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "0;1;3");
+		view->setString(9, "Marks DLL as UI, Filter or Resource");
+		view->execute();
+		view->setString(0, "MsiEmbeddedUI");
+		view->setString(1, "Data");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "Contents of DLL file");
+		view->execute();
+		view->setString(0, "MsiEmbeddedUI");
+		view->setString(1, "FileName");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "Target filename for DLL");
+		view->execute();
+		view->setString(0, "MsiEmbeddedUI");
+		view->setString(1, "MsiEmbeddedUI");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key that uniquely identifies the row");
+		view->execute();
+		view->setString(0, "MsiEmbeddedUI");
+		view->setString(1, "MessageFilter");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 234913791);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Message filter bitfield");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIEmbeddedUI>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiEmbeddedUI` (`MsiEmbeddedUI`, `FileName`, `Attributes`, `MessageFilter`, `Data`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -1631,9 +4584,80 @@ public:
 		return "CREATE TABLE `MsiFileHash` (`File_` CHAR(72) NOT NULL, `Options` SHORT NOT NULL, `HashPart1` LONG NOT NULL, `HashPart2` LONG NOT NULL, `HashPart3` LONG NOT NULL, `HashPart4` LONG NOT NULL PRIMARY KEY `File_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiFileHash");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, foreign key into File table referencing file with this hash");
+		view->execute();
+		view->setString(0, "MsiFileHash");
+		view->setString(1, "Options");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Various options and attributes for this hash.");
+		view->execute();
+		view->setString(0, "MsiFileHash");
+		view->setString(1, "HashPart1");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Size of file in bytes (long integer).");
+		view->execute();
+		view->setString(0, "MsiFileHash");
+		view->setString(1, "HashPart2");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Size of file in bytes (long integer).");
+		view->execute();
+		view->setString(0, "MsiFileHash");
+		view->setString(1, "HashPart3");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Size of file in bytes (long integer).");
+		view->execute();
+		view->setString(0, "MsiFileHash");
+		view->setString(1, "HashPart4");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Size of file in bytes (long integer).");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIFileHash>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiFileHash` (`File_`, `Options`, `HashPart1`, `HashPart2`, `HashPart3`, `HashPart4`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -1662,9 +4686,69 @@ public:
 		return "CREATE TABLE `MsiLockPermissionsEx` (`MsiLockPermissionsEx` CHAR(72) NOT NULL, `LockObject` CHAR(72) NOT NULL, `Table` CHAR(32) NOT NULL, `SDDLText` LONGCHAR NOT NULL, `Condition` CHAR(255) PRIMARY KEY `MsiLockPermissionsEx`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiLockPermissionsEx");
+		view->setString(1, "Table");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "CreateFolder;File;Registry;ServiceInstall");
+		view->setString(9, "Reference to another table name");
+		view->execute();
+		view->setString(0, "MsiLockPermissionsEx");
+		view->setString(1, "Condition");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Expression which must evaluate to TRUE in order for this set of permissions to be applied");
+		view->execute();
+		view->setString(0, "MsiLockPermissionsEx");
+		view->setString(1, "LockObject");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into Registry, File, CreateFolder, or ServiceInstall table");
+		view->execute();
+		view->setString(0, "MsiLockPermissionsEx");
+		view->setString(1, "MsiLockPermissionsEx");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token");
+		view->execute();
+		view->setString(0, "MsiLockPermissionsEx");
+		view->setString(1, "SDDLText");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "FormattedSDDLText");
+		view->setString(8, "");
+		view->setString(9, "String to indicate permissions to be applied to the LockObject");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSILockPermissionsEx>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiLockPermissionsEx` (`MsiLockPermissionsEx`, `LockObject`, `Table`, `SDDLText`, `Condition`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -1689,9 +4773,36 @@ public:
 		return "CREATE TABLE `MsiPackageCertificate` (`PackageCertificate` CHAR(72) NOT NULL, `DigitalCertificate_` CHAR(72) NOT NULL PRIMARY KEY `PackageCertificate`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiPackageCertificate");
+		view->setString(1, "DigitalCertificate_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "MsiDigitalCertificate");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key to MsiDigitalCertificate table identifying the signer certificate.");
+		view->execute();
+		view->setString(0, "MsiPackageCertificate");
+		view->setString(1, "PackageCertificate");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key. A unique identifier for the row.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPackageCertificate>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiPackageCertificate` (`PackageCertificate`, `DigitalCertificate_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1713,9 +4824,36 @@ public:
 		return "CREATE TABLE `MsiPatchCertificate` (`PatchCertificate` CHAR(72) NOT NULL, `DigitalCertificate_` CHAR(72) NOT NULL PRIMARY KEY `PatchCertificate`, `DigitalCertificate_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiPatchCertificate");
+		view->setString(1, "DigitalCertificate_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "MsiDigitalCertificate");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key to MsiDigitalCertificate table identifying the signer certificate.");
+		view->execute();
+		view->setString(0, "MsiPatchCertificate");
+		view->setString(1, "PatchCertificate");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key. A unique identifier for the row.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatchCertificate>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiPatchCertificate` (`PatchCertificate`, `DigitalCertificate_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1737,9 +4875,36 @@ public:
 		return "CREATE TABLE `MsiPatchHeaders` (`StreamRef` CHAR(38) NOT NULL, `Header` OBJECT NOT NULL PRIMARY KEY `StreamRef`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiPatchHeaders");
+		view->setString(1, "StreamRef");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key. A unique identifier for the row.");
+		view->execute();
+		view->setString(0, "MsiPatchHeaders");
+		view->setString(1, "Header");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "Binary stream. The patch header, used for patch validation.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatchHeaders>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiPatchHeaders` (`StreamRef`, `Header`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1762,9 +4927,47 @@ public:
 		return "CREATE TABLE `MsiPatchMetadata` (`Company` CHAR(72), `Property` CHAR(72) NOT NULL, `Value` LONGCHAR NOT NULL LOCALIZABLE PRIMARY KEY `Company`, `Property`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiPatchMetadata");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of property. Never null or empty. Patch-only table.");
+		view->execute();
+		view->setString(0, "MsiPatchMetadata");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "String value for property.  Never null or empty. Patch-only table.");
+		view->execute();
+		view->setString(0, "MsiPatchMetadata");
+		view->setString(1, "Company");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of company. Null for standard MSI metadata properties. Non-null for company specific metadata. Patch-only table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatchMetadata>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiPatchMetadata` (`Company`, `Property`, `Value`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -1787,9 +4990,36 @@ public:
 		return "CREATE TABLE `MsiPatchOldAssemblyFile` (`File_` CHAR(72) NOT NULL, `Assembly_` CHAR(72) NOT NULL PRIMARY KEY `File_`, `Assembly_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiPatchOldAssemblyFile");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into File table. Patch-only table.");
+		view->execute();
+		view->setString(0, "MsiPatchOldAssemblyFile");
+		view->setString(1, "Assembly_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "MsiPatchOldAssemblyName");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into MsiPatchOldAssemblyName table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatchOldAssemblyFile>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiPatchOldAssemblyFile` (`File_`, `Assembly_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -1812,9 +5042,47 @@ public:
 		return "CREATE TABLE `MsiPatchOldAssemblyName` (`Assembly` CHAR(72) NOT NULL, `Name` CHAR(255) NOT NULL, `Value` CHAR(255) NOT NULL PRIMARY KEY `Assembly`, `Name`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiPatchOldAssemblyName");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The name part of the name-value pairs for the assembly name. This represents the old name for the assembly.");
+		view->execute();
+		view->setString(0, "MsiPatchOldAssemblyName");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The value part of the name-value pairs for the assembly name. This represents the old name for the assembly.");
+		view->execute();
+		view->setString(0, "MsiPatchOldAssemblyName");
+		view->setString(1, "Assembly");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A unique identifier for the row.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatchOldAssemblyName>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiPatchOldAssemblyName` (`Assembly`, `Name`, `Value`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -1839,9 +5107,58 @@ public:
 		return "CREATE TABLE `MsiPatchSequence` (`PatchFamily` CHAR(72) NOT NULL, `ProductCode` CHAR(38), `Sequence` CHAR(72) NOT NULL, `Attributes` LONG PRIMARY KEY `PatchFamily`, `ProductCode`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiPatchSequence");
+		view->setString(1, "Sequence");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Version");
+		view->setString(8, "");
+		view->setString(9, "Specifies the sequence of this patch within the specified PatchFamily.");
+		view->execute();
+		view->setString(0, "MsiPatchSequence");
+		view->setString(1, "Attributes");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 1);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The specific attributes for the patch family.");
+		view->execute();
+		view->setString(0, "MsiPatchSequence");
+		view->setString(1, "PatchFamily");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Specifies that the patch is a member of the patch family named in this field.");
+		view->execute();
+		view->setString(0, "MsiPatchSequence");
+		view->setString(1, "ProductCode");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "Identifies the Product for which this family is applicable.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatchSequence>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiPatchSequence` (`PatchFamily`, `ProductCode`, `Sequence`, `Attributes`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -1864,9 +5181,25 @@ public:
 		return "CREATE TABLE `MsiSFCBypass` (`File_` CHAR(72) NOT NULL PRIMARY KEY `File_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiSFCBypass");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into File table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSISFCBypass>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiSFCBypass` (`File_`) VALUES(?)", 1);
 		for (auto& row : rows)
 		{
@@ -1891,9 +5224,80 @@ public:
 		return "CREATE TABLE `MsiServiceConfig` (`MsiServiceConfig` CHAR(72) NOT NULL, `Name` CHAR(255) NOT NULL LOCALIZABLE, `Event` SHORT NOT NULL, `ConfigType` LONG NOT NULL, `Argument` LONGCHAR, `Component_` CHAR(72) NOT NULL PRIMARY KEY `MsiServiceConfig`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiServiceConfig");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Name of a service. /, \\, comma and space are invalid");
+		view->execute();
+		view->setString(0, "MsiServiceConfig");
+		view->setString(1, "Argument");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Argument(s) for service configuration. Value depends on the content of the ConfigType field");
+		view->execute();
+		view->setString(0, "MsiServiceConfig");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Component Table that controls the configuration of the service");
+		view->execute();
+		view->setString(0, "MsiServiceConfig");
+		view->setString(1, "Event");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 7);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Bit field:   0x1 = Install, 0x2 = Uninstall, 0x4 = Reinstall");
+		view->execute();
+		view->setString(0, "MsiServiceConfig");
+		view->setString(1, "MsiServiceConfig");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+		view->setString(0, "MsiServiceConfig");
+		view->setString(1, "ConfigType");
+		view->setString(2, "N");
+		view->setInteger(3, -2147483647);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Service Configuration Option");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIServiceConfig>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiServiceConfig` (`MsiServiceConfig`, `Name`, `Event`, `ConfigType`, `Argument`, `Component_`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -1926,9 +5330,113 @@ public:
 		return "CREATE TABLE `MsiServiceConfigFailureActions` (`MsiServiceConfigFailureActions` CHAR(72) NOT NULL, `Name` CHAR(255) NOT NULL LOCALIZABLE, `Event` SHORT NOT NULL, `ResetPeriod` LONG, `RebootMessage` CHAR(255) LOCALIZABLE, `Command` CHAR(255) LOCALIZABLE, `Actions` LONGCHAR, `DelayActions` LONGCHAR, `Component_` CHAR(72) NOT NULL PRIMARY KEY `MsiServiceConfigFailureActions`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Name of a service. /, \\, comma and space are invalid");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Component Table that controls the configuration of failure actions for the service");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "Event");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 7);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Bit field:   0x1 = Install, 0x2 = Uninstall, 0x4 = Reinstall");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "MsiServiceConfigFailureActions");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "ResetPeriod");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Time in seconds after which to reset the failure count to zero. Leave blank if it should never be reset");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "RebootMessage");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Message to be broadcast to server users before rebooting");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "Command");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Command line of the process to CreateProcess function to execute");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "Actions");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "A list of integer actions separated by [~] delimiters: 0 = SC_ACTION_NONE, 1 = SC_ACTION_RESTART, 2 = SC_ACTION_REBOOT, 3 = SC_ACTION_RUN_COMMAND. Terminate with [~][~]");
+		view->execute();
+		view->setString(0, "MsiServiceConfigFailureActions");
+		view->setString(1, "DelayActions");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "A list of delays (time in milli-seconds), separated by [~] delmiters, to wait before taking the corresponding Action. Terminate with [~][~]");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIServiceConfigFailureActions>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiServiceConfigFailureActions` (`MsiServiceConfigFailureActions`, `Name`, `Event`, `ResetPeriod`, `RebootMessage`, `Command`, `Actions`, `DelayActions`, `Component_`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", 9);
 		for (auto& row : rows)
 		{
@@ -1959,9 +5467,58 @@ public:
 		return "CREATE TABLE `MsiShortcutProperty` (`MsiShortcutProperty` CHAR(72) NOT NULL, `Shortcut_` CHAR(72) NOT NULL, `PropertyKey` LONGCHAR NOT NULL, `PropVariantValue` LONGCHAR NOT NULL PRIMARY KEY `MsiShortcutProperty`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "MsiShortcutProperty");
+		view->setString(1, "MsiShortcutProperty");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token");
+		view->execute();
+		view->setString(0, "MsiShortcutProperty");
+		view->setString(1, "Shortcut_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Shortcut");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Shortcut table");
+		view->execute();
+		view->setString(0, "MsiShortcutProperty");
+		view->setString(1, "PropertyKey");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Canonical string representation of the Property Key being set");
+		view->execute();
+		view->setString(0, "MsiShortcutProperty");
+		view->setString(1, "PropVariantValue");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "String representation of the value in the property");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIShortcutProperty>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `MsiShortcutProperty` (`MsiShortcutProperty`, `Shortcut_`, `PropertyKey`, `PropVariantValue`) VALUES(?, ?, ?, ?)", 4);
 		for (auto& row : rows)
 		{
@@ -1986,9 +5543,47 @@ public:
 		return "CREATE TABLE `ODBCAttribute` (`Driver_` CHAR(72) NOT NULL, `Attribute` CHAR(40) NOT NULL, `Value` CHAR(255) LOCALIZABLE PRIMARY KEY `Driver_`, `Attribute`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ODBCAttribute");
+		view->setString(1, "Value");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Value for ODBC driver attribute");
+		view->execute();
+		view->setString(0, "ODBCAttribute");
+		view->setString(1, "Attribute");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Name of ODBC driver attribute");
+		view->execute();
+		view->setString(0, "ODBCAttribute");
+		view->setString(1, "Driver_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "ODBCDriver");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to ODBC driver in ODBCDriver table");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIODBCAttribute>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ODBCAttribute` (`Driver_`, `Attribute`, `Value`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -2014,9 +5609,69 @@ public:
 		return "CREATE TABLE `ODBCDataSource` (`DataSource` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `Description` CHAR(255) NOT NULL, `DriverDescription` CHAR(255) NOT NULL, `Registration` SHORT NOT NULL PRIMARY KEY `DataSource`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ODBCDataSource");
+		view->setString(1, "Description");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Text used as registered name for data source");
+		view->execute();
+		view->setString(0, "ODBCDataSource");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to associated component");
+		view->execute();
+		view->setString(0, "ODBCDataSource");
+		view->setString(1, "DataSource");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized.internal token for data source");
+		view->execute();
+		view->setString(0, "ODBCDataSource");
+		view->setString(1, "DriverDescription");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Reference to driver description, may be existing driver");
+		view->execute();
+		view->setString(0, "ODBCDataSource");
+		view->setString(1, "Registration");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 1);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Registration option: 0=machine, 1=user, others t.b.d.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIODBCDataSource>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ODBCDataSource` (`DataSource`, `Component_`, `Description`, `DriverDescription`, `Registration`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2044,9 +5699,69 @@ public:
 		return "CREATE TABLE `ODBCDriver` (`Driver` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `Description` CHAR(255) NOT NULL, `File_` CHAR(72) NOT NULL, `File_Setup` CHAR(72) PRIMARY KEY `Driver`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ODBCDriver");
+		view->setString(1, "Description");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Text used as registered name for driver, non-localized");
+		view->execute();
+		view->setString(0, "ODBCDriver");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to key driver file");
+		view->execute();
+		view->setString(0, "ODBCDriver");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to associated component");
+		view->execute();
+		view->setString(0, "ODBCDriver");
+		view->setString(1, "Driver");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized.internal token for driver");
+		view->execute();
+		view->setString(0, "ODBCDriver");
+		view->setString(1, "File_Setup");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Optional reference to key driver setup DLL");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIODBCDriver>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ODBCDriver` (`Driver`, `Component_`, `Description`, `File_`, `File_Setup`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2072,9 +5787,47 @@ public:
 		return "CREATE TABLE `ODBCSourceAttribute` (`DataSource_` CHAR(72) NOT NULL, `Attribute` CHAR(32) NOT NULL, `Value` CHAR(255) LOCALIZABLE PRIMARY KEY `DataSource_`, `Attribute`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ODBCSourceAttribute");
+		view->setString(1, "Value");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Value for ODBC data source attribute");
+		view->execute();
+		view->setString(0, "ODBCSourceAttribute");
+		view->setString(1, "Attribute");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Name of ODBC data source attribute");
+		view->execute();
+		view->setString(0, "ODBCSourceAttribute");
+		view->setString(1, "DataSource_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "ODBCDataSource");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to ODBC data source in ODBCDataSource table");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIODBCSourceAttribute>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ODBCSourceAttribute` (`DataSource_`, `Attribute`, `Value`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -2100,9 +5853,69 @@ public:
 		return "CREATE TABLE `ODBCTranslator` (`Translator` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `Description` CHAR(255) NOT NULL, `File_` CHAR(72) NOT NULL, `File_Setup` CHAR(72) PRIMARY KEY `Translator`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ODBCTranslator");
+		view->setString(1, "Description");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Text used as registered name for translator");
+		view->execute();
+		view->setString(0, "ODBCTranslator");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to key translator file");
+		view->execute();
+		view->setString(0, "ODBCTranslator");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reference to associated component");
+		view->execute();
+		view->setString(0, "ODBCTranslator");
+		view->setString(1, "File_Setup");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Optional reference to key translator setup DLL");
+		view->execute();
+		view->setString(0, "ODBCTranslator");
+		view->setString(1, "Translator");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized.internal token for translator");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIODBCTranslator>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ODBCTranslator` (`Translator`, `Component_`, `Description`, `File_`, `File_Setup`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2131,9 +5944,80 @@ public:
 		return "CREATE TABLE `Patch` (`File_` CHAR(72) NOT NULL, `Sequence` SHORT NOT NULL, `PatchSize` LONG NOT NULL, `Attributes` SHORT NOT NULL, `Header` OBJECT, `StreamRef_` CHAR(38) PRIMARY KEY `File_`, `Sequence`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Patch");
+		view->setString(1, "Sequence");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Primary key, sequence with respect to the media images; order must track cabinet order.");
+		view->execute();
+		view->setString(0, "Patch");
+		view->setString(1, "Attributes");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Integer containing bit flags representing patch attributes");
+		view->execute();
+		view->setString(0, "Patch");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token, foreign key to File table, must match identifier in cabinet.");
+		view->execute();
+		view->setString(0, "Patch");
+		view->setString(1, "Header");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "Binary stream. The patch header, used for patch validation.");
+		view->execute();
+		view->setString(0, "Patch");
+		view->setString(1, "PatchSize");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Size of patch in bytes (long integer).");
+		view->execute();
+		view->setString(0, "Patch");
+		view->setString(1, "StreamRef_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Identifier. Foreign key to the StreamRef column of the MsiPatchHeaders table.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatch>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Patch` (`File_`, `Sequence`, `PatchSize`, `Attributes`, `Header`, `StreamRef_`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -2159,9 +6043,36 @@ public:
 		return "CREATE TABLE `PatchPackage` (`PatchId` CHAR(38) NOT NULL, `Media_` SHORT NOT NULL PRIMARY KEY `PatchId`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "PatchPackage");
+		view->setString(1, "Media_");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Foreign key to DiskId column of Media table. Indicates the disk containing the patch package.");
+		view->execute();
+		view->setString(0, "PatchPackage");
+		view->setString(1, "PatchId");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "A unique string GUID representing this patch.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPatchPackage>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `PatchPackage` (`PatchId`, `Media_`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -2187,9 +6098,80 @@ public:
 		return "CREATE TABLE `ProgId` (`ProgId` CHAR(255) NOT NULL, `ProgId_Parent` CHAR(255), `Class_` CHAR(38), `Description` CHAR(255) LOCALIZABLE, `Icon_` CHAR(72), `IconIndex` SHORT PRIMARY KEY `ProgId`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ProgId");
+		view->setString(1, "Description");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Localized description for the Program identifier.");
+		view->execute();
+		view->setString(0, "ProgId");
+		view->setString(1, "Icon_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Icon");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Optional foreign key into the Icon Table, specifying the icon file associated with this ProgId. Will be written under the DefaultIcon key.");
+		view->execute();
+		view->setString(0, "ProgId");
+		view->setString(1, "IconIndex");
+		view->setString(2, "Y");
+		view->setInteger(3, -32767);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Optional icon index.");
+		view->execute();
+		view->setString(0, "ProgId");
+		view->setString(1, "ProgId");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The Program Identifier. Primary key.");
+		view->execute();
+		view->setString(0, "ProgId");
+		view->setString(1, "Class_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Class");
+		view->setInteger(6, 1);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "The CLSID of an OLE factory corresponding to the ProgId.");
+		view->execute();
+		view->setString(0, "ProgId");
+		view->setString(1, "ProgId_Parent");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "ProgId");
+		view->setInteger(6, 1);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The Parent Program Identifier. If specified, the ProgId column becomes a version independent prog id.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIProgId>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ProgId` (`ProgId`, `ProgId_Parent`, `Class_`, `Description`, `Icon_`, `IconIndex`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -2215,9 +6197,36 @@ public:
 		return "CREATE TABLE `Property` (`Property` CHAR(72) NOT NULL, `Value` LONGCHAR NOT NULL LOCALIZABLE PRIMARY KEY `Property`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Property");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of property, uppercase if settable by launcher or loader.");
+		view->execute();
+		view->setString(0, "Property");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "String value for property.  Never null or empty.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIProperty>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Property` (`Property`, `Value`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -2242,9 +6251,69 @@ public:
 		return "CREATE TABLE `PublishComponent` (`ComponentId` CHAR(38) NOT NULL, `Qualifier` CHAR(255) NOT NULL, `Component_` CHAR(72) NOT NULL, `AppData` LONGCHAR LOCALIZABLE, `Feature_` CHAR(38) NOT NULL PRIMARY KEY `ComponentId`, `Qualifier`, `Component_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "PublishComponent");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Feature table.");
+		view->execute();
+		view->setString(0, "PublishComponent");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table.");
+		view->execute();
+		view->setString(0, "PublishComponent");
+		view->setString(1, "ComponentId");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "A string GUID that represents the component id that will be requested by the alien product.");
+		view->execute();
+		view->setString(0, "PublishComponent");
+		view->setString(1, "AppData");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "This is localisable Application specific data that can be associated with a Qualified Component.");
+		view->execute();
+		view->setString(0, "PublishComponent");
+		view->setString(1, "Qualifier");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "This is defined only when the ComponentId column is an Qualified Component Id. This is the Qualifier for ProvideComponentIndirect.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIPublishComponent>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `PublishComponent` (`ComponentId`, `Qualifier`, `Component_`, `AppData`, `Feature_`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2276,9 +6345,113 @@ public:
 		return "CREATE TABLE `RadioButton` (`Property` CHAR(72) NOT NULL, `Order` SHORT NOT NULL, `Value` CHAR(64) NOT NULL, `X` SHORT NOT NULL, `Y` SHORT NOT NULL, `Width` SHORT NOT NULL, `Height` SHORT NOT NULL, `Text` CHAR(64) LOCALIZABLE, `Help` CHAR(50) LOCALIZABLE PRIMARY KEY `Property`, `Order`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "RadioButton");
+		view->setString(1, "Y");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The vertical coordinate of the upper left corner of the bounding rectangle of the radio button.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "Text");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The visible title to be assigned to the radio button.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "Property");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A named property to be tied to this radio button. All the buttons tied to the same property become part of the same group.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "Height");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The height of the button.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "Width");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The width of the button.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "X");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The horizontal coordinate of the upper left corner of the bounding rectangle of the radio button.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "Value");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value string associated with this button. Selecting the button will set the associated property to this value.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "Order");
+		view->setString(2, "N");
+		view->setInteger(3, 1);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A positive integer used to determine the ordering of the items within one list..The integers do not have to be consecutive.");
+		view->execute();
+		view->setString(0, "RadioButton");
+		view->setString(1, "Help");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The help strings used with the button. The text is optional.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIRadioButton>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `RadioButton` (`Property`, `Order`, `Value`, `X`, `Y`, `Width`, `Height`, `Text`, `Help`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", 9);
 		for (auto& row : rows)
 		{
@@ -2310,9 +6483,69 @@ public:
 		return "CREATE TABLE `RegLocator` (`Signature_` CHAR(72) NOT NULL, `Root` SHORT NOT NULL, `Key` CHAR(255) NOT NULL, `Name` CHAR(255), `Type` SHORT PRIMARY KEY `Signature_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "RegLocator");
+		view->setString(1, "Name");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The registry value name.");
+		view->execute();
+		view->setString(0, "RegLocator");
+		view->setString(1, "Type");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 18);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "An integer value that determines if the registry value is a filename or a directory location or to be used as is w/o interpretation.");
+		view->execute();
+		view->setString(0, "RegLocator");
+		view->setString(1, "Signature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The table key. The Signature_ represents a unique file signature and is also the foreign key in the Signature table. If the type is 0, the registry values refers a directory, and _Signature is not a foreign key.");
+		view->execute();
+		view->setString(0, "RegLocator");
+		view->setString(1, "Key");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "RegPath");
+		view->setString(8, "");
+		view->setString(9, "The key for the registry value.");
+		view->execute();
+		view->setString(0, "RegLocator");
+		view->setString(1, "Root");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 3);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The predefined root key for the registry value, one of rrkEnum.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIRegLocator>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `RegLocator` (`Signature_`, `Root`, `Key`, `Name`, `Type`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2341,9 +6574,80 @@ public:
 		return "CREATE TABLE `Registry` (`Registry` CHAR(72) NOT NULL, `Root` SHORT NOT NULL, `Key` CHAR(255) NOT NULL LOCALIZABLE, `Name` CHAR(255) LOCALIZABLE, `Value` LONGCHAR LOCALIZABLE, `Component_` CHAR(72) NOT NULL PRIMARY KEY `Registry`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Registry");
+		view->setString(1, "Name");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The registry value name.");
+		view->execute();
+		view->setString(0, "Registry");
+		view->setString(1, "Value");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The registry value.");
+		view->execute();
+		view->setString(0, "Registry");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table referencing component that controls the installing of the registry value.");
+		view->execute();
+		view->setString(0, "Registry");
+		view->setString(1, "Key");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "RegPath");
+		view->setString(8, "");
+		view->setString(9, "The key for the registry value.");
+		view->execute();
+		view->setString(0, "Registry");
+		view->setString(1, "Registry");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+		view->setString(0, "Registry");
+		view->setString(1, "Root");
+		view->setString(2, "N");
+		view->setInteger(3, -1);
+		view->setInteger(4, 3);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The predefined root key for the registry value, one of rrkEnum.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIRegistry>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Registry` (`Registry`, `Root`, `Key`, `Name`, `Value`, `Component_`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -2372,9 +6676,69 @@ public:
 		return "CREATE TABLE `RemoveFile` (`FileKey` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `FileName` CHAR(255) LOCALIZABLE, `DirProperty` CHAR(72) NOT NULL, `InstallMode` SHORT NOT NULL PRIMARY KEY `FileKey`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "RemoveFile");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key referencing Component that controls the file to be removed.");
+		view->execute();
+		view->setString(0, "RemoveFile");
+		view->setString(1, "FileKey");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key used to identify a particular file entry");
+		view->execute();
+		view->setString(0, "RemoveFile");
+		view->setString(1, "FileName");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "WildCardFilename");
+		view->setString(8, "");
+		view->setString(9, "Name of the file to be removed.");
+		view->execute();
+		view->setString(0, "RemoveFile");
+		view->setString(1, "DirProperty");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of a property whose value is assumed to resolve to the full pathname to the folder of the file to be removed.");
+		view->execute();
+		view->setString(0, "RemoveFile");
+		view->setString(1, "InstallMode");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "1;2;3");
+		view->setString(9, "Installation option, one of iimEnum.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIRemoveFile>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `RemoveFile` (`FileKey`, `Component_`, `FileName`, `DirProperty`, `InstallMode`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2405,9 +6769,102 @@ public:
 		return "CREATE TABLE `RemoveIniFile` (`RemoveIniFile` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL LOCALIZABLE, `DirProperty` CHAR(72), `Section` CHAR(96) NOT NULL LOCALIZABLE, `Key` CHAR(128) NOT NULL LOCALIZABLE, `Value` CHAR(255) LOCALIZABLE, `Action` SHORT NOT NULL, `Component_` CHAR(72) NOT NULL PRIMARY KEY `RemoveIniFile`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "Action");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "2;4");
+		view->setString(9, "The type of modification to be made, one of iifEnum.");
+		view->execute();
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "Value");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The value to be deleted. The value is required when Action is iifIniRemoveTag");
+		view->execute();
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table referencing component that controls the deletion of the .INI value.");
+		view->execute();
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "FileName");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "The .INI file name in which to delete the information");
+		view->execute();
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "DirProperty");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Directory table denoting the directory where the .INI file is.");
+		view->execute();
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "Key");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The .INI file key below Section.");
+		view->execute();
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "Section");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The .INI file Section.");
+		view->execute();
+		view->setString(0, "RemoveIniFile");
+		view->setString(1, "RemoveIniFile");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIRemoveIniFile>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `RemoveIniFile` (`RemoveIniFile`, `FileName`, `DirProperty`, `Section`, `Key`, `Value`, `Action`, `Component_`) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", 8);
 		for (auto& row : rows)
 		{
@@ -2438,9 +6895,69 @@ public:
 		return "CREATE TABLE `RemoveRegistry` (`RemoveRegistry` CHAR(72) NOT NULL, `Root` SHORT NOT NULL, `Key` CHAR(255) NOT NULL LOCALIZABLE, `Name` CHAR(255) LOCALIZABLE, `Component_` CHAR(72) NOT NULL PRIMARY KEY `RemoveRegistry`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "RemoveRegistry");
+		view->setString(1, "Name");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The registry value name.");
+		view->execute();
+		view->setString(0, "RemoveRegistry");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table referencing component that controls the deletion of the registry value.");
+		view->execute();
+		view->setString(0, "RemoveRegistry");
+		view->setString(1, "Key");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "RegPath");
+		view->setString(8, "");
+		view->setString(9, "The key for the registry value.");
+		view->execute();
+		view->setString(0, "RemoveRegistry");
+		view->setString(1, "Root");
+		view->setString(2, "N");
+		view->setInteger(3, -1);
+		view->setInteger(4, 3);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The predefined root key for the registry value, one of rrkEnum");
+		view->execute();
+		view->setString(0, "RemoveRegistry");
+		view->setString(1, "RemoveRegistry");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIRemoveRegistry>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `RemoveRegistry` (`RemoveRegistry`, `Root`, `Key`, `Name`, `Component_`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2468,9 +6985,69 @@ public:
 		return "CREATE TABLE `ReserveCost` (`ReserveKey` CHAR(72) NOT NULL, `Component_` CHAR(72) NOT NULL, `ReserveFolder` CHAR(72), `ReserveLocal` LONG NOT NULL, `ReserveSource` LONG NOT NULL PRIMARY KEY `ReserveKey`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ReserveCost");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Reserve a specified amount of space if this component is to be installed.");
+		view->execute();
+		view->setString(0, "ReserveCost");
+		view->setString(1, "ReserveFolder");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of a property whose value is assumed to resolve to the full path to the destination directory");
+		view->execute();
+		view->setString(0, "ReserveCost");
+		view->setString(1, "ReserveKey");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key that uniquely identifies a particular ReserveCost record");
+		view->execute();
+		view->setString(0, "ReserveCost");
+		view->setString(1, "ReserveLocal");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Disk space to reserve if linked component is installed locally.");
+		view->execute();
+		view->setString(0, "ReserveCost");
+		view->setString(1, "ReserveSource");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Disk space to reserve if linked component is installed to run from the source location.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIReserveCost>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ReserveCost` (`ReserveKey`, `Component_`, `ReserveFolder`, `ReserveLocal`, `ReserveSource`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2496,9 +7073,47 @@ public:
 		return "CREATE TABLE `SFPCatalog` (`SFPCatalog` CHAR(255) NOT NULL, `Catalog` OBJECT NOT NULL, `Dependency` LONGCHAR PRIMARY KEY `SFPCatalog`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "SFPCatalog");
+		view->setString(1, "SFPCatalog");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "File name for the catalog.");
+		view->execute();
+		view->setString(0, "SFPCatalog");
+		view->setString(1, "Catalog");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Binary");
+		view->setString(8, "");
+		view->setString(9, "SFP Catalog");
+		view->execute();
+		view->setString(0, "SFPCatalog");
+		view->setString(1, "Dependency");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Parent catalog - only used by SFP");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSISFPCatalog>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `SFPCatalog` (`SFPCatalog`, `Catalog`, `Dependency`) VALUES(?, ?, ?)", 3);
 		for (auto& row : rows)
 		{
@@ -2521,9 +7136,36 @@ public:
 		return "CREATE TABLE `SelfReg` (`File_` CHAR(72) NOT NULL, `Cost` SHORT PRIMARY KEY `File_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "SelfReg");
+		view->setString(1, "File_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "File");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the File table denoting the module that needs to be registered.");
+		view->execute();
+		view->setString(0, "SelfReg");
+		view->setString(1, "Cost");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The cost of registering the module.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSISelfReg>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `SelfReg` (`File_`, `Cost`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -2549,9 +7191,80 @@ public:
 		return "CREATE TABLE `ServiceControl` (`ServiceControl` CHAR(72) NOT NULL, `Name` CHAR(255) NOT NULL LOCALIZABLE, `Event` SHORT NOT NULL, `Arguments` CHAR(255) LOCALIZABLE, `Wait` SHORT, `Component_` CHAR(72) NOT NULL PRIMARY KEY `ServiceControl`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ServiceControl");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Name of a service. /, \\, comma and space are invalid");
+		view->execute();
+		view->setString(0, "ServiceControl");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Component Table that controls the startup of the service");
+		view->execute();
+		view->setString(0, "ServiceControl");
+		view->setString(1, "Event");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 187);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Bit field:  Install:  0x1 = Start, 0x2 = Stop, 0x8 = Delete, Uninstall: 0x10 = Start, 0x20 = Stop, 0x80 = Delete");
+		view->execute();
+		view->setString(0, "ServiceControl");
+		view->setString(1, "ServiceControl");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+		view->setString(0, "ServiceControl");
+		view->setString(1, "Arguments");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Arguments for the service.  Separate by [~].");
+		view->execute();
+		view->setString(0, "ServiceControl");
+		view->setString(1, "Wait");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 1);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Boolean for whether to wait for the service to fully start");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIServiceControl>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ServiceControl` (`ServiceControl`, `Name`, `Event`, `Arguments`, `Wait`, `Component_`) VALUES(?, ?, ?, ?, ?, ?)", 6);
 		for (auto& row : rows)
 		{
@@ -2588,9 +7301,157 @@ public:
 		return "CREATE TABLE `ServiceInstall` (`ServiceInstall` CHAR(72) NOT NULL, `Name` CHAR(255) NOT NULL, `DisplayName` CHAR(255) LOCALIZABLE, `ServiceType` LONG NOT NULL, `StartType` LONG NOT NULL, `ErrorControl` LONG NOT NULL, `LoadOrderGroup` CHAR(255), `Dependencies` CHAR(255), `StartName` CHAR(255), `Password` CHAR(255), `Arguments` CHAR(255), `Component_` CHAR(72) NOT NULL, `Description` CHAR(255) LOCALIZABLE PRIMARY KEY `ServiceInstall`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Internal Name of the Service");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "Description");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "Description of service.");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Component Table that controls the startup of the service");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "Arguments");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Arguments to include in every start of the service, passed to WinMain");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "ServiceInstall");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "Dependencies");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Other services this depends on to start.  Separate by [~], and end with [~][~]");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "DisplayName");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "External Name of the Service");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "ErrorControl");
+		view->setString(2, "N");
+		view->setInteger(3, -2147483647);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Severity of error if service fails to start");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "LoadOrderGroup");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "LoadOrderGroup");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "Password");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "password to run service with.  (with StartName)");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "ServiceType");
+		view->setString(2, "N");
+		view->setInteger(3, -2147483647);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Type of the service");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "StartName");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "User or object name to run service as");
+		view->execute();
+		view->setString(0, "ServiceInstall");
+		view->setString(1, "StartType");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 4);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Type of the service");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIServiceInstall>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `ServiceInstall` (`ServiceInstall`, `Name`, `DisplayName`, `ServiceType`, `StartType`, `ErrorControl`, `LoadOrderGroup`, `Dependencies`, `StartName`, `Password`, `Arguments`, `Component_`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 13);
 		for (auto& row : rows)
 		{
@@ -2637,9 +7498,190 @@ public:
 		return "CREATE TABLE `Shortcut` (`Shortcut` CHAR(72) NOT NULL, `Directory_` CHAR(72) NOT NULL, `Name` CHAR(128) NOT NULL LOCALIZABLE, `Component_` CHAR(72) NOT NULL, `Target` CHAR(72) NOT NULL, `Arguments` CHAR(255), `Description` CHAR(255) LOCALIZABLE, `Hotkey` SHORT, `Icon_` CHAR(72), `IconIndex` SHORT, `ShowCmd` SHORT, `WkDir` CHAR(72), `DisplayResourceDLL` CHAR(100), `DisplayResourceId` LONG, `DescriptionResourceDLL` CHAR(100), `DescriptionResourceId` LONG PRIMARY KEY `Shortcut`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Shortcut");
+		view->setString(1, "Name");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Filename");
+		view->setString(8, "");
+		view->setString(9, "The name of the shortcut to be created.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Description");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The description for the shortcut.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Component table denoting the component whose selection gates the the shortcut creation/deletion.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Icon_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Icon");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the File table denoting the external icon file for the shortcut.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "IconIndex");
+		view->setString(2, "Y");
+		view->setInteger(3, -32767);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The icon index for the shortcut.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Directory_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Directory");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Foreign key into the Directory table denoting the directory where the shortcut file is created.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Target");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Shortcut");
+		view->setString(8, "");
+		view->setString(9, "The shortcut target. This is usually a property that is expanded to a file or a folder that the shortcut points to.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Shortcut");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Primary key, non-localized token.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Arguments");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The command-line arguments for the shortcut.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "DescriptionResourceDLL");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Formatted string value representing the full path to the language neutral file that contains the MUI manifest for the shortcut description.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "DescriptionResourceId");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The description index for the shortcut.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "DisplayResourceDLL");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Formatted string value representing the full path to the language neutral file that contains the MUI manifest for the shortcut display name.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "DisplayResourceId");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The display name index for the shortcut.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "Hotkey");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The hotkey for the shortcut. It has the virtual-key code for the key in the low-order byte, and the modifier flags in the high-order byte. ");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "ShowCmd");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "1;3;7");
+		view->setString(9, "The show command for the application window.The following values may be used.");
+		view->execute();
+		view->setString(0, "Shortcut");
+		view->setString(1, "WkDir");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of property defining location of working directory.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIShortcut>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Shortcut` (`Shortcut`, `Directory_`, `Name`, `Component_`, `Target`, `Arguments`, `Description`, `Hotkey`, `Icon_`, `IconIndex`, `ShowCmd`, `WkDir`, `DisplayResourceDLL`, `DisplayResourceId`, `DescriptionResourceDLL`, `DescriptionResourceId`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 16);
 		for (auto& row : rows)
 		{
@@ -2682,9 +7724,113 @@ public:
 		return "CREATE TABLE `Signature` (`Signature` CHAR(72) NOT NULL, `FileName` CHAR(255) NOT NULL, `MinVersion` CHAR(20), `MaxVersion` CHAR(20), `MinSize` LONG, `MaxSize` LONG, `MinDate` LONG, `MaxDate` LONG, `Languages` CHAR(255) PRIMARY KEY `Signature`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Signature");
+		view->setString(1, "FileName");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The name of the file. This may contain a \"short name|long name\" pair.");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "Signature");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "The table key. The Signature represents a unique file signature.");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "Languages");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Language");
+		view->setString(8, "");
+		view->setString(9, "The languages supported by the file.");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "MaxDate");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The maximum creation date of the file.");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "MaxSize");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The maximum size of the file. ");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "MaxVersion");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The maximum version of the file.");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "MinDate");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The minimum creation date of the file.");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "MinSize");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The minimum size of the file.");
+		view->execute();
+		view->setString(0, "Signature");
+		view->setString(1, "MinVersion");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The minimum version of the file.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSISignature>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Signature` (`Signature`, `FileName`, `MinVersion`, `MaxVersion`, `MinSize`, `MaxSize`, `MinDate`, `MaxDate`, `Languages`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?)", 9);
 		for (auto& row : rows)
 		{
@@ -2716,9 +7862,69 @@ public:
 		return "CREATE TABLE `TextStyle` (`TextStyle` CHAR(72) NOT NULL, `FaceName` CHAR(32) NOT NULL, `Size` SHORT NOT NULL, `Color` LONG, `StyleBits` SHORT PRIMARY KEY `TextStyle`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "TextStyle");
+		view->setString(1, "TextStyle");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Name of the style. The primary key of this table. This name is embedded in the texts to indicate a style change.");
+		view->execute();
+		view->setString(0, "TextStyle");
+		view->setString(1, "Color");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 16777215);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A long integer indicating the color of the string in the RGB format (Red, Green, Blue each 0-255, RGB = R + 256*G + 256^2*B).");
+		view->execute();
+		view->setString(0, "TextStyle");
+		view->setString(1, "FaceName");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "A string indicating the name of the font used. Required. The string must be at most 31 characters long.");
+		view->execute();
+		view->setString(0, "TextStyle");
+		view->setString(1, "Size");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The size of the font used. This size is given in our units (1/12 of the system font height). Assuming that the system font is set to 12 point size, this is equivalent to the point size.");
+		view->execute();
+		view->setString(0, "TextStyle");
+		view->setString(1, "StyleBits");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 15);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "A combination of style bits.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSITextStyle>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `TextStyle` (`TextStyle`, `FaceName`, `Size`, `Color`, `StyleBits`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{
@@ -2749,9 +7955,102 @@ public:
 		return "CREATE TABLE `TypeLib` (`LibID` CHAR(38) NOT NULL, `Language` SHORT NOT NULL, `Component_` CHAR(72) NOT NULL, `Version` LONG, `Description` CHAR(128) LOCALIZABLE, `Directory_` CHAR(72), `Feature_` CHAR(38) NOT NULL, `Cost` LONG PRIMARY KEY `LibID`, `Language`, `Component_`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "TypeLib");
+		view->setString(1, "Description");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "");
+		view->execute();
+		view->setString(0, "TypeLib");
+		view->setString(1, "Feature_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Feature");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Feature Table, specifying the feature to validate or install in order for the type library to be operational.");
+		view->execute();
+		view->setString(0, "TypeLib");
+		view->setString(1, "Component_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Component");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Required foreign key into the Component Table, specifying the component for which to return a path when called through LocateComponent.");
+		view->execute();
+		view->setString(0, "TypeLib");
+		view->setString(1, "Directory_");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Directory");
+		view->setInteger(6, 1);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "Optional. The foreign key into the Directory table denoting the path to the help file for the type library.");
+		view->execute();
+		view->setString(0, "TypeLib");
+		view->setString(1, "Language");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The language of the library.");
+		view->execute();
+		view->setString(0, "TypeLib");
+		view->setString(1, "Version");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 16777215);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The version of the library. The minor version is in the lower 8 bits of the integer. The major version is in the next 16 bits. ");
+		view->execute();
+		view->setString(0, "TypeLib");
+		view->setString(1, "Cost");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The cost associated with the registration of the typelib. This column is currently optional.");
+		view->execute();
+		view->setString(0, "TypeLib");
+		view->setString(1, "LibID");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "The GUID that represents the library.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSITypeLib>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `TypeLib` (`LibID`, `Language`, `Component_`, `Version`, `Description`, `Directory_`, `Feature_`, `Cost`) VALUES(?, ?, ?, ?, ?, ?, ?, ?)", 8);
 		for (auto& row : rows)
 		{
@@ -2779,9 +8078,36 @@ public:
 		return "CREATE TABLE `UIText` (`Key` CHAR(72) NOT NULL, `Text` CHAR(255) LOCALIZABLE PRIMARY KEY `Key`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "UIText");
+		view->setString(1, "Text");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The localized version of the string.");
+		view->execute();
+		view->setString(0, "UIText");
+		view->setString(1, "Key");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Identifier");
+		view->setString(8, "");
+		view->setString(9, "A unique key that identifies the particular string.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIUIText>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `UIText` (`Key`, `Text`) VALUES(?, ?)", 2);
 		for (auto& row : rows)
 		{
@@ -2808,9 +8134,91 @@ public:
 		return "CREATE TABLE `Upgrade` (`UpgradeCode` CHAR(38) NOT NULL, `VersionMin` CHAR(20), `VersionMax` CHAR(20), `Language` CHAR(255), `Attributes` LONG NOT NULL, `Remove` CHAR(255), `ActionProperty` CHAR(72) NOT NULL PRIMARY KEY `UpgradeCode`, `VersionMin`, `VersionMax`, `Language`, `Attributes`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Upgrade");
+		view->setString(1, "Attributes");
+		view->setString(2, "N");
+		view->setInteger(3, 0);
+		view->setInteger(4, 2147483647);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "The attributes of this product set.");
+		view->execute();
+		view->setString(0, "Upgrade");
+		view->setString(1, "Language");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Language");
+		view->setString(8, "");
+		view->setString(9, "A comma-separated list of languages for either products in this set or products not in this set.");
+		view->execute();
+		view->setString(0, "Upgrade");
+		view->setString(1, "ActionProperty");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "UpperCase");
+		view->setString(8, "");
+		view->setString(9, "The property to set when a product in this set is found.");
+		view->execute();
+		view->setString(0, "Upgrade");
+		view->setString(1, "Remove");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The list of features to remove when uninstalling a product from this set.  The default is \"ALL\".");
+		view->execute();
+		view->setString(0, "Upgrade");
+		view->setString(1, "UpgradeCode");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Guid");
+		view->setString(8, "");
+		view->setString(9, "The UpgradeCode GUID belonging to the products in this set.");
+		view->execute();
+		view->setString(0, "Upgrade");
+		view->setString(1, "VersionMax");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The maximum ProductVersion of the products in this set.  The set may or may not include products with this particular version.");
+		view->execute();
+		view->setString(0, "Upgrade");
+		view->setString(1, "VersionMin");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The minimum ProductVersion of the products in this set.  The set may or may not include products with this particular version.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIUpgrade>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Upgrade` (`UpgradeCode`, `VersionMin`, `VersionMax`, `Language`, `Attributes`, `Remove`, `ActionProperty`) VALUES(?, ?, ?, ?, ?, ?, ?)", 7);
 		for (auto& row : rows)
 		{
@@ -2840,9 +8248,69 @@ public:
 		return "CREATE TABLE `Verb` (`Extension_` CHAR(255) NOT NULL, `Verb` CHAR(32) NOT NULL, `Sequence` SHORT, `Command` CHAR(255) LOCALIZABLE, `Argument` CHAR(255) LOCALIZABLE PRIMARY KEY `Extension_`, `Verb`)";
 	}
 
+	static void insertValidationRules(MSIDatabase* db)
+	{
+		auto view = db->createView("INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", 10);
+		view->setString(0, "Verb");
+		view->setString(1, "Sequence");
+		view->setString(2, "Y");
+		view->setInteger(3, 0);
+		view->setInteger(4, 32767);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "");
+		view->setString(8, "");
+		view->setString(9, "Order within the verbs for a particular extension. Also used simply to specify the default verb.");
+		view->execute();
+		view->setString(0, "Verb");
+		view->setString(1, "Argument");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "Optional value for the command arguments.");
+		view->execute();
+		view->setString(0, "Verb");
+		view->setString(1, "Extension_");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "Extension");
+		view->setInteger(6, 1);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The extension associated with the table row.");
+		view->execute();
+		view->setString(0, "Verb");
+		view->setString(1, "Command");
+		view->setString(2, "Y");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Formatted");
+		view->setString(8, "");
+		view->setString(9, "The command text.");
+		view->execute();
+		view->setString(0, "Verb");
+		view->setString(1, "Verb");
+		view->setString(2, "N");
+		view->setInteger(3, MSI_NULL_INTEGER);
+		view->setInteger(4, MSI_NULL_INTEGER);
+		view->setString(5, "");
+		view->setInteger(6, MSI_NULL_INTEGER);
+		view->setString(7, "Text");
+		view->setString(8, "");
+		view->setString(9, "The verb for the command.");
+		view->execute();
+	}
 	static void createTable(MSIDatabase* db, const std::vector<MSIVerb>& rows)
 	{
 		db->createView(createTableSql(), 0)->execute();
+		insertValidationRules(db);
 		auto view = db->createView("INSERT INTO `Verb` (`Extension_`, `Verb`, `Sequence`, `Command`, `Argument`) VALUES(?, ?, ?, ?, ?)", 5);
 		for (auto& row : rows)
 		{

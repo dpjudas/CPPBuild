@@ -20,8 +20,7 @@ public:
 #if 0
 		File::writeAllText("C:\\Development\\CPPBuild\\CPPBuild\\MSISchema.h", MSISchema::generateCode("C:\\Development\\Schema.Msi"));
 		return;
-#endif
-
+#else
 		std::string productName = "MNP2000";
 		std::string productVersion = "01.40.0000";
 		std::string manufacturer = "CPPBuild";
@@ -276,6 +275,7 @@ public:
 		};
 
 		auto db = MSIDatabase::createAlways(filename);
+		db->createTable<MSIValidation>({});
 		db->createTable(directory);
 		db->createTable(components);
 		db->createTable(files);
@@ -311,7 +311,7 @@ public:
 		summaryInfo.reset();
 
 		db->commit();
-		return;
+#endif
 	}
 };
 

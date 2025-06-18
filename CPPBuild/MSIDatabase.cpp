@@ -616,6 +616,19 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 		createTableCode += "\t\t}" + newline;
 		createTableCode += "\t}" + newline;
 
+		auto escapeString = [](std::string v) -> std::string
+			{
+				std::string r;
+				r.reserve(v.size());
+				for (char c : v)
+				{
+					if (c == '"' || c == '\\')
+						r.push_back('\\');
+					r.push_back(c);
+				}
+				return r;
+			};
+
 		std::string validationCode;
 		if (tableName != "_Validation")
 		{
@@ -623,16 +636,16 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 			validationCode += "\t\tauto view = db->createView(\"INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", 10);" + newline;
 			for (auto& rule : tableValidation[tableName])
 			{
-				validationCode += "\t\tview->setString(0, \"" + rule.table + "\");" + newline;
-				validationCode += "\t\tview->setString(1, \"" + rule.column + "\");" + newline;
-				validationCode += "\t\tview->setString(2, \"" + rule.nullable + "\");" + newline;
+				validationCode += "\t\tview->setString(0, \"" + escapeString(rule.table) + "\");" + newline;
+				validationCode += "\t\tview->setString(1, \"" + escapeString(rule.column) + "\");" + newline;
+				validationCode += "\t\tview->setString(2, \"" + escapeString(rule.nullable) + "\");" + newline;
 				validationCode += "\t\tview->setInteger(3, " + (rule.minValue ? std::to_string(rule.minValue.value()) : "MSI_NULL_INTEGER") + ");" + newline;
 				validationCode += "\t\tview->setInteger(4, " + (rule.maxValue ? std::to_string(rule.maxValue.value()) : "MSI_NULL_INTEGER") + ");" + newline;
-				validationCode += "\t\tview->setString(5, \"" + (rule.keyTable ? rule.keyTable.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->setString(5, \"" + escapeString(rule.keyTable ? rule.keyTable.value() : "") + "\");" + newline;
 				validationCode += "\t\tview->setInteger(6, " + (rule.keyColumn ? std::to_string(rule.keyColumn.value()) : "MSI_NULL_INTEGER") + ");" + newline;
-				validationCode += "\t\tview->setString(7, \"" + (rule.category ? rule.category.value() : "") + "\");" + newline;
-				validationCode += "\t\tview->setString(8, \"" + (rule.set ? rule.set.value() : "") + "\");" + newline;
-				validationCode += "\t\tview->setString(9, \"" + (rule.description ? rule.description.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->setString(7, \"" + escapeString(rule.category ? rule.category.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->setString(8, \"" + escapeString(rule.set ? rule.set.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->setString(9, \"" + escapeString(rule.description ? rule.description.value() : "") + "\");" + newline;
 				validationCode += "\t\tview->execute();" + newline;
 			}
 			validationCode += "\t}" + newline;

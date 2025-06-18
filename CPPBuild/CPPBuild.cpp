@@ -2,6 +2,7 @@
 #include "Precomp.h"
 #include "CPPBuild.h"
 #include "VSGenerator.h"
+#include "MSIGenerator.h"
 #include "WebTarget.h"
 #include "Guid/Guid.h"
 #include "IOData/Directory.h"
@@ -375,4 +376,10 @@ void CPPBuild::rebuild(std::string target, std::string configuration)
 	checkMakefile(target, configuration);
 	WebTarget webTarget(workDir, target, configuration);
 	webTarget.rebuild();
+}
+
+void CPPBuild::createInstaller()
+{
+	auto msi = MSIGenerator::create();
+	msi->generate();
 }

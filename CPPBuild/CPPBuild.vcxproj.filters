@@ -52,6 +52,8 @@
     <ClCompile Include="Guid\Guid.cpp">
       <Filter>Guid</Filter>
     </ClCompile>
+    <ClCompile Include="MSIGenerator.cpp" />
+    <ClCompile Include="MSIDatabase.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -114,6 +116,9 @@
     <ClInclude Include="Guid\Guid.h">
       <Filter>Guid</Filter>
     </ClInclude>
+    <ClInclude Include="MSIGenerator.h" />
+    <ClInclude Include="MSIDatabase.h" />
+    <ClInclude Include="MSISchema.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

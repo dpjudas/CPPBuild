@@ -23,6 +23,7 @@ public:
 	void build(std::string target, std::string configuration);
 	void rebuild(std::string target, std::string configuration);
 	void clean(std::string target, std::string configuration);
+	void createInstaller();
 
 	VSGuids loadSolutionGuids();
 	void saveSolutionGuids(const VSGuids& guids);

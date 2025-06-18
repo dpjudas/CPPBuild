@@ -1,6 +1,7 @@
 
 #include "Precomp.h"
 #include "MSIDatabase.h"
+#include <optional>
 
 std::unique_ptr<MSIDatabase> MSIDatabase::createAlways(const std::string& filename)
 {
@@ -338,6 +339,49 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 {
 	auto db = MSIDatabase::openExisting(schemaMsi);
 
+	struct ValidationRule
+	{
+		std::string table;
+		std::string column;
+		std::string nullable;
+		std::optional<int> minValue;
+		std::optional<int> maxValue;
+		std::optional<std::string> keyTable;
+		std::optional<int> keyColumn;
+		std::optional<std::string> category;
+		std::optional<std::string> set;
+		std::optional<std::string> description;
+	};
+	std::map<std::string, std::vector<ValidationRule>> tableValidation;
+
+	auto view = db->createView("SELECT `Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description` FROM `_Validation`", 0);
+	auto row = view->executeReader();
+	while (row->fetch())
+	{
+		ValidationRule rule;
+		rule.table = row->getString(0);
+		rule.column = row->getString(1);
+		rule.nullable = row->getString(2);
+		if (!row->isNull(3))
+			rule.minValue = row->getInteger(3);
+		if (!row->isNull(4))
+			rule.maxValue = row->getInteger(4);
+		if (!row->isNull(5))
+			rule.keyTable = row->getString(5);
+		if (!row->isNull(6))
+			rule.keyColumn = row->getInteger(6);
+		if (!row->isNull(7))
+			rule.category = row->getString(7);
+		if (!row->isNull(8))
+			rule.set = row->getString(8);
+		if (!row->isNull(9))
+			rule.description = row->getString(9);
+		std::string tableName = rule.table;
+		tableValidation[tableName].push_back(std::move(rule));
+	}
+	row.reset();
+	view.reset();
+
 #ifdef WIN32
 	std::string newline = "\r\n";
 #else
@@ -376,6 +420,8 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 		std::string createTableCode = "\tstatic void createTable(MSIDatabase* db, const std::vector<" + className + ">& rows)" + newline + "\t{" + newline;
 
 		createTableCode += "\t\tdb->createView(createTableSql(), 0)->execute();" + newline;
+		if (tableName != "_Validation")
+			createTableCode += "\t\tinsertValidationRules(db);" + newline;
 
 		createTableCode += "\t\tauto view = db->createView(\"INSERT INTO `" + tableName + "` (";
 		bool firstColumn = true;
@@ -570,8 +616,31 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 		createTableCode += "\t\t}" + newline;
 		createTableCode += "\t}" + newline;
 
+		std::string validationCode;
+		if (tableName != "_Validation")
+		{
+			validationCode = "\tstatic void insertValidationRules(MSIDatabase* db)" + newline + "\t{" + newline;
+			validationCode += "\t\tauto view = db->createView(\"INSERT INTO `_Validation` (`Table`, `Column`, `Nullable`, `MinValue`, `MaxValue`, `KeyTable`, `KeyColumn`, `Category`, `Set`, `Description`) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)\", 10);" + newline;
+			for (auto& rule : tableValidation[tableName])
+			{
+				validationCode += "\t\tview->setString(0, \"" + rule.table + "\");" + newline;
+				validationCode += "\t\tview->setString(1, \"" + rule.column + "\");" + newline;
+				validationCode += "\t\tview->setString(2, \"" + rule.nullable + "\");" + newline;
+				validationCode += "\t\tview->setInteger(3, " + (rule.minValue ? std::to_string(rule.minValue.value()) : "MSI_NULL_INTEGER") + ");" + newline;
+				validationCode += "\t\tview->setInteger(4, " + (rule.maxValue ? std::to_string(rule.maxValue.value()) : "MSI_NULL_INTEGER") + ");" + newline;
+				validationCode += "\t\tview->setString(5, \"" + (rule.keyTable ? rule.keyTable.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->setInteger(6, " + (rule.keyColumn ? std::to_string(rule.keyColumn.value()) : "MSI_NULL_INTEGER") + ");" + newline;
+				validationCode += "\t\tview->setString(7, \"" + (rule.category ? rule.category.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->setString(8, \"" + (rule.set ? rule.set.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->setString(9, \"" + (rule.description ? rule.description.value() : "") + "\");" + newline;
+				validationCode += "\t\tview->execute();" + newline;
+			}
+			validationCode += "\t}" + newline;
+		}
+
 		classCode += newline + "\tstatic std::string createTableSql() " + newline + "\t{" + newline + "\t\treturn \"" + sql + "\";" + newline + "\t}" + newline;
 		classCode += newline;
+		classCode += validationCode;
 		classCode += createTableCode;
 		classCode += "};" + newline + newline;
 

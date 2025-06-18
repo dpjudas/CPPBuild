@@ -138,6 +138,10 @@ class MSISchema
 {
 public:
 	static std::string generateCode(const std::string& schemaMsi);
+	static std::string exportTables(const std::string& msi);
+
+private:
+	static std::string escapeString(const std::string& str);
 };
 
 class MSIObject

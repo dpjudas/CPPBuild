@@ -156,8 +156,10 @@
     <ClInclude Include="Javascript\ScriptValue.h" />
     <ClInclude Include="Json\JsonValue.h" />
     <ClInclude Include="MSIDatabase.h" />
+    <ClInclude Include="MSIDialog.h" />
     <ClInclude Include="MSIGenerator.h" />
     <ClInclude Include="MSISchema.h" />
+    <ClInclude Include="MSISequence.h" />
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="Text\Text.h" />
     <ClInclude Include="Text\UTF16.h" />

@@ -616,19 +616,6 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 		createTableCode += "\t\t}" + newline;
 		createTableCode += "\t}" + newline;
 
-		auto escapeString = [](std::string v) -> std::string
-			{
-				std::string r;
-				r.reserve(v.size());
-				for (char c : v)
-				{
-					if (c == '"' || c == '\\')
-						r.push_back('\\');
-					r.push_back(c);
-				}
-				return r;
-			};
-
 		std::string validationCode;
 		if (tableName != "_Validation")
 		{
@@ -658,6 +645,149 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 		classCode += "};" + newline + newline;
 
 		result += classCode;
+	}
+
+	return result;
+}
+
+std::string MSISchema::escapeString(const std::string& v)
+{
+	std::string r;
+	r.reserve(v.size());
+	for (char c : v)
+	{
+		if (c == '"' || c == '\\')
+			r.push_back('\\');
+		r.push_back(c);
+	}
+	return r;
+}
+
+// Exports a MSI database in C++ form to get the standard dialogs out of UISample.msi (thanks Microsoft)
+std::string MSISchema::exportTables(const std::string& msi)
+{
+	auto db = MSIDatabase::openExisting(msi);
+
+#ifdef WIN32
+	std::string newline = "\r\n";
+#else
+	std::string newline = "\n";
+#endif
+
+	std::string result;
+
+	std::map<std::string, std::vector<MSIColumnInfo>> tables = db->getSchema();
+	for (const auto& it : tables)
+	{
+		const std::string& tableName = it.first;
+		const std::vector<MSIColumnInfo>& columns = it.second;
+
+		std::string className;
+		if (tableName == "_Validation") // This isn't actually an internal table...
+			className = "MSIValidation";
+		else if (tableName.substr(0, 3) == "Msi") // Newer tables have the Msi prefix. Older tables do not
+			className = "MSI" + tableName.substr(3);
+		else
+			className = "MSI" + tableName;
+
+		std::string listVarName = className.substr(3);
+		if (listVarName[0] >= 'A' && listVarName[0] <= 'Z')
+			listVarName[0] = listVarName[0] - 'A' + 'a';
+
+		result += "std::vector<" + className + "> " + listVarName + " = " + newline + "{" + newline;
+
+		std::string selectSQL = "SELECT ";
+		bool firstColumn = true;
+		for (const MSIColumnInfo& column : columns)
+		{
+			if (firstColumn)
+				firstColumn = false;
+			else
+				selectSQL += ", ";
+			selectSQL += "`";
+			selectSQL += column.name;
+			selectSQL += "`";
+		}
+		selectSQL += "FROM `" + tableName + "`";
+
+		auto view = db->createView(selectSQL, 0);
+		auto row = view->executeReader();
+		while (row->fetch())
+		{
+			std::string rowCode = "\t{ ";
+
+			int field = 0;
+			bool firstField = true;
+			for (const MSIColumnInfo& column : columns)
+			{
+				if (column.name.size() < 1)
+					throw std::runtime_error("Invalid table column name");
+				if (column.type.size() < 2)
+					throw std::runtime_error("Unsupported table column type");
+
+				std::string cppName = column.name;
+				if (cppName[0] >= 'A' && cppName[0] <= 'Z')
+					cppName[0] = cppName[0] - 'A' + 'a';
+				if (cppName.back() == '_') // We don't care about foreign keys in the struct as we don't enforce any of that anyway
+					cppName.pop_back();
+
+				// Check for C++ keywords
+				if (cppName == "template" || cppName == "class")
+					cppName.push_back('_');
+
+				std::string prefix = column.type.substr(0, 2);
+				bool notNull = true;
+				if (prefix[0] >= 'A' && prefix[0] <= 'Z')
+				{
+					notNull = false;
+					prefix[0] = prefix[0] - 'A' + 'a';
+				}
+
+				std::string fieldCode;
+				if (notNull || !row->isNull(field))
+				{
+					bool localizable = false;
+					if (prefix[0] == 's' || prefix[0] == 'l')
+					{
+						std::string value = row->getString(field);
+						fieldCode = "." +cppName + " = \"" + escapeString(value) + "\"";
+					}
+					else if (prefix[0] == 'i')
+					{
+						fieldCode = "." + cppName + " = " + std::to_string(row->getInteger(field));
+					}
+					else if (prefix == "v0")
+					{
+						//fieldCode = "." + cppName + ".data = std::vector<uint8_t>(" + row->getStream(field) + ")";
+					}
+					else if (prefix[0] == 'g' || prefix[0] == 'j' || prefix[0] == 'O')
+					{
+						throw std::runtime_error("Unsupported temporary fields");
+					}
+					else
+					{
+						throw std::runtime_error("Unsupported table column type");
+					}
+				}
+				
+				if (!fieldCode.empty())
+				{
+					if (firstField)
+						firstField = false;
+					else
+						rowCode += ", ";
+					rowCode += fieldCode;
+				}
+
+				field++;
+			}
+
+			rowCode += " }," + newline;
+			result += rowCode;
+		}
+
+		result += "};" + newline;
+		result += newline;
 	}
 
 	return result;

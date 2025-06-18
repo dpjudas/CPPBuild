@@ -119,6 +119,8 @@
     <ClInclude Include="MSIGenerator.h" />
     <ClInclude Include="MSIDatabase.h" />
     <ClInclude Include="MSISchema.h" />
+    <ClInclude Include="MSIDialog.h" />
+    <ClInclude Include="MSISequence.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

@@ -364,7 +364,7 @@ public:
 class CancelDlg
 {
 public:
-	MSIDialog dialog = { .dialog = "CancelDlg", .hCentering = 50, .vCentering = 10, .width = 260, .height = 85, .attributes = 3, .title = "[ProductName] [Setup]", .control_First = "No", .control_Default = "No", .control_Cancel = "No" };
+	MSIDialog dialog = { .dialog = "CancelDlg", .hCentering = 50, .vCentering = 50, .width = 260, .height = 85, .attributes = 3, .title = "[ProductName] [Setup]", .control_First = "No", .control_Default = "No", .control_Cancel = "No" };
 
 	std::vector<MSIControl> controls =
 	{
@@ -481,7 +481,7 @@ public:
 class ErrorDlg
 {
 public:
-	MSIDialog dialog = { .dialog = "ErrorDlg", .hCentering = 50, .vCentering = 10, .width = 270, .height = 105, .attributes = 65539, .title = "Installer Information", .control_First = "ErrorText" };
+	MSIDialog dialog = { .dialog = "ErrorDlg", .hCentering = 50, .vCentering = 50, .width = 270, .height = 105, .attributes = 65539, .title = "Installer Information", .control_First = "ErrorText" };
 
 	std::vector<MSIControl> controls =
 	{
@@ -831,15 +831,15 @@ public:
 		{ .dialog = "SetupTypeDlg", .control = "Title", .type = "Text", .x = 15, .y = 6, .width = 200, .height = 15, .attributes = 196611, .text = "[DlgTitleFont]Choose Setup Type" },
 		{ .dialog = "SetupTypeDlg", .control = "Back", .type = "PushButton", .x = 180, .y = 243, .width = 56, .height = 17, .attributes = 3, .text = "[ButtonText_Back]", .control_Next = "Next" },
 		{ .dialog = "SetupTypeDlg", .control = "Next", .type = "PushButton", .x = 236, .y = 243, .width = 56, .height = 17, .attributes = 1, .text = "[ButtonText_Next]", .control_Next = "Cancel" },
-		{ .dialog = "SetupTypeDlg", .control = "TypicalLabel", .type = "Text", .x = 105, .y = 65, .width = 100, .height = 10, .attributes = 3, .text = "[DlgTitleFont]&Typical", .control_Next = "TypicalButton" },
-		{ .dialog = "SetupTypeDlg", .control = "CompleteButton", .type = "PushButton", .x = 50, .y = 171, .width = 38, .height = 38, .attributes = 5767171, .text = "[CompleteSetupIcon]", .control_Next = "Back", .help = "Complete Installation|" },
-		{ .dialog = "SetupTypeDlg", .control = "CompleteLabel", .type = "Text", .x = 105, .y = 171, .width = 100, .height = 10, .attributes = 3, .text = "[DlgTitleFont]C&omplete", .control_Next = "CompleteButton" },
-		{ .dialog = "SetupTypeDlg", .control = "CompleteText", .type = "Text", .x = 105, .y = 184, .width = 230, .height = 20, .attributes = 3, .text = "All program features will be installed.  (Requires most disk space)" },
-		{ .dialog = "SetupTypeDlg", .control = "CustomButton", .type = "PushButton", .x = 50, .y = 118, .width = 38, .height = 38, .attributes = 5767171, .text = "[CustomSetupIcon]", .control_Next = "CompleteLabel", .help = "Custom Installation|" },
-		{ .dialog = "SetupTypeDlg", .control = "CustomLabel", .type = "Text", .x = 105, .y = 118, .width = 100, .height = 10, .attributes = 3, .text = "[DlgTitleFont]C&ustom", .control_Next = "CustomButton" },
-		{ .dialog = "SetupTypeDlg", .control = "CustomText", .type = "Text", .x = 105, .y = 131, .width = 230, .height = 30, .attributes = 3, .text = "Allows users to choose which program features will be installed and where they will be installed. Recommended for advanced users." },
-		{ .dialog = "SetupTypeDlg", .control = "TypicalButton", .type = "PushButton", .x = 50, .y = 65, .width = 38, .height = 38, .attributes = 5767171, .text = "[InstallerIcon]", .control_Next = "CustomLabel", .help = "Typical Installation|" },
-		{ .dialog = "SetupTypeDlg", .control = "TypicalText", .type = "Text", .x = 105, .y = 78, .width = 230, .height = 20, .attributes = 3, .text = "Installs the most common program features. Recommended for most users." },
+		{ .dialog = "SetupTypeDlg", .control = "CompleteButton", .type = "PushButton", .x = 35, .y = 171, .width = 38, .height = 38, .attributes = 5767171, .text = "[CompleteSetupIcon]", .control_Next = "Back", .help = "Complete Installation|" },
+		{ .dialog = "SetupTypeDlg", .control = "CompleteLabel", .type = "Text", .x = 105, .y = 174, .width = 100, .height = 10, .attributes = 3, .text = "[DlgTitleFont]C&omplete", .control_Next = "CompleteButton" },
+		{ .dialog = "SetupTypeDlg", .control = "CompleteText", .type = "Text", .x = 105, .y = 187, .width = 230, .height = 20, .attributes = 3, .text = "All program features will be installed.  (Requires most disk space)" },
+		{ .dialog = "SetupTypeDlg", .control = "CustomButton", .type = "PushButton", .x = 35, .y = 118, .width = 38, .height = 38, .attributes = 5767171, .text = "[CustomSetupIcon]", .control_Next = "CompleteLabel", .help = "Custom Installation|" },
+		{ .dialog = "SetupTypeDlg", .control = "CustomLabel", .type = "Text", .x = 105, .y = 121, .width = 100, .height = 10, .attributes = 3, .text = "[DlgTitleFont]C&ustom", .control_Next = "CustomButton" },
+		{ .dialog = "SetupTypeDlg", .control = "CustomText", .type = "Text", .x = 105, .y = 134, .width = 230, .height = 30, .attributes = 3, .text = "Allows users to choose which program features will be installed and where they will be installed. Recommended for advanced users." },
+		{ .dialog = "SetupTypeDlg", .control = "TypicalButton", .type = "PushButton", .x = 35, .y = 65, .width = 38, .height = 38, .attributes = 5767171, .text = "[InstallerIcon]", .control_Next = "CustomLabel", .help = "Typical Installation|" },
+		{ .dialog = "SetupTypeDlg", .control = "TypicalLabel", .type = "Text", .x = 105, .y = 68, .width = 100, .height = 10, .attributes = 3, .text = "[DlgTitleFont]&Typical", .control_Next = "TypicalButton" },
+		{ .dialog = "SetupTypeDlg", .control = "TypicalText", .type = "Text", .x = 105, .y = 81, .width = 230, .height = 20, .attributes = 3, .text = "Installs the most common program features. Recommended for most users." },
 	};
 
 	std::vector<MSIControlCondition> controlCondition =
@@ -1030,7 +1030,7 @@ public:
 class WaitForCostingDlg
 {
 public:
-	MSIDialog dialog = { .dialog = "WaitForCostingDlg", .hCentering = 50, .vCentering = 10, .width = 260, .height = 85, .attributes = 3, .title = "[ProductName] [Setup]", .control_First = "Return", .control_Default = "Return", .control_Cancel = "Return" };
+	MSIDialog dialog = { .dialog = "WaitForCostingDlg", .hCentering = 50, .vCentering = 50, .width = 260, .height = 85, .attributes = 3, .title = "[ProductName] [Setup]", .control_First = "Return", .control_Default = "Return", .control_Cancel = "Return" };
 
 	std::vector<MSIControl> controls =
 	{
@@ -1119,6 +1119,8 @@ public:
 class MSIDialogs
 {
 public:
+	MSIDialogs();
+
 	AdminWelcomeDlg adminWelcomeDlg;
 	ExitDialog exitDialog;
 	FatalError fatalError;
@@ -1150,20 +1152,7 @@ public:
 	WelcomeDlg welcomeDlg;
 	WelcomeDlgLink welcomeDlgLink;
 
-	std::vector<MSIBinary> binary =
-	{
-		{ .name = "bannrbmp" },
-		{ .name = "completi" },
-		{ .name = "custicon" },
-		{ .name = "dlgbmp" },
-		{ .name = "exclamic" },
-		{ .name = "info" },
-		{ .name = "insticon" },
-		{ .name = "New" },
-		{ .name = "removico" },
-		{ .name = "repairic" },
-		{ .name = "Up" },
-	};
+	std::vector<MSIBinary> binary;
 
 	std::vector<MSIBBControl> bbControl;
 	std::vector<MSIBillboard> billboard;
@@ -1225,7 +1214,7 @@ public:
 		{ .property = "RemoveIcon", .value = "removico" },
 		{ .property = "RepairIcon", .value = "repairic" },
 		{ .property = "Setup", .value = "Setup" },
-		{ .property = "ShowUserRegistrationDlg", .value = "1" },
+		{ .property = "ShowUserRegistrationDlg", .value = "0" },
 		{ .property = "Wizard", .value = "Setup Wizard" },
 	};
 
@@ -1460,63 +1449,7 @@ public:
 		{ .error = 1938, .message = "An error occurred during the installation of assembly '[6]'. One or more modules of the assembly could not be found. {{HRESULT: [3]. assembly interface: [4], function: [5], component: [2]}}" },
 	};
 
-	void createTables(MSIDatabase* db, std::vector<MSIProperty>& propertyList)
-	{
-		propertyList.insert(propertyList.end(), property.begin(), property.end());
-
-		std::vector<MSIDialog> dialogs;
-		std::vector<MSIControl> controls;
-		std::vector<MSIControlCondition> controlCondition;
-		std::vector<MSIControlEvent> controlEvent;
-		std::vector<MSIEventMapping> eventMapping;
-
-		addDialog(adminWelcomeDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(exitDialog, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(fatalError, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(prepareDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(progressDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(userExit, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(adminBrowseDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(adminInstallPointDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(adminRegistrationDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(browseDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(cancelDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(customizeDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(diskCostDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(errorDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(filesInUse, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(licenseAgreementDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(maintenanceTypeDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(maintenanceWelcomeDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(msiRMFilesInUse, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(outOfDiskDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(outOfRbDiskDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(resumeDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(setupTypeDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(userRegistrationDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(verifyReadyDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(verifyRemoveDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(verifyRepairDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(waitForCostingDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(welcomeDlg, dialogs, controls, controlCondition, controlEvent, eventMapping);
-		addDialog(welcomeDlgLink, dialogs, controls, controlCondition, controlEvent, eventMapping);
-
-		db->createTable(dialogs);
-		db->createTable(controls);
-		db->createTable(controlCondition);
-		db->createTable(controlEvent);
-		db->createTable(eventMapping);
-
-		db->createTable(textStyle);
-		db->createTable(bbControl);
-		db->createTable(billboard);
-		db->createTable(checkBox);
-		db->createTable(radioButton);
-		db->createTable(comboBox);
-		db->createTable(listBox);
-		db->createTable(listView);
-		// db->createTable(binary);
-	}
+	void createTables(MSIDatabase* db, std::vector<MSIProperty>& propertyList);
 
 private:
 	template<typename T>

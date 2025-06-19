@@ -20,11 +20,11 @@ public:
 	void generate() override
 	{
 #if 0
+		MSISchema::saveBinaries("C:\\Development\\UISample.Msi", "C:\\Development\\UISampleBinaries");
+#elif 0
 		File::writeAllText("C:\\Development\\UISample.txt", MSISchema::exportTables("C:\\Development\\UISample.Msi"));
-		return;
 #elif 0
 		File::writeAllText("C:\\Development\\CPPBuild\\CPPBuild\\MSISchema.h", MSISchema::generateCode("C:\\Development\\Schema.Msi"));
-		return;
 #else
 		std::string productName = "MNP2000";
 		std::string productVersion = "01.40.0000";

@@ -1,6 +1,8 @@
 
 #include "Precomp.h"
 #include "MSIDatabase.h"
+#include "IOData/FilePath.h"
+#include "Guid/Guid.h"
 #include <optional>
 
 std::unique_ptr<MSIDatabase> MSIDatabase::createAlways(const std::string& filename)
@@ -172,6 +174,34 @@ void MSIDatabaseView::setStream(int field, const std::string& filename)
 	UINT result = MsiRecordSetStream(record, field + 1, to_utf16(filename).c_str());
 	if (result != ERROR_SUCCESS)
 		throw std::runtime_error("MsiRecordSetStream failed");
+}
+
+void MSIDatabaseView::setStream(int field, const MSIObject& obj)
+{
+	if (!obj.filename.empty())
+	{
+		setStream(field, obj.filename);
+	}
+	else
+	{
+		// Special thanks to Microsoft for not making MsiRecordSetStreamFromData(record, field, data, size)
+		wchar_t buffer[1024];
+		DWORD result = GetTempPath2(1024, buffer);
+		if (result == 0 || result >= 1024)
+			throw std::runtime_error("GetTempPath2 failed");
+		std::string filename = FilePath::combine(from_utf16(buffer), Guid::makeGuid().toString()) + ".msistream";
+		File::writeAllBytes(filename, obj.data);
+		try
+		{
+			setStream(field, filename);
+		}
+		catch (...)
+		{
+			File::tryDelete(filename);
+			throw;
+		}
+		File::tryDelete(filename);
+	}
 }
 
 void MSIDatabaseView::execute()
@@ -547,12 +577,12 @@ std::string MSISchema::generateCode(const std::string& schemaMsi)
 				if (notNull)
 				{
 					classCode += "\tMSIObject " + cppName + ";" + newline;
-					createTableCode += "\t\t\tview->setStream(" + std::to_string(index) + ", row." + cppName + ".filename);" + newline;
+					createTableCode += "\t\t\tview->setStream(" + std::to_string(index) + ", row." + cppName + ");" + newline;
 				}
 				else
 				{
 					classCode += "\tstd::optional<MSIObject> " + cppName + ";" + newline;
-					createTableCode += "\t\t\tview->setStream(" + std::to_string(index) + ", row." + cppName + " ? row." + cppName + ".value().filename : \"\");" + newline;
+					createTableCode += "\t\t\tview->setStream(" + std::to_string(index) + ", row." + cppName + " ? row." + cppName + ".value() : MSIObject());" + newline;
 				}
 			}
 			else if (prefix[0] == 's')
@@ -791,4 +821,17 @@ std::string MSISchema::exportTables(const std::string& msi)
 	}
 
 	return result;
+}
+
+void MSISchema::saveBinaries(const std::string& msi, const std::string& outputFolder)
+{
+	auto db = MSIDatabase::openExisting(msi);
+	auto view = db->createView("SELECT Name, Data FROM Binary", 0);
+	auto row = view->executeReader();
+	while (row->fetch())
+	{
+		std::string name = row->getString(0);
+		auto data = row->getStream(1);
+		File::writeAllBytes(FilePath::combine(outputFolder, name), data);
+	}
 }

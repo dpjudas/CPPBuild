@@ -100,6 +100,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Base64\Base64.cpp" />
     <ClCompile Include="CPPBuild.cpp" />
     <ClCompile Include="CSSTokenizer.cpp" />
     <ClCompile Include="Guid\Guid.cpp" />
@@ -122,6 +123,7 @@
     <ClCompile Include="Json\JsonValue.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="MSIDatabase.cpp" />
+    <ClCompile Include="MSIDialog.cpp" />
     <ClCompile Include="MSIGenerator.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -140,6 +142,7 @@
     <ClCompile Include="Zip\ZipWriter.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Base64\Base64.h" />
     <ClInclude Include="CPPBuild.h" />
     <ClInclude Include="CPPBuildJS.h" />
     <ClInclude Include="CSSTokenizer.h" />

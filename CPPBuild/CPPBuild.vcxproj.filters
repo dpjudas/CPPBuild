@@ -54,6 +54,10 @@
     </ClCompile>
     <ClCompile Include="MSIGenerator.cpp" />
     <ClCompile Include="MSIDatabase.cpp" />
+    <ClCompile Include="Base64\Base64.cpp">
+      <Filter>Base64</Filter>
+    </ClCompile>
+    <ClCompile Include="MSIDialog.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -121,6 +125,9 @@
     <ClInclude Include="MSISchema.h" />
     <ClInclude Include="MSIDialog.h" />
     <ClInclude Include="MSISequence.h" />
+    <ClInclude Include="Base64\Base64.h">
+      <Filter>Base64</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">
@@ -140,6 +147,9 @@
     </Filter>
     <Filter Include="Guid">
       <UniqueIdentifier>{f4e01054-3f1a-4572-89cb-262e8ad68969}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Base64">
+      <UniqueIdentifier>{039aa25b-506f-4e11-942e-d21ec92251ec}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

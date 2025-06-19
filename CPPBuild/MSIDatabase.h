@@ -15,6 +15,7 @@ class MSIColumnInfo;
 class MSIDatabaseView;
 class MSIDatabaseRow;
 class MSISummaryInfo;
+class MSIObject;
 
 class MSIDatabase
 {
@@ -57,6 +58,7 @@ public:
 	void setInteger(int field, int value);
 	void setString(int field, const std::string& text);
 	void setStream(int field, const std::string& filename);
+	void setStream(int field, const MSIObject& obj);
 
 	void execute();
 	std::unique_ptr<MSIDatabaseRow> executeReader();
@@ -139,6 +141,7 @@ class MSISchema
 public:
 	static std::string generateCode(const std::string& schemaMsi);
 	static std::string exportTables(const std::string& msi);
+	static void saveBinaries(const std::string& msi, const std::string& outputFolder);
 
 private:
 	static std::string escapeString(const std::string& str);
@@ -147,6 +150,10 @@ private:
 class MSIObject
 {
 public:
-	std::string filename; // When writing to a record (thanks Microsoft, for not providing a binary version)
-	std::vector<uint8_t> data; // When reading from a record
+	MSIObject() = default;
+	MSIObject(const std::string& filename) : filename(filename) { }
+	MSIObject(const std::shared_ptr<DataBuffer>& data) : data(data) { }
+
+	std::string filename;
+	std::shared_ptr<DataBuffer> data;
 };

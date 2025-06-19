@@ -761,7 +761,7 @@ public:
 		for (auto& row : rows)
 		{
 			view->setString(0, row.name);
-			view->setStream(1, row.data.filename);
+			view->setStream(1, row.data);
 			view->execute();
 		}
 	}
@@ -3099,7 +3099,7 @@ public:
 		for (auto& row : rows)
 		{
 			view->setString(0, row.name);
-			view->setStream(1, row.data.filename);
+			view->setStream(1, row.data);
 			view->execute();
 		}
 	}
@@ -4306,7 +4306,7 @@ public:
 		for (auto& row : rows)
 		{
 			view->setString(0, row.digitalCertificate);
-			view->setStream(1, row.certData.filename);
+			view->setStream(1, row.certData);
 			view->execute();
 		}
 	}
@@ -4383,7 +4383,7 @@ public:
 			view->setString(0, row.table);
 			view->setString(1, row.signObject);
 			view->setString(2, row.digitalCertificate);
-			view->setStream(3, row.hash ? row.hash.value().filename : "");
+			view->setStream(3, row.hash ? row.hash.value() : MSIObject());
 			view->execute();
 		}
 	}
@@ -4563,7 +4563,7 @@ public:
 			view->setString(1, row.fileName);
 			view->setInteger(2, row.attributes);
 			view->setInteger(3, row.messageFilter ? row.messageFilter.value() : MSI_NULL_INTEGER);
-			view->setStream(4, row.data.filename);
+			view->setStream(4, row.data);
 			view->execute();
 		}
 	}
@@ -4909,7 +4909,7 @@ public:
 		for (auto& row : rows)
 		{
 			view->setString(0, row.streamRef);
-			view->setStream(1, row.header.filename);
+			view->setStream(1, row.header);
 			view->execute();
 		}
 	}
@@ -6025,7 +6025,7 @@ public:
 			view->setInteger(1, row.sequence);
 			view->setInteger(2, row.patchSize);
 			view->setInteger(3, row.attributes);
-			view->setStream(4, row.header ? row.header.value().filename : "");
+			view->setStream(4, row.header ? row.header.value() : MSIObject());
 			view->setString(5, row.streamRef ? row.streamRef.value() : "");
 			view->execute();
 		}
@@ -7118,7 +7118,7 @@ public:
 		for (auto& row : rows)
 		{
 			view->setString(0, row.sFPCatalog);
-			view->setStream(1, row.catalog.filename);
+			view->setStream(1, row.catalog);
 			view->setString(2, row.dependency ? row.dependency.value() : "");
 			view->execute();
 		}

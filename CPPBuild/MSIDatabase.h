@@ -169,8 +169,12 @@ public:
 	void addFile(const std::string& filename, const std::string& sourceFile, bool executeFlag = false);
 	std::shared_ptr<DataBuffer> close();
 
+	struct Impl;
+
 private:
 	HFCI handle = {};
 	bool closed = false;
 	std::string filename;
+
+	std::unique_ptr<Impl> pimpl;
 };

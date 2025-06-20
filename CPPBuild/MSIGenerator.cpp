@@ -42,6 +42,24 @@ public:
 
 		std::string filename = "C:\\Development\\test.msi";
 
+		std::string srcFolder = "C:\\Development\\VkDoom\\build\\RelWithDebInfo";
+		std::vector<std::string> programFiles =
+		{
+			"vkdoom.exe",
+			//"vkdoom.pdb",
+			"vkdoom.pk3",
+			"vktool.exe",
+			//"vktool.pdb",
+			"zmusic.dll",
+			"openal32.dll",
+			"lights.pk3",
+			//"licenses.zip",
+			"libsndfile-1.dll",
+			"game_widescreen_gfx.pk3",
+			"game_support.pk3",
+			"brightmaps.pk3"
+		};
+
 		std::vector<MSIDirectory> directory =
 		{
 			{ "TARGETDIR", "", "SourceDir" },
@@ -63,34 +81,40 @@ public:
 				.componentId = "{5606A45C-E07F-45C8-9EC9-D1E0224F58C1}",
 				.directory = "INSTALLDIR",
 				.attributes = msidbComponentAttributesLocalOnly | msidbComponentAttributes64bit,
-				.keyPath = "Redpark.exe"
+				.keyPath = "file_1"
 			}
 		};
 
-		std::vector<MSIFile> files =
+		std::vector<MSIFile> files;
+		int sequence = 1;
+		for (const std::string& filename : programFiles)
 		{
+			size_t filesize = File::openExisting(FilePath::combine(srcFolder, filename))->size();
+			if (filesize > 0x7fffffff)
+				throw std::runtime_error("File too large");
+
+			std::string shortname = "aa" + std::to_string(sequence) + "." + FilePath::extension(filename);
+			std::string identifier = "file_" + std::to_string(sequence);
+
+			MSIFile file =
 			{
-				.file = "Redpark.exe",
+				.file = identifier,
 				.component = "Notepad",
-				.fileName = "Redpark.exe",
-				.fileSize = 1337,
-				.sequence = 1
-			},
-			{
-				.file = "Redpark.pk3",
-				.component = "Notepad",
-				.fileName = "Redpark.pk3",
-				.fileSize = 1337,
-				.sequence = 1
-			},
-		};
+				.fileName = shortname + "|" + filename,
+				.fileSize = (int)filesize,
+				.sequence = sequence
+			};
+			files.push_back(std::move(file));
+
+			sequence++;
+		}
 
 		std::vector<MSIMedia> media =
 		{
 			{
 				.diskId = 1,
-				.lastSequence = 1,
-				.cabinet = "cabinet.cab"
+				.lastSequence = (int)programFiles.size(),
+				.cabinet = "#cab1.cab"
 			}
 		};
 
@@ -136,9 +160,9 @@ public:
 			{
 				.shortcut = "sNotepad",
 				.directory = "MENUDIR",
-				.name = "Redpark.exe",
+				.name = "vkdoom.exe",
 				.component = "Notepad",
-				.target = "[#Redpark.exe]"
+				.target = "[#file_1]"
 			}
 		};
 
@@ -172,13 +196,20 @@ public:
 		// Cabinet.cab data stream
 
 		auto cabinetWriter = std::make_unique<CabinetWriter>();
-		cabinetWriter->addFile("Redpark.exe", "c:\\development\\Redpark.exe");
-		cabinetWriter->addFile("Redpark.pk3", "c:\\development\\Redpark.pk3");
+		sequence = 1;
+		for (const std::string& filename : programFiles)
+		{
+			std::string identifier = "file_" + std::to_string(sequence);
+			cabinetWriter->addFile(identifier, FilePath::combine(srcFolder, filename));
+			sequence++;
+		}
 		auto cabfile = cabinetWriter->close();
 		cabinetWriter.reset();
 
-		auto view = db->createView("INSERT INTO `_Storages` (`Name`, `Data`) VALUES(?, ?)", 2);
-		view->setString(0, "Cabinet.cab");
+		// File::writeAllBytes("c:\\development\\test.cab", cabfile);
+
+		auto view = db->createView("INSERT INTO `_Streams` (`Name`, `Data`) VALUES(?, ?)", 2);
+		view->setString(0, "cab1.cab");
 		view->setStream(1, cabfile);
 		view->execute();
 		view.reset();

@@ -61,7 +61,7 @@ public:
 			BOOL result = ReadFile(handle, (uint8_t*)data + pos, (DWORD)readsize, &bytesRead, nullptr);
 			if (result == FALSE)
 				throw std::runtime_error("ReadFile failed");
-			pos += readsize;
+			pos += bytesRead;
 			if (bytesRead != readsize)
 				break;
 		}

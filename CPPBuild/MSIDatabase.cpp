@@ -2,6 +2,7 @@
 #include "Precomp.h"
 #include "MSIDatabase.h"
 #include "IOData/FilePath.h"
+#include "IOData/MemoryDevice.h"
 #include "Guid/Guid.h"
 #include <optional>
 #include <strsafe.h>
@@ -843,20 +844,68 @@ void MSISchema::saveBinaries(const std::string& msi, const std::string& outputFo
 // CabinetWriter
 // 
 // Wow, what a garbage API from Microsoft. Doesn't even do unicode it seems.
+// We are going to pretend the ANSI codepage is CP_UTF8.
 
-static std::string to_ansi(const std::wstring& str)
+struct CabinetWriter::Impl
 {
-	if (str.empty()) return {};
-	int needed = WideCharToMultiByte(CP_ACP, 0, str.data(), (int)str.size(), nullptr, 0, nullptr, nullptr);
-	if (needed == 0)
-		throw std::runtime_error("WideCharToMultiByte failed");
-	std::string result;
-	result.resize(needed);
-	needed = WideCharToMultiByte(CP_ACP, 0, str.data(), (int)str.size(), &result[0], (int)result.size(), nullptr, nullptr);
-	if (needed == 0)
-		throw std::runtime_error("WideCharToMultiByte failed");
-	return result;
-}
+	std::map<std::string, std::shared_ptr<MemoryDevice>> files;
+	int nextTempFilename = 0;
+	std::vector<std::shared_ptr<IODevice>> openFiles;
+
+	INT_PTR openExisting(const char* filename)
+	{
+		auto it = files.find(filename);
+		if (it == files.end())
+			return createFileIndex(File::openExisting(filename));
+		else
+			return createFileIndex(it->second);
+	}
+
+	INT_PTR createAlways(const char* filename)
+	{
+		auto& file = files[filename];
+		file = MemoryDevice::create();
+		return createFileIndex(file);
+	}
+
+	void closeFile(INT_PTR index)
+	{
+		openFiles[index - 1].reset();
+	}
+
+	IODevice* getFile(INT_PTR index)
+	{
+		return openFiles[index - 1].get();
+	}
+
+	INT_PTR createFileIndex(std::shared_ptr<IODevice> file)
+	{
+		for (size_t i = 0; i < openFiles.size(); i++)
+		{
+			if (!openFiles[i])
+			{
+				openFiles[i] = std::move(file);
+				return i + 1;
+			}
+		}
+
+		INT_PTR index = (INT_PTR)openFiles.size();
+		openFiles.push_back(std::move(file));
+		return index + 1;
+	}
+
+	void deleteFile(const char* filename)
+	{
+		auto it = files.find(filename);
+		if (it != files.end())
+			files.erase(it);
+	}
+
+	std::string getTempFilename()
+	{
+		return "tempfile-" + std::to_string(nextTempFilename++) + ".tmp";
+	}
+};
 
 static FNFCIFILEPLACED(fnFilePlaced)
 {
@@ -865,173 +914,119 @@ static FNFCIFILEPLACED(fnFilePlaced)
 
 static FNFCIOPEN(fnFileOpen)
 {
-	HANDLE hFile = NULL;
-	DWORD dwDesiredAccess = 0;
-	DWORD dwCreationDisposition = 0;
-
-	UNREFERENCED_PARAMETER(pv);
 	UNREFERENCED_PARAMETER(pmode);
-
-	if (oflag & _O_RDWR)
+	try
 	{
-		dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+		auto writer = static_cast<CabinetWriter::Impl*>(pv);
+		if (oflag & _O_CREAT)
+			return writer->createAlways(pszFile);
+		else
+			return writer->openExisting(pszFile);
 	}
-	else if (oflag & _O_WRONLY)
+	catch (...)
 	{
-		dwDesiredAccess = GENERIC_WRITE;
+		*err = ERROR_FILE_NOT_FOUND;
+		return -1;
 	}
-	else
-	{
-		dwDesiredAccess = GENERIC_READ;
-	}
-
-	if (oflag & _O_CREAT)
-	{
-		dwCreationDisposition = CREATE_ALWAYS;
-	}
-	else
-	{
-		dwCreationDisposition = OPEN_EXISTING;
-	}
-
-	hFile = CreateFileA(pszFile,
-		dwDesiredAccess,
-		FILE_SHARE_READ,
-		NULL,
-		dwCreationDisposition,
-		FILE_ATTRIBUTE_NORMAL,
-		NULL);
-
-	if (hFile == INVALID_HANDLE_VALUE)
-	{
-		*err = GetLastError();
-	}
-
-	return (INT_PTR)hFile;
 }
 
 static FNFCIREAD(fnFileRead)
 {
-	DWORD dwBytesRead = 0;
-
-	UNREFERENCED_PARAMETER(pv);
-
-	if (ReadFile((HANDLE)hf, memory, cb, &dwBytesRead, NULL) == FALSE)
+	try
 	{
-		dwBytesRead = (DWORD)-1;
-		*err = GetLastError();
+		auto writer = static_cast<CabinetWriter::Impl*>(pv);
+		return (UINT)writer->getFile(hf)->try_read(memory, cb);
 	}
-
-	return dwBytesRead;
+	catch (...)
+	{
+		*err = ERROR_READ_FAULT;
+		return -1;
+	}
 }
 
 static FNFCIWRITE(fnFileWrite)
 {
-	DWORD dwBytesWritten = 0;
-
-	UNREFERENCED_PARAMETER(pv);
-
-	if (WriteFile((HANDLE)hf, memory, cb, &dwBytesWritten, NULL) == FALSE)
+	try
 	{
-		dwBytesWritten = (DWORD)-1;
-		*err = GetLastError();
+		auto writer = static_cast<CabinetWriter::Impl*>(pv);
+		writer->getFile(hf)->write(memory, cb);
+		return cb;
 	}
-
-	return dwBytesWritten;
+	catch (...)
+	{
+		*err = ERROR_WRITE_FAULT;
+		return -1;
+	}
 }
 
 static FNFCICLOSE(fnFileClose)
 {
-	INT iResult = 0;
-
-	UNREFERENCED_PARAMETER(pv);
-
-	if (CloseHandle((HANDLE)hf) == FALSE)
-	{
-		*err = GetLastError();
-		iResult = -1;
-	}
-
-	return iResult;
+	auto writer = static_cast<CabinetWriter::Impl*>(pv);
+	writer->closeFile(hf);
+	return 0;
 }
 
 static FNFCISEEK(fnFileSeek)
 {
-	INT iResult = 0;
-
-	UNREFERENCED_PARAMETER(pv);
-
-	iResult = SetFilePointer((HANDLE)hf, dist, NULL, seektype);
-
-	if (iResult == -1)
+	try
 	{
-		*err = GetLastError();
+		auto writer = static_cast<CabinetWriter::Impl*>(pv);
+		if (seektype == FILE_BEGIN)
+			return (long)writer->getFile(hf)->seek(dist);
+		else if (seektype == FILE_CURRENT)
+			return (long)writer->getFile(hf)->seek_from_current(dist);
+		else if (seektype == FILE_END)
+			return (long)writer->getFile(hf)->seek_from_end(dist);
+		else
+			throw std::runtime_error("Unknown seek value");
 	}
-
-	return iResult;
+	catch (...)
+	{
+		*err = ERROR_SEEK;
+		return -1;
+	}
 }
 
 static FNFCIDELETE(fnFileDelete)
 {
-	INT iResult = 0;
-
-	UNREFERENCED_PARAMETER(pv);
-
-	if (DeleteFileA(pszFile) == FALSE)
-	{
-		*err = GetLastError();
-		iResult = -1;
-	}
-
-	return iResult;
+	*err = ERROR_SUCCESS;
+	auto writer = static_cast<CabinetWriter::Impl*>(pv);
+	writer->deleteFile(pszFile);
+	return 0;
 }
 
 static FNFCIGETTEMPFILE(fnGetTempFileName)
 {
-	BOOL bSucceeded = FALSE;
-	CHAR pszTempPath[MAX_PATH];
-	CHAR pszTempFile[MAX_PATH];
-
-	UNREFERENCED_PARAMETER(pv);
-	UNREFERENCED_PARAMETER(cbTempName);
-
-	if (GetTempPathA(MAX_PATH, pszTempPath) != 0)
-	{
-		if (GetTempFileNameA(pszTempPath, "CABINET", 0, pszTempFile) != 0)
-		{
-			DeleteFileA(pszTempFile);
-			bSucceeded = SUCCEEDED(StringCbCopyA(pszTempName, cbTempName, pszTempFile));
-		}
-	}
-
-	return bSucceeded;
+	auto writer = static_cast<CabinetWriter::Impl*>(pv);
+	std::string filename = writer->getTempFilename();
+	return SUCCEEDED(StringCbCopyA(pszTempName, cbTempName, filename.c_str()));
 }
 
 static FNFCIGETOPENINFO(fnGetOpenInfo)
 {
-	HANDLE hFile;
-	FILETIME fileTime;
-	BY_HANDLE_FILE_INFORMATION fileInfo;
-
-	hFile = (HANDLE)fnFileOpen(pszName, _O_RDONLY, 0, err, pv);
-
-	if (hFile != (HANDLE)-1)
+	HANDLE hFile = CreateFile(to_utf16(pszName).c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, 0);
+	if (hFile == INVALID_HANDLE_VALUE)
 	{
-		if (GetFileInformationByHandle(hFile, &fileInfo)
-			&& FileTimeToLocalFileTime(&fileInfo.ftCreationTime, &fileTime)
-			&& FileTimeToDosDateTime(&fileTime, pdate, ptime))
-		{
-			*pattribs = (USHORT)fileInfo.dwFileAttributes;
-			*pattribs &= (_A_RDONLY | _A_HIDDEN | _A_SYSTEM | _A_ARCH);
-		}
-		else
-		{
-			fnFileClose((INT_PTR)hFile, err, pv);
-			hFile = (HANDLE)-1;
-		}
+		*err = ERROR_FILE_NOT_FOUND;
+		return -1;
 	}
 
-	return (INT_PTR)hFile;
+	FILETIME fileTime;
+	BY_HANDLE_FILE_INFORMATION fileInfo;
+	if (GetFileInformationByHandle(hFile, &fileInfo) && FileTimeToLocalFileTime(&fileInfo.ftCreationTime, &fileTime) && FileTimeToDosDateTime(&fileTime, pdate, ptime))
+	{
+		*pattribs = (USHORT)fileInfo.dwFileAttributes;
+		*pattribs &= (_A_RDONLY | _A_HIDDEN | _A_SYSTEM | _A_ARCH);
+		CloseHandle(hFile);
+	}
+	else
+	{
+		CloseHandle(hFile);
+		*err = ERROR_FILE_NOT_FOUND;
+		return -1;
+	}
+
+	return fnFileOpen(pszName, _O_RDONLY, 0, err, pv);
 }
 
 static FNFCIALLOC(fnMemAlloc)
@@ -1067,30 +1062,31 @@ static FNFCISTATUS(fnStatus)
 	return 0;
 }
 
-CabinetWriter::CabinetWriter()
+CabinetWriter::CabinetWriter() : pimpl(new Impl())
 {
+	/*
 	wchar_t buffer[1024];
 	DWORD result = GetTempPath2(1024, buffer);
 	if (result == 0 || result >= 1024)
 		throw std::runtime_error("GetTempPath2 failed");
-	filename = FilePath::combine(from_utf16(buffer), Guid::makeGuid().toString()) + ".msistream";
+	filename = FilePath::combine(from_utf16(buffer), Guid::makeGuid().toString()) + ".cab";
+	*/
+
+	filename = "__cabinet__.cab";
 
 	std::string tempDisk;
-	std::string tempPath = to_ansi(to_utf16(FilePath::removeLastComponent(filename)));
-	std::string tempFilename = to_ansi(to_utf16(FilePath::lastComponent(filename)));
-
-	if (tempPath.size() > 1 && tempPath[1] == L':')
-	{
-		tempDisk = tempPath.substr(0, 2);
-		tempPath = tempPath.substr(2);
-	}
+	std::string tempPath = FilePath::removeLastComponent(filename);
+	std::string tempFilename = FilePath::lastComponent(filename);
 
 	if (tempDisk.size() >= CB_MAX_DISK_NAME || tempFilename.size() >= CB_MAX_CABINET_NAME || tempPath.size() >= CB_MAX_CAB_PATH)
 		throw std::runtime_error("Filename too long for the cabinet writer");
 
 	CCAB cabinfo = {};
-	cabinfo.cb = sizeof(CCAB);
-	cabinfo.cbFolderThresh = 0xffffffff;
+	cabinfo.cb = 0x7fffffff;
+	cabinfo.cbFolderThresh = 0x7fffffff;
+	cabinfo.setID = 1;
+	cabinfo.iCab = 1;
+	cabinfo.iDisk = 0;
 	strcpy_s(cabinfo.szDisk, tempDisk.c_str());
 	strcpy_s(cabinfo.szCab, tempFilename.c_str());
 	strcpy_s(cabinfo.szCabPath, tempPath.c_str());
@@ -1109,7 +1105,7 @@ CabinetWriter::CabinetWriter()
 		fnFileDelete,
 		fnGetTempFileName,
 		&cabinfo,
-		this);
+		pimpl.get());
 
 	if (!handle)
 	{
@@ -1129,18 +1125,17 @@ CabinetWriter::~CabinetWriter()
 
 void CabinetWriter::addFile(const std::string& filename, const std::string& sourceFile, bool executeFlag)
 {
-	std::string filenameAnsi = to_ansi(to_utf16(filename));
-	std::string sourceFileAnsi = to_ansi(to_utf16(sourceFile));
-
 	BOOL result = FCIAddFile(
 		handle,
-		const_cast<LPSTR>(filenameAnsi.c_str()),
-		const_cast<LPSTR>(sourceFileAnsi.c_str()),
+		const_cast<LPSTR>(sourceFile.c_str()),
+		const_cast<LPSTR>(filename.c_str()),
 		executeFlag ? TRUE : FALSE,
 		fnGetNextCabinet,
 		fnStatus,
 		fnGetOpenInfo,
 		tcompTYPE_MSZIP);
+	if (result == FALSE)
+		throw std::runtime_error("FCIAddFile failed");
 }
 
 std::shared_ptr<DataBuffer> CabinetWriter::close()
@@ -1148,10 +1143,14 @@ std::shared_ptr<DataBuffer> CabinetWriter::close()
 	if (closed)
 		throw std::runtime_error("Cabinet already closed");
 
+	BOOL result = FCIFlushCabinet(handle, FALSE, fnGetNextCabinet, fnStatus);
+	if (result == FALSE)
+		throw std::runtime_error("FCIFlushCabinet failed");
+
 	FCIDestroy(handle);
 	closed = true;
 
-	auto data = File::readAllBytes(filename);
-	File::tryDelete(filename);
-	return data;
+	//auto data = File::readAllBytes(filename);
+	//File::tryDelete(filename);
+	return pimpl->files[filename]->buffer();
 }

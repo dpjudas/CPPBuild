@@ -4,6 +4,9 @@
 #include "IOData/FilePath.h"
 #include "Guid/Guid.h"
 #include <optional>
+#include <strsafe.h>
+#include <io.h>
+#include <fcntl.h>
 
 std::unique_ptr<MSIDatabase> MSIDatabase::createAlways(const std::string& filename)
 {
@@ -834,4 +837,321 @@ void MSISchema::saveBinaries(const std::string& msi, const std::string& outputFo
 		auto data = row->getStream(1);
 		File::writeAllBytes(FilePath::combine(outputFolder, name), data);
 	}
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// CabinetWriter
+// 
+// Wow, what a garbage API from Microsoft. Doesn't even do unicode it seems.
+
+static std::string to_ansi(const std::wstring& str)
+{
+	if (str.empty()) return {};
+	int needed = WideCharToMultiByte(CP_ACP, 0, str.data(), (int)str.size(), nullptr, 0, nullptr, nullptr);
+	if (needed == 0)
+		throw std::runtime_error("WideCharToMultiByte failed");
+	std::string result;
+	result.resize(needed);
+	needed = WideCharToMultiByte(CP_ACP, 0, str.data(), (int)str.size(), &result[0], (int)result.size(), nullptr, nullptr);
+	if (needed == 0)
+		throw std::runtime_error("WideCharToMultiByte failed");
+	return result;
+}
+
+static FNFCIFILEPLACED(fnFilePlaced)
+{
+	return 0;
+}
+
+static FNFCIOPEN(fnFileOpen)
+{
+	HANDLE hFile = NULL;
+	DWORD dwDesiredAccess = 0;
+	DWORD dwCreationDisposition = 0;
+
+	UNREFERENCED_PARAMETER(pv);
+	UNREFERENCED_PARAMETER(pmode);
+
+	if (oflag & _O_RDWR)
+	{
+		dwDesiredAccess = GENERIC_READ | GENERIC_WRITE;
+	}
+	else if (oflag & _O_WRONLY)
+	{
+		dwDesiredAccess = GENERIC_WRITE;
+	}
+	else
+	{
+		dwDesiredAccess = GENERIC_READ;
+	}
+
+	if (oflag & _O_CREAT)
+	{
+		dwCreationDisposition = CREATE_ALWAYS;
+	}
+	else
+	{
+		dwCreationDisposition = OPEN_EXISTING;
+	}
+
+	hFile = CreateFileA(pszFile,
+		dwDesiredAccess,
+		FILE_SHARE_READ,
+		NULL,
+		dwCreationDisposition,
+		FILE_ATTRIBUTE_NORMAL,
+		NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+	{
+		*err = GetLastError();
+	}
+
+	return (INT_PTR)hFile;
+}
+
+static FNFCIREAD(fnFileRead)
+{
+	DWORD dwBytesRead = 0;
+
+	UNREFERENCED_PARAMETER(pv);
+
+	if (ReadFile((HANDLE)hf, memory, cb, &dwBytesRead, NULL) == FALSE)
+	{
+		dwBytesRead = (DWORD)-1;
+		*err = GetLastError();
+	}
+
+	return dwBytesRead;
+}
+
+static FNFCIWRITE(fnFileWrite)
+{
+	DWORD dwBytesWritten = 0;
+
+	UNREFERENCED_PARAMETER(pv);
+
+	if (WriteFile((HANDLE)hf, memory, cb, &dwBytesWritten, NULL) == FALSE)
+	{
+		dwBytesWritten = (DWORD)-1;
+		*err = GetLastError();
+	}
+
+	return dwBytesWritten;
+}
+
+static FNFCICLOSE(fnFileClose)
+{
+	INT iResult = 0;
+
+	UNREFERENCED_PARAMETER(pv);
+
+	if (CloseHandle((HANDLE)hf) == FALSE)
+	{
+		*err = GetLastError();
+		iResult = -1;
+	}
+
+	return iResult;
+}
+
+static FNFCISEEK(fnFileSeek)
+{
+	INT iResult = 0;
+
+	UNREFERENCED_PARAMETER(pv);
+
+	iResult = SetFilePointer((HANDLE)hf, dist, NULL, seektype);
+
+	if (iResult == -1)
+	{
+		*err = GetLastError();
+	}
+
+	return iResult;
+}
+
+static FNFCIDELETE(fnFileDelete)
+{
+	INT iResult = 0;
+
+	UNREFERENCED_PARAMETER(pv);
+
+	if (DeleteFileA(pszFile) == FALSE)
+	{
+		*err = GetLastError();
+		iResult = -1;
+	}
+
+	return iResult;
+}
+
+static FNFCIGETTEMPFILE(fnGetTempFileName)
+{
+	BOOL bSucceeded = FALSE;
+	CHAR pszTempPath[MAX_PATH];
+	CHAR pszTempFile[MAX_PATH];
+
+	UNREFERENCED_PARAMETER(pv);
+	UNREFERENCED_PARAMETER(cbTempName);
+
+	if (GetTempPathA(MAX_PATH, pszTempPath) != 0)
+	{
+		if (GetTempFileNameA(pszTempPath, "CABINET", 0, pszTempFile) != 0)
+		{
+			DeleteFileA(pszTempFile);
+			bSucceeded = SUCCEEDED(StringCbCopyA(pszTempName, cbTempName, pszTempFile));
+		}
+	}
+
+	return bSucceeded;
+}
+
+static FNFCIGETOPENINFO(fnGetOpenInfo)
+{
+	HANDLE hFile;
+	FILETIME fileTime;
+	BY_HANDLE_FILE_INFORMATION fileInfo;
+
+	hFile = (HANDLE)fnFileOpen(pszName, _O_RDONLY, 0, err, pv);
+
+	if (hFile != (HANDLE)-1)
+	{
+		if (GetFileInformationByHandle(hFile, &fileInfo)
+			&& FileTimeToLocalFileTime(&fileInfo.ftCreationTime, &fileTime)
+			&& FileTimeToDosDateTime(&fileTime, pdate, ptime))
+		{
+			*pattribs = (USHORT)fileInfo.dwFileAttributes;
+			*pattribs &= (_A_RDONLY | _A_HIDDEN | _A_SYSTEM | _A_ARCH);
+		}
+		else
+		{
+			fnFileClose((INT_PTR)hFile, err, pv);
+			hFile = (HANDLE)-1;
+		}
+	}
+
+	return (INT_PTR)hFile;
+}
+
+static FNFCIALLOC(fnMemAlloc)
+{
+	return malloc(cb);
+}
+
+static FNFCIFREE(fnMemFree)
+{
+	free(memory);
+}
+
+static FNFCIGETNEXTCABINET(fnGetNextCabinet)
+{
+	return FALSE;
+	/*
+	HRESULT hr;
+
+	UNREFERENCED_PARAMETER(pv);
+	UNREFERENCED_PARAMETER(cbPrevCab);
+
+	hr = StringCchPrintfA(pccab->szCab,
+		ARRAYSIZE(pccab->szCab),
+		"FCISample%02d.cab",
+		pccab->iCab);
+
+	return (SUCCEEDED(hr));
+	*/
+}
+
+static FNFCISTATUS(fnStatus)
+{
+	return 0;
+}
+
+CabinetWriter::CabinetWriter()
+{
+	wchar_t buffer[1024];
+	DWORD result = GetTempPath2(1024, buffer);
+	if (result == 0 || result >= 1024)
+		throw std::runtime_error("GetTempPath2 failed");
+	filename = FilePath::combine(from_utf16(buffer), Guid::makeGuid().toString()) + ".msistream";
+
+	std::string tempDisk;
+	std::string tempPath = to_ansi(to_utf16(FilePath::removeLastComponent(filename)));
+	std::string tempFilename = to_ansi(to_utf16(FilePath::lastComponent(filename)));
+
+	if (tempPath.size() > 1 && tempPath[1] == L':')
+	{
+		tempDisk = tempPath.substr(0, 2);
+		tempPath = tempPath.substr(2);
+	}
+
+	if (tempDisk.size() >= CB_MAX_DISK_NAME || tempFilename.size() >= CB_MAX_CABINET_NAME || tempPath.size() >= CB_MAX_CAB_PATH)
+		throw std::runtime_error("Filename too long for the cabinet writer");
+
+	CCAB cabinfo = {};
+	cabinfo.cb = sizeof(CCAB);
+	cabinfo.cbFolderThresh = 0xffffffff;
+	strcpy_s(cabinfo.szDisk, tempDisk.c_str());
+	strcpy_s(cabinfo.szCab, tempFilename.c_str());
+	strcpy_s(cabinfo.szCabPath, tempPath.c_str());
+
+	ERF errorInfo = {};
+	handle = FCICreate(
+		&errorInfo,
+		fnFilePlaced,
+		fnMemAlloc,
+		fnMemFree,
+		fnFileOpen,
+		fnFileRead,
+		fnFileWrite,
+		fnFileClose,
+		fnFileSeek,
+		fnFileDelete,
+		fnGetTempFileName,
+		&cabinfo,
+		this);
+
+	if (!handle)
+	{
+		File::tryDelete(filename);
+		throw std::runtime_error("FCICreate failed");
+	}
+}
+
+CabinetWriter::~CabinetWriter()
+{
+	if (!closed)
+	{
+		FCIDestroy(handle);
+		File::tryDelete(filename);
+	}
+}
+
+void CabinetWriter::addFile(const std::string& filename, const std::string& sourceFile, bool executeFlag)
+{
+	std::string filenameAnsi = to_ansi(to_utf16(filename));
+	std::string sourceFileAnsi = to_ansi(to_utf16(sourceFile));
+
+	BOOL result = FCIAddFile(
+		handle,
+		const_cast<LPSTR>(filenameAnsi.c_str()),
+		const_cast<LPSTR>(sourceFileAnsi.c_str()),
+		executeFlag ? TRUE : FALSE,
+		fnGetNextCabinet,
+		fnStatus,
+		fnGetOpenInfo,
+		tcompTYPE_MSZIP);
+}
+
+std::shared_ptr<DataBuffer> CabinetWriter::close()
+{
+	if (closed)
+		throw std::runtime_error("Cabinet already closed");
+
+	FCIDestroy(handle);
+	closed = true;
+
+	auto data = File::readAllBytes(filename);
+	File::tryDelete(filename);
+	return data;
 }

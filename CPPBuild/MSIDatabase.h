@@ -8,8 +8,10 @@
 #define NOMINMAX
 #include <Windows.h>
 #include <MsiQuery.h>
+#include <fci.h>
 
 #pragma comment(lib, "Msi.lib")
+#pragma comment(lib, "Cabinet.lib")
 
 class MSIColumnInfo;
 class MSIDatabaseView;
@@ -156,4 +158,19 @@ public:
 
 	std::string filename;
 	std::shared_ptr<DataBuffer> data;
+};
+
+class CabinetWriter
+{
+public:
+	CabinetWriter();
+	~CabinetWriter();
+
+	void addFile(const std::string& filename, const std::string& sourceFile, bool executeFlag = false);
+	std::shared_ptr<DataBuffer> close();
+
+private:
+	HFCI handle = {};
+	bool closed = false;
+	std::string filename;
 };

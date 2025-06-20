@@ -169,6 +169,20 @@ public:
 		db->createTable(shortcuts);
 		db->createTable(properties);
 
+		// Cabinet.cab data stream
+
+		auto cabinetWriter = std::make_unique<CabinetWriter>();
+		cabinetWriter->addFile("Redpark.exe", "c:\\development\\Redpark.exe");
+		cabinetWriter->addFile("Redpark.pk3", "c:\\development\\Redpark.pk3");
+		auto cabfile = cabinetWriter->close();
+		cabinetWriter.reset();
+
+		auto view = db->createView("INSERT INTO `_Storages` (`Name`, `Data`) VALUES(?, ?)", 2);
+		view->setString(0, "Cabinet.cab");
+		view->setStream(1, cabfile);
+		view->execute();
+		view.reset();
+
 		// Summary Information Stream
 
 		auto summaryInfo = db->getSummaryInfo(12);

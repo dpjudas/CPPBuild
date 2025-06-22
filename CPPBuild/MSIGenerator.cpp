@@ -17,7 +17,7 @@
 class MSIGeneratorImpl : public MSIGenerator
 {
 public:
-	void generate() override
+	void generate(const InstallerDefinition& installerDef) override
 	{
 #if 0
 		MSISchema::saveBinaries("C:\\Development\\UISample.Msi", "C:\\Development\\UISampleBinaries");
@@ -26,13 +26,19 @@ public:
 #elif 0
 		File::writeAllText("C:\\Development\\CPPBuild\\CPPBuild\\MSISchema.h", MSISchema::generateCode("C:\\Development\\Schema.Msi"));
 #else
-		std::string productName = "MNP2000";
-		std::string productVersion = "01.40.0000";
-		std::string manufacturer = "CPPBuild";
-		std::string productCode = "{BDEAD587-1A5D-4547-BE94-DED150E3E088}";
-		std::string upgradeCode = "{4D1FB718-DD8F-40E7-BAE5-443DB0E01627}";
-		std::string packageCode = "{F50595D3-DEBF-4906-AF02-99DE0659D3F7}";
-		std::string productKeywords = "Installer,MNP2000,CPPBuild";
+		std::string productName = installerDef.msiProductName;
+		std::string productVersion = installerDef.msiProductVersion;
+		std::string manufacturer = installerDef.msiManufacturer;
+		std::string productCode = installerDef.msiProductCode;
+		std::string upgradeCode = installerDef.msiUpgradeCode;
+		std::string packageCode = installerDef.msiPackageCode;
+		std::string productKeywords;
+		for (const auto& keyword : installerDef.msiProductKeywords)
+		{
+			if (!productKeywords.empty())
+				productKeywords.push_back(',');
+			productKeywords += keyword;
+		}
 		int productLanguage = 1033;
 		int installerVersion = 500; // Windows Installer 5.0; Windows 7 and newer
 
@@ -205,8 +211,6 @@ public:
 		}
 		auto cabfile = cabinetWriter->close();
 		cabinetWriter.reset();
-
-		// File::writeAllBytes("c:\\development\\test.cab", cabfile);
 
 		auto view = db->createView("INSERT INTO `_Streams` (`Name`, `Data`) VALUES(?, ?)", 2);
 		view->setString(0, "cab1.cab");

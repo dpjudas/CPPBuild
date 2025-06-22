@@ -380,6 +380,43 @@ void CPPBuild::rebuild(std::string target, std::string configuration)
 
 void CPPBuild::createInstaller()
 {
+	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
+
 	auto msi = MSIGenerator::create();
-	msi->generate();
+	for (const JsonValue& defJson : config["installers"].items())
+	{
+		InstallerDefinition def;
+		def.name = defJson["name"].to_string();
+		def.msiProductName = defJson["msiProductName"].to_string();
+		def.msiProductVersion = defJson["msiProductVersion"].to_string();
+		def.msiManufacturer = defJson["msiManufacturer"].to_string();
+		def.msiProductCode = defJson["msiProductCode"].to_string();
+		def.msiUpgradeCode = defJson["msiUpgradeCode"].to_string();
+		def.msiPackageCode = defJson["msiPackageCode"].to_string();
+
+		for (const JsonValue& keywordJson : defJson["msiProductKeywords"].items())
+		{
+			def.msiProductKeywords.push_back(keywordJson.to_string());
+		}
+
+		for (const JsonValue& defComponentJson : defJson["components"].items())
+		{
+			InstallerComponent component;
+			component.name = defComponentJson["name"].to_string();
+			for (const JsonValue& file : defComponentJson["files"].items())
+				component.files.push_back(file.to_string());
+			def.components.push_back(std::move(component));
+		}
+
+		for (const JsonValue& defFeatureJson : defJson["features"].items())
+		{
+			InstallerFeature feature;
+			feature.name = defFeatureJson["name"].to_string();
+			for (const JsonValue& file : defFeatureJson["components"].items())
+				feature.components.push_back(file.to_string());
+			def.features.push_back(std::move(feature));
+		}
+
+		msi->generate(def);
+	}
 }

@@ -391,7 +391,12 @@ class InstallerComponent
 {
 	constructor(name) {
 		this.name = name;
+		this.msiComponentId = "";
 		this.files = [];
+	}
+
+	setMsiComponentId(id) {
+		this.msiComponentId = id;
 	}
 
 	addFiles(files) {
@@ -406,6 +411,7 @@ class InstallerComponent
 	toInstallerDefinition() {
 		return {
 			name: this.name,
+			msiComponentId: this.msiComponentId,
 			files: this.files
 		};
 	}

@@ -17,7 +17,7 @@
 class MSIGeneratorImpl : public MSIGenerator
 {
 public:
-	void generate(const InstallerDefinition& installerDef) override
+	void generate(const std::string& binDir, const std::string& sourcePath, const InstallerDefinition& installerDef) override
 	{
 #if 0
 		MSISchema::saveBinaries("C:\\Development\\UISample.Msi", "C:\\Development\\UISampleBinaries");
@@ -46,25 +46,7 @@ public:
 		if (FAILED(result))
 			throw std::runtime_error("CoInitializeEx(COINIT_APARTMENTTHREADED) failed");
 
-		std::string filename = "C:\\Development\\test.msi";
-
-		std::string srcFolder = "C:\\Development\\VkDoom\\build\\RelWithDebInfo";
-		std::vector<std::string> programFiles =
-		{
-			"vkdoom.exe",
-			//"vkdoom.pdb",
-			"vkdoom.pk3",
-			"vktool.exe",
-			//"vktool.pdb",
-			"zmusic.dll",
-			"openal32.dll",
-			"lights.pk3",
-			//"licenses.zip",
-			"libsndfile-1.dll",
-			"game_widescreen_gfx.pk3",
-			"game_support.pk3",
-			"brightmaps.pk3"
-		};
+		std::string filename = FilePath::combine(binDir, installerDef.name + ".msi");
 
 		std::vector<MSIDirectory> directory =
 		{
@@ -80,75 +62,83 @@ public:
 		// const int msidbComponentAttributesRegistryKeyPath = 4;
 		const int msidbComponentAttributes64bit = 256;
 
-		std::vector<MSIComponent> components =
+		std::vector<MSIComponent> components;
+		std::vector<std::string> cabFiles;
+		std::vector<MSIFile> files;
+		int sequence = 1;
+		for (const InstallerComponent& component : installerDef.components)
 		{
-			{
-				.component = "Notepad",
-				.componentId = "{5606A45C-E07F-45C8-9EC9-D1E0224F58C1}",
+			components.push_back({
+				.component = component.name,
+				.componentId = component.msiComponentId,
 				.directory = "INSTALLDIR",
 				.attributes = msidbComponentAttributesLocalOnly | msidbComponentAttributes64bit,
 				.keyPath = "file_1"
-			}
-		};
+				});
 
-		std::vector<MSIFile> files;
-		int sequence = 1;
-		for (const std::string& filename : programFiles)
-		{
-			size_t filesize = File::openExisting(FilePath::combine(srcFolder, filename))->size();
-			if (filesize > 0x7fffffff)
-				throw std::runtime_error("File too large");
-
-			std::string shortname = "aa" + std::to_string(sequence) + "." + FilePath::extension(filename);
-			std::string identifier = "file_" + std::to_string(sequence);
-
-			MSIFile file =
+			for (const std::string& filename : component.files)
 			{
-				.file = identifier,
-				.component = "Notepad",
-				.fileName = shortname + "|" + filename,
-				.fileSize = (int)filesize,
-				.sequence = sequence
-			};
-			files.push_back(std::move(file));
+				size_t filesize = File::openExisting(FilePath::combine(sourcePath, filename))->size();
+				if (filesize > 0x7fffffff)
+					throw std::runtime_error("File too large");
 
-			sequence++;
+				std::string shortname = "aa" + std::to_string(sequence) + "." + FilePath::extension(filename);
+				std::string identifier = "file_" + std::to_string(sequence);
+
+				MSIFile file =
+				{
+					.file = identifier,
+					.component = component.name,
+					.fileName = shortname + "|" + filename,
+					.fileSize = (int)filesize,
+					.sequence = sequence
+				};
+
+				files.push_back(std::move(file));
+				cabFiles.push_back(filename);
+				sequence++;
+			}
 		}
 
 		std::vector<MSIMedia> media =
 		{
 			{
 				.diskId = 1,
-				.lastSequence = (int)programFiles.size(),
+				.lastSequence = (int)cabFiles.size(),
 				.cabinet = "#cab1.cab"
 			}
 		};
 
-		std::vector<MSIFeature> features =
+		std::vector<MSIFeature> features;
+		for (const InstallerFeature& feature : installerDef.features)
 		{
-			{
-				.feature = "Notepad",
-				.title = "Notepad",
-				.description = "Notepad Editor",
+			features.push_back({
+				.feature = feature.name,
+				.title = feature.name,
+				.description = feature.name,
 				.display = 1 /* sort order + odd value = expanded node, even value = collapsed */,
 				.level = 3 /* install level is used for Custom, Typical, Minimum style selection */,
 				.directory = "INSTALLDIR",
 				.attributes = 0
-			}
-		};
+				});
+		}
 
 		// "Each Windows Installer Feature uses one or more Windows Installer Components, and features may share components"
 
-		std::vector<MSIFeatureComponents> featureComponents =
+		std::vector<MSIFeatureComponents> featureComponents;
+		for (const InstallerFeature& feature : installerDef.features)
 		{
+			for (const std::string& component : feature.components)
 			{
-				.feature = "Notepad",
-				.component = "Notepad"
+				featureComponents.push_back({ .feature = feature.name, .component = component });
 			}
-		};
+		}
 
 		const int msidbRegistryRootLocalMachine = 2;
 
+		std::vector<MSIRegistry> registry;
+		std::vector<MSIShortcut> shortcuts;
+#if 0
 		std::vector<MSIRegistry> registry =
 		{
 			{
@@ -171,6 +161,7 @@ public:
 				.target = "[#file_1]"
 			}
 		};
+#endif
 
 		std::vector<MSIProperty> properties =
 		{
@@ -203,10 +194,10 @@ public:
 
 		auto cabinetWriter = std::make_unique<CabinetWriter>();
 		sequence = 1;
-		for (const std::string& filename : programFiles)
+		for (const std::string& filename : cabFiles)
 		{
 			std::string identifier = "file_" + std::to_string(sequence);
-			cabinetWriter->addFile(identifier, FilePath::combine(srcFolder, filename));
+			cabinetWriter->addFile(identifier, FilePath::combine(sourcePath, filename));
 			sequence++;
 		}
 		auto cabfile = cabinetWriter->close();

@@ -382,9 +382,14 @@ void CPPBuild::createInstaller()
 {
 	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
 
+	std::string binDir = FilePath::combine(workDir, { "Build", "Installer" });
+	Directory::create(binDir);
+
 	auto msi = MSIGenerator::create();
 	for (const JsonValue& defJson : config["installers"].items())
 	{
+		std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), defJson["subdirectory"].to_string());
+
 		InstallerDefinition def;
 		def.name = defJson["name"].to_string();
 		def.msiProductName = defJson["msiProductName"].to_string();
@@ -403,6 +408,7 @@ void CPPBuild::createInstaller()
 		{
 			InstallerComponent component;
 			component.name = defComponentJson["name"].to_string();
+			component.msiComponentId = defComponentJson["msiComponentId"].to_string();
 			for (const JsonValue& file : defComponentJson["files"].items())
 				component.files.push_back(file.to_string());
 			def.components.push_back(std::move(component));
@@ -417,6 +423,6 @@ void CPPBuild::createInstaller()
 			def.features.push_back(std::move(feature));
 		}
 
-		msi->generate(def);
+		msi->generate(binDir, sourcePath, def);
 	}
 }

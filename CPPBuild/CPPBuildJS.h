@@ -314,6 +314,7 @@ class Installer
 	constructor(subdirectory, name) {
 		this.subdirectory = subdirectory;
 		this.name = name;
+		this.installDir = name;
 		this.components = [];
 		this.features = [];
 		this.msiProductName = name;
@@ -323,6 +324,10 @@ class Installer
 		this.msiUpgradeCode = "";
 		this.msiPackageCode = "";
 		this.msiProductKeywords = [ "Installer" ];
+	}
+
+	setInstallDir(path) {
+		this.installDir = path;
 	}
 
 	setMsiProductName(name) {
@@ -374,6 +379,7 @@ class Installer
 		return {
 			subdirectory: this.subdirectory,
 			name: this.name,
+			installDir: this.installDir,
 			components: this.components.map(function(component) { return component.toInstallerDefinition(); }),
 			features: this.features.map(function(feature) { return feature.toInstallerDefinition(); }),
 			msiProductName: this.msiProductName,
@@ -435,6 +441,7 @@ class InstallerFeature
 
 	toInstallerDefinition() {
 		return {
+			name: this.name,
 			components: this.components.map(function(component) { return component.name; })
 		};
 	}

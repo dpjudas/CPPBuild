@@ -19,6 +19,7 @@ class InstallerDefinition
 {
 public:
 	std::string name;
+	std::string installDir;
 	std::string msiProductName;
 	std::string msiProductVersion;
 	std::string msiManufacturer;

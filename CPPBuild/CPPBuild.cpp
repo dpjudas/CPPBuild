@@ -32,7 +32,8 @@ void CPPBuild::configure(std::string sourcePath)
 	Directory::trySetHidden(cppbuildDir);
 	File::writeAllText(FilePath::combine(cppbuildDir, "config.json"), config.to_json());
 
-	generateWorkspace();
+	if (!config["project"]["targets"].items().empty())
+		generateWorkspace();
 }
 
 void CPPBuild::updateMakefile()
@@ -79,11 +80,17 @@ void CPPBuild::validateConfig(const JsonValue& config)
 	if (name.empty())
 		throw std::runtime_error("No project name specified");
 
-	if (config["project"]["configurations"].items().empty())
-		throw std::runtime_error("No targets specified");
+	if (!config["project"]["installers"].items().empty())
+	{
+		return;
+	}
+	if (!config["project"]["targets"].items().empty())
+	{
+		if (config["project"]["configurations"].items().empty())
+			throw std::runtime_error("No configurations specified");
+	}
 
-	if (config["project"]["targets"].items().empty())
-		throw std::runtime_error("No targets specified");
+	throw std::runtime_error("No targets or installers specified");
 }
 
 JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
@@ -386,12 +393,13 @@ void CPPBuild::createInstaller()
 	Directory::create(binDir);
 
 	auto msi = MSIGenerator::create();
-	for (const JsonValue& defJson : config["installers"].items())
+	for (const JsonValue& defJson : config["project"]["installers"].items())
 	{
 		std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), defJson["subdirectory"].to_string());
 
 		InstallerDefinition def;
 		def.name = defJson["name"].to_string();
+		def.installDir = defJson["installDir"].to_string();
 		def.msiProductName = defJson["msiProductName"].to_string();
 		def.msiProductVersion = defJson["msiProductVersion"].to_string();
 		def.msiManufacturer = defJson["msiManufacturer"].to_string();

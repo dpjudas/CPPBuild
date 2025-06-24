@@ -52,8 +52,8 @@ public:
 		{
 			{ "TARGETDIR", "", "SourceDir" },
 			{ "ProgramFiles64Folder", "TARGETDIR", "." },
+			{ "INSTALLDIR", "ProgramFiles64Folder", installerDef.installDir },
 			{ "MENUDIR", "INSTALLDIR", "Menu" },
-			{ "INSTALLDIR", "ProgramFiles64Folder", "Red_Park:Notepad" }
 		};
 
 		const int msidbComponentAttributesLocalOnly = 0;

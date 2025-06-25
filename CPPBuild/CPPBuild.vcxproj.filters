@@ -52,12 +52,111 @@
     <ClCompile Include="Guid\Guid.cpp">
       <Filter>Guid</Filter>
     </ClCompile>
-    <ClCompile Include="MSIGenerator.cpp" />
-    <ClCompile Include="MSIDatabase.cpp" />
     <ClCompile Include="Base64\Base64.cpp">
       <Filter>Base64</Filter>
     </ClCompile>
-    <ClCompile Include="MSIDialog.cpp" />
+    <ClCompile Include="Msi\MSIDatabase.cpp">
+      <Filter>Msi</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\MSIGenerator.cpp">
+      <Filter>Msi</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\MSIDialog.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\AdminWelcomeDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\ExitDialog.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\FatalError.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\PrepareDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\ProgressDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\UserExit.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\AdminBrowseDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\AdminInstallPointDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\AdminRegistrationDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\BrowseDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\CancelDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\CustomizeDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\DiskCostDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\ErrorDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\FilesInUse.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\LicenseAgreementDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\MaintenanceTypeDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\MaintenanceWelcomeDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\MsiRMFilesInUse.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\OutOfDiskDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\OutOfRbDiskDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\ResumeDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\SetupTypeDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\UserRegistrationDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\VerifyReadyDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\VerifyRemoveDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\VerifyRepairDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\WaitForCostingDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\WelcomeDlg.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\Dialogs\WelcomeDlgLink.cpp">
+      <Filter>Msi\Dialogs</Filter>
+    </ClCompile>
+    <ClCompile Include="Msi\MSISequence.cpp">
+      <Filter>Msi</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -120,13 +219,113 @@
     <ClInclude Include="Guid\Guid.h">
       <Filter>Guid</Filter>
     </ClInclude>
-    <ClInclude Include="MSIGenerator.h" />
-    <ClInclude Include="MSIDatabase.h" />
-    <ClInclude Include="MSISchema.h" />
-    <ClInclude Include="MSIDialog.h" />
-    <ClInclude Include="MSISequence.h" />
     <ClInclude Include="Base64\Base64.h">
       <Filter>Base64</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\MSIDatabase.h">
+      <Filter>Msi</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\MSIGenerator.h">
+      <Filter>Msi</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\MSISchema.h">
+      <Filter>Msi</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\MSISequence.h">
+      <Filter>Msi</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\MSIDialog.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\AdminWelcomeDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\ExitDialog.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\FatalError.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\PrepareDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\ProgressDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\UserExit.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\AdminBrowseDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\AdminInstallPointDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\AdminRegistrationDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\BrowseDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\CancelDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\CustomizeDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\DiskCostDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\ErrorDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\FilesInUse.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\LicenseAgreementDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\MaintenanceTypeDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\MaintenanceWelcomeDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\MsiRMFilesInUse.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\OutOfDiskDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\OutOfRbDiskDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\ResumeDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\SetupTypeDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\UserRegistrationDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\VerifyReadyDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\VerifyRemoveDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\VerifyRepairDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\WaitForCostingDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\WelcomeDlg.h">
+      <Filter>Msi\Dialogs</Filter>
+    </ClInclude>
+    <ClInclude Include="Msi\Dialogs\WelcomeDlgLink.h">
+      <Filter>Msi\Dialogs</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -150,6 +349,12 @@
     </Filter>
     <Filter Include="Base64">
       <UniqueIdentifier>{039aa25b-506f-4e11-942e-d21ec92251ec}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Msi">
+      <UniqueIdentifier>{af1ef40c-4dfd-434b-81ce-3e5ee6b584f3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Msi\Dialogs">
+      <UniqueIdentifier>{40a03b56-46ad-460c-8ad9-db6f23871a1c}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

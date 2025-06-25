@@ -192,6 +192,7 @@ class Project
 class File
 {
 	static readAllText(filename) {
+		return native.readAllText(filename);
 	}
 
 	static readAllJson(filename) {
@@ -199,9 +200,11 @@ class File
 	}
 
 	static readAllBytes(filename) {
+		return native.readAllBytes(filename);
 	}
 
 	static writeAllText(filename, text) {
+		native.writeAllText(filename, text);
 	}
 
 	static writeAllJson(filename, obj) {
@@ -209,6 +212,7 @@ class File
 	}
 
 	static writeAllBytes(filename, bytes) {
+		native.writeAllBytes(filename, bytes);
 	}
 }
 

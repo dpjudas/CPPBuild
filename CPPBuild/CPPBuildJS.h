@@ -332,63 +332,66 @@ class FilePath
 class Directory
 {
 	static files(filename) {
-		return [];
+		return native.getFiles(filename);
 	}
 
 	static folders(filename) {
-		return [];
+		return native.getFolders(filename);
 	}
 
 	static projectPath() {
+		return native.subdirectory;
 	}
 
 	static create(path) {
+		return native.createDirectory(path);
 	}
 }
 
 class Environment
 {
 	static getVariable(name) {
+		return native.getEnvironmentVar(name);
 	}
 
 	static isMSVC() {
-		return true;
+		return native.environmentMsvc;
 	}
 
 	static isClang() {
-		return false;
+		return native.environmentClang;
 	}
 
 	static isGCC() {
-		return false;
+		return native.environmentGCC;
 	}
 
 	static isWindows() {
-		return true;
+		return native.environmentWindows;
 	}
 
 	static isUnix() {
-		return false;
+		return native.environmentUnix;
 	}
 
 	static isApple() {
-		return false;
+		return native.environmentApple;
 	}
 
 	static isX86() {
-		return false;
+		return native.environmentX86;
 	}
 
 	static isX64() {
-		return true;
+		return native.environmentX64;
 	}
 
 	static isARM32() {
-		return false;
+		return native.environmentARM32;
 	}
 
 	static isARM64() {
-		return false;
+		return native.environmentARM64;
 	}
 }
 

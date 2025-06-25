@@ -3,6 +3,7 @@
 #include "ScriptContext.h"
 #include "IOData/File.h"
 #include "IOData/FilePath.h"
+#include "IOData/Directory.h"
 #include "CPPBuildJS.h"
 
 ScriptContext::ScriptContext(const std::string& sourcePath) : sourcePath(sourcePath)
@@ -25,6 +26,24 @@ ScriptContext::ScriptContext(const std::string& sourcePath) : sourcePath(sourceP
 	native = ScriptValue(context, JS_NewObject(context));
 	native.setPropertyStr("addSubdirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::addSubdirectory, "addSubdirectory", 1)));
 	native.setPropertyStr("subdirectory", ScriptValue(context, JS_NewString(context, "")));
+	native.setPropertyStr("getEnvironmentVar", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getEnvironmentVar, "getEnvironmentVar", 1)));
+	native.setPropertyStr("environmentMsvc", ScriptValue(context, JS_NewBool(context, true)));
+	native.setPropertyStr("environmentClang", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentGCC", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentWindows", ScriptValue(context, JS_NewBool(context, true)));
+	native.setPropertyStr("environmentUnix", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentApple", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentX86", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentX64", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentARM32", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentARM64", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("createDirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::createDirectory, "createDirectory", 1)));
+	native.setPropertyStr("getFiles", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFiles, "getFiles", 1)));
+	native.setPropertyStr("getFolders", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFolders, "getFolders", 1)));
+	native.setPropertyStr("readAllText", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::readAllText, "readAllText", 1)));
+	native.setPropertyStr("readAllBytes", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::readAllBytes, "readAllBytes", 1)));
+	native.setPropertyStr("writeAllText", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::writeAllText, "writeAllText", 2)));
+	native.setPropertyStr("writeAllBytes", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::writeAllBytes, "writeAllBytes", 2)));
 }
 
 ScriptContext::~ScriptContext()
@@ -77,6 +96,169 @@ JSValue ScriptContext::addSubdirectory(JSContext* ctx, JSValueConst this_val, in
 	}
 
 	return JS_UNDEFINED;
+}
+
+JSValue ScriptContext::getEnvironmentVar(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1 || !JS_IsString(argv[0]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to Environment.getVariable"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		#ifdef _MSC_VER
+		#pragma warning(push)
+		#pragma warning(disable: 4996) // C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead
+		#endif
+		std::string value = std::getenv(arg0.toString().c_str());
+		#ifdef _MSC_VER
+		#pragma warning(pop)
+		#endif
+		return JS_NewString(ctx, value.c_str());
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::createDirectory(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1 || !JS_IsString(argv[0]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to Directory.create"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		Directory::create(arg0.toString().c_str());
+		return JS_UNDEFINED;
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::getFiles(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1 || !JS_IsString(argv[0]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to Directory.files"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		auto files = Directory::files(arg0.toString());
+		// To do: add files to js array
+		return JS_NewArray(ctx);
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::getFolders(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1 || !JS_IsString(argv[0]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to Directory.folders"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		auto folders = Directory::folders(arg0.toString());
+		// To do: add folders to js array
+		return JS_NewArray(ctx);
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::readAllText(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1 || !JS_IsString(argv[0]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to File.readAllText"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		std::string text = File::readAllText(arg0.toString());
+		return JS_NewString(ctx, text.c_str());
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::readAllBytes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1 || !JS_IsString(argv[0]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to File.readAllBytes"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		auto data = File::readAllBytes(arg0.toString());
+		return JS_NewArrayBufferCopy(ctx, data->data<uint8_t>(), data->size());
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::writeAllText(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 2 || !JS_IsString(argv[0]) || !JS_IsString(argv[1]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to File.writeAllText"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptValueConst arg1(ctx, argv[1]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		File::writeAllText(arg0.toString(), arg1.toString());
+		return JS_UNDEFINED;
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::writeAllBytes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 2 || !JS_IsString(argv[0]) || !JS_IsArrayBuffer(argv[1]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to File.writeAllBytes"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptValueConst arg1(ctx, argv[1]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		File::writeAllBytes(arg0.toString(), arg1.toBuffer());
+		return JS_UNDEFINED;
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
 }
 
 ScriptValue ScriptContext::eval(const std::string& code, const std::string& filename, int flags)

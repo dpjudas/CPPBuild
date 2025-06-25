@@ -1,6 +1,7 @@
 #pragma once
 
 #include "quickjs.h"
+#include "IOData/DataBuffer.h"
 
 class ScriptValue
 {
@@ -202,6 +203,13 @@ public:
 		if (strData)
 			JS_FreeCString(context, strData);
 		return str;
+	}
+
+	std::shared_ptr<DataBuffer> toBuffer() const
+	{
+		size_t size = 0;
+		uint8_t* data = JS_GetArrayBuffer(context, &size, value);
+		return DataBuffer::create(data, size);
 	}
 
 	bool isException() const

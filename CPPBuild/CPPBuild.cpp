@@ -56,8 +56,8 @@ void CPPBuild::checkMakefile(std::string target, std::string configuration)
 			std::string projectName = targetDef["name"].to_string();
 			std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
 
-			// To do: need to check all files that CPPBuild.js included
-			int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(sourcePath, "CPPBuild.js"));
+			// To do: need to check all files that Configure.js included
+			int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(sourcePath, "Configure.js"));
 			if (makefileTime < srcFileTime)
 			{
 				needsUpdate = true;
@@ -95,7 +95,7 @@ void CPPBuild::validateConfig(const JsonValue& config)
 
 JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
 {
-	std::string scriptFilename = FilePath::combine(sourcePath, "CPPBuild.js");
+	std::string scriptFilename = FilePath::combine(sourcePath, "Configure.js");
 	std::string configureScript = File::readAllText(scriptFilename);
 
 	ScriptContext context(sourcePath);
@@ -212,7 +212,7 @@ void CPPBuild::generateWorkspace()
 			}
 
 			std::string name = FilePath::combine(sourcePath, item.to_string());
-			if (!isMakefileProject && customBuildFile.empty() && FilePath::lastComponent(name) == "CPPBuild.js")
+			if (!isMakefileProject && customBuildFile.empty() && FilePath::lastComponent(name) == "Configure.js")
 			{
 				customBuildFile = name;
 				if (filter)

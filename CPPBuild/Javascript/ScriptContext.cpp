@@ -79,7 +79,7 @@ JSValue ScriptContext::addSubdirectory(JSContext* ctx, JSValueConst this_val, in
 		std::string newpath = FilePath::combine(current, arg0.toString());
 		context->native.setPropertyStr("subdirectory", ScriptValue(ctx, JS_NewString(ctx, newpath.c_str())));
 
-		std::string scriptFilename = FilePath::combine(context->sourcePath, { newpath, "CPPBuild.js" });
+		std::string scriptFilename = FilePath::combine(context->sourcePath, { newpath, "Configure.js" });
 		std::string configureScript = File::readAllText(scriptFilename);
 
 		ScriptValue result = context->eval(configureScript, scriptFilename, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_STRICT);

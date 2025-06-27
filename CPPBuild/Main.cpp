@@ -25,7 +25,7 @@ int main(int argc, char** argv)
 		}
 
 		CPPBuild app(workdir);
-		if ((args.size() == 2 || args.size() == 3) && args[1] == "generate")
+		if ((args.size() == 2 || args.size() == 3) && args[1] == "configure")
 		{
 			std::string sourcePath;
 			if (args.size() == 3)
@@ -60,7 +60,7 @@ int main(int argc, char** argv)
 		}
 		else
 		{
-			std::cout << "cppbuild generate [source path]" << std::endl;
+			std::cout << "cppbuild configure [source path]" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] build <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] clean <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] rebuild <target> <configuration>" << std::endl;

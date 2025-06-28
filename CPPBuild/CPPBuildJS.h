@@ -5,6 +5,10 @@ static const char* cppbuildJS = R"xxxx(
 import { native } from "cppbuild/native";
 export { Project, Targets, Installers, File, FilePath, Directory, Environment };
 
+function isObject(x) {
+	return typeof x === 'object' && !Array.isArray(x) && x !== null;
+}
+
 class Target
 {
 	constructor(subdirectory, type, name) {
@@ -20,6 +24,19 @@ class Target
 		this.wwwRootDir = "wwwroot";
 		this.cssRootFile = name + ".css";
 		this.htmlShellFile = "shell.html";
+		this.configurations = {};
+	}
+
+	getConfiguration(name) {
+		if (this.configurations[name] === undefined) {
+			this.configurations[name] = {
+				defines: [],
+				includePaths: [],
+				linkLibraries: [],
+				libraryPaths: []
+			};
+		}
+		return this.configurations[name];
 	}
 
 	addFiles(files) {
@@ -40,40 +57,64 @@ class Target
 		this.filters.push(filter);
 	}
 
-	addDefines(defines) {
+	addDefines(defines, options) {
 		var self = this;
-		defines.forEach(function(define) { self.addDefine(define); });
+		defines.forEach(function(define) { self.addDefine(define, options); });
 	}
 
-	addDefine(define) {
-		this.defines.push(define);
+	addDefine(define, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.defines.push(define);
+		}
+		else {
+			this.defines.push(define);
+		}
 	}
 
-	addIncludePaths(paths) {
+	addIncludePaths(paths, options) {
 		var self = this;
-		paths.forEach(function(path) { self.addIncludePath(path); });
+		paths.forEach(function(path) { self.addIncludePath(path, options); });
 	}
 
-	addIncludePath(path) {
-		this.includePaths.push(path);
+	addIncludePath(path, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.includePaths.push(path);
+		}
+		else {
+			this.includePaths.push(path);
+		}
 	}
 
-	addLinkLibraries(libs) {
+	addLinkLibraries(libs, options) {
 		var self = this;
-		libs.forEach(function(lib) { self.addLinkLibrary(lib); });
+		libs.forEach(function(lib) { self.addLinkLibrary(lib, options); });
 	}
 
-	addLinkLibrary(lib) {
-		this.linkLibraries.push(lib);
+	addLinkLibrary(lib, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.linkLibraries.push(lib);
+		}
+		else {
+			this.linkLibraries.push(lib);
+		}
 	}
 
-	addLibraryPaths(paths) {
+	addLibraryPaths(paths, options) {
 		var self = this;
-		paths.forEach(function(path) { self.addLibraryPath(path); });
+		paths.forEach(function(path) { self.addLibraryPath(path, options); });
 	}
 
-	addLibraryPath(path) {
-		this.libraryPaths.push(path);
+	addLibraryPath(path, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.libraryPaths.push(path);
+		}
+		else {
+			this.libraryPaths.push(path);
+		}
 	}
 
 	setWebRootPath(path) {
@@ -101,7 +142,8 @@ class Target
 			libraryPaths: this.libraryPaths,
 			wwwRootDir: this.wwwRootDir,
 			cssRootFile: this.cssRootFile,
-			htmlShellFile: this.htmlShellFile
+			htmlShellFile: this.htmlShellFile,
+			configurations: this.configurations
 		};
 	}
 }

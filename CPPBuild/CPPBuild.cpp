@@ -294,13 +294,9 @@ void CPPBuild::generateWorkspace()
 			{
 				// External lib reference.
 				if (FilePath::extension(libName).empty())
-				{
 					dependencies.push_back(libName + ".lib");
-				}
 				else
-				{
 					dependencies.push_back(libName);
-				}
 			}
 		}
 
@@ -309,12 +305,48 @@ void CPPBuild::generateWorkspace()
 			std::string configName = configDef["name"].to_string();
 			std::string platform = configDef["platform"].to_string();
 
+			std::vector<std::string> configDefines = defines;
+			std::vector<std::string> configIncludes = includes;
+			std::vector<std::string> configLibraryPaths = libraryPaths;
+			std::vector<std::string> configDependencies = dependencies;
+
+			const JsonValue& targetConfigDef = targetDef["configurations"][configName];
+			if (targetConfigDef.is_object())
+			{
+				for (const JsonValue& item : targetConfigDef["defines"].items())
+					configDefines.push_back(item.to_string());
+
+				for (const JsonValue& item : targetConfigDef["includePaths"].items())
+					configIncludes.push_back(FilePath::combine(sourcePath, item.to_string()));
+
+				for (const JsonValue& item : targetConfigDef["libraryPaths"].items())
+					configLibraryPaths.push_back(FilePath::combine(sourcePath, item.to_string()));
+
+				for (const JsonValue& item : targetConfigDef["linkLibraries"].items())
+				{
+					std::string libName = item.to_string();
+					auto it = guids.projectGuids.find(libName);
+					if (it != guids.projectGuids.end())
+					{
+						throw std::runtime_error("Project link references must apply for all configurations");
+					}
+					else
+					{
+						// External lib reference.
+						if (FilePath::extension(libName).empty())
+							configDependencies.push_back(libName + ".lib");
+						else
+							configDependencies.push_back(libName);
+					}
+				}
+			}
+
 			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, platform);
 			if (isMakefileProject)
 			{
 				projConfig->general.configurationType = "Makefile";
-				projConfig->general.nmakePreprocessorDefinitions = defines;
-				projConfig->general.nmakeIncludeSearchPath = includes;
+				projConfig->general.nmakePreprocessorDefinitions = configDefines;
+				projConfig->general.nmakeIncludeSearchPath = configIncludes;
 				projConfig->general.nmakeOutput = outputFile;
 				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
 				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
@@ -323,38 +355,38 @@ void CPPBuild::generateWorkspace()
 			else if(projectType == "application")
 			{
 				projConfig->general.configurationType = "Application";
-				projConfig->clCompile.preprocessorDefinitions = defines;
-				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->clCompile.preprocessorDefinitions = configDefines;
+				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->link.subSystem = "Windows";
-				projConfig->link.additionalLibraryDirectories = libraryPaths;
-				projConfig->link.additionalDependencies = dependencies;
+				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
+				projConfig->link.additionalDependencies = configDependencies;
 			}
 			else if (projectType == "console")
 			{
 				projConfig->general.configurationType = "Application";
-				projConfig->clCompile.preprocessorDefinitions = defines;
-				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->clCompile.preprocessorDefinitions = configDefines;
+				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->link.subSystem = "Console";
-				projConfig->link.additionalLibraryDirectories = libraryPaths;
-				projConfig->link.additionalDependencies = dependencies;
+				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
+				projConfig->link.additionalDependencies = configDependencies;
 			}
 			else if (projectType == "lib")
 			{
 				projConfig->general.configurationType = "StaticLibrary";
-				projConfig->clCompile.preprocessorDefinitions = defines;
-				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->clCompile.preprocessorDefinitions = configDefines;
+				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->link.subSystem = "Windows";
-				projConfig->link.additionalLibraryDirectories = libraryPaths;
-				projConfig->link.additionalDependencies = dependencies;
+				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
+				projConfig->link.additionalDependencies = configDependencies;
 			}
 			else if (projectType == "dll")
 			{
 				projConfig->general.configurationType = "DynamicLibrary";
-				projConfig->clCompile.preprocessorDefinitions = defines;
-				projConfig->clCompile.additionalIncludeDirectories = includes;
+				projConfig->clCompile.preprocessorDefinitions = configDefines;
+				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->link.subSystem = "Windows";
-				projConfig->link.additionalLibraryDirectories = libraryPaths;
-				projConfig->link.additionalDependencies = dependencies;
+				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
+				projConfig->link.additionalDependencies = configDependencies;
 			}
 
 			if (configName == "Debug")

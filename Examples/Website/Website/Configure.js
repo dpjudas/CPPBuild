@@ -1,7 +1,7 @@
 import { Targets } from "cppbuild";
 
 var files = [
-	"CPPBuild.js",
+	"Configure.js",
 	"Main.cpp",
 	"Main.h",
 	"Main.css",

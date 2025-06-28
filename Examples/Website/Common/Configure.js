@@ -1,7 +1,7 @@
 import { Targets } from "cppbuild";
 
 var files = [
-	"CPPBuild.js",
+	"Configure.js",
 	"Precomp.cpp",
 	"Precomp.h",
 	"Text/StringFormat.cpp",

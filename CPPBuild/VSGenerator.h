@@ -88,6 +88,7 @@ public:
 		std::string optimizeReferences = "true";
 		std::string generateDebugInformation = "true";
 		std::vector<std::string> additionalLibraryDirectories;
+		std::vector<std::string> additionalDependencies;
 	} link;
 
 	struct

@@ -195,6 +195,19 @@ void VSGenerator::writeProject(const VSCppProject* project)
 			additionalLibraryDirectories += "%(AdditionalLibraryDirectories)";
 		}
 
+		std::string additionalDependencies;
+		for (const auto& value : configuration->link.additionalDependencies)
+		{
+			if (!additionalDependencies.empty())
+				additionalDependencies += ";";
+			additionalDependencies += value;
+		}
+		if (!additionalDependencies.empty())
+		{
+			additionalDependencies += ";";
+			additionalDependencies += "%(AdditionalDependencies)";
+		}
+
 		output.writeLine("  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">");
 		if (configuration->general.configurationType != "Makefile")
 		{
@@ -214,6 +227,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 			output.writeLine("      <SubSystem>" + configuration->link.subSystem + "</SubSystem>");
 			output.writeLine("      <GenerateDebugInformation>" + configuration->link.generateDebugInformation + "</GenerateDebugInformation>");
 			output.writeLine("      <AdditionalLibraryDirectories>" + additionalLibraryDirectories + "</AdditionalLibraryDirectories>");
+			output.writeLine("      <AdditionalDependencies>" + additionalDependencies + "</AdditionalDependencies>");
 			output.writeLine("    </Link>");
 		}
 		output.writeLine("  </ItemDefinitionGroup>");

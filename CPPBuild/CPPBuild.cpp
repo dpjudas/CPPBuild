@@ -191,6 +191,8 @@ void CPPBuild::generateWorkspace()
 		std::vector<std::string> extraFiles;
 		std::vector<std::string> defines;
 		std::vector<std::string> includes;
+		std::vector<std::string> libraryPaths;
+		std::vector<std::string> dependencies;
 
 		std::map<std::string, std::unique_ptr<VSCppProjectFilter>> filters;
 
@@ -250,6 +252,9 @@ void CPPBuild::generateWorkspace()
 		for (const JsonValue& item : targetDef["includePaths"].items())
 			includes.push_back(FilePath::combine(sourcePath, item.to_string()));
 
+		for (const JsonValue& item : targetDef["libraryPaths"].items())
+			libraryPaths.push_back(FilePath::combine(sourcePath, item.to_string()));
+
 		std::string outputFile;
 		if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
 		{
@@ -288,7 +293,14 @@ void CPPBuild::generateWorkspace()
 			else
 			{
 				// External lib reference.
-				// To do: add this to linker flags
+				if (FilePath::extension(libName).empty())
+				{
+					dependencies.push_back(libName + ".lib");
+				}
+				else
+				{
+					dependencies.push_back(libName);
+				}
 			}
 		}
 
@@ -314,6 +326,8 @@ void CPPBuild::generateWorkspace()
 				projConfig->clCompile.preprocessorDefinitions = defines;
 				projConfig->clCompile.additionalIncludeDirectories = includes;
 				projConfig->link.subSystem = "Windows";
+				projConfig->link.additionalLibraryDirectories = libraryPaths;
+				projConfig->link.additionalDependencies = dependencies;
 			}
 			else if (projectType == "console")
 			{
@@ -321,6 +335,8 @@ void CPPBuild::generateWorkspace()
 				projConfig->clCompile.preprocessorDefinitions = defines;
 				projConfig->clCompile.additionalIncludeDirectories = includes;
 				projConfig->link.subSystem = "Console";
+				projConfig->link.additionalLibraryDirectories = libraryPaths;
+				projConfig->link.additionalDependencies = dependencies;
 			}
 			else if (projectType == "lib")
 			{
@@ -328,6 +344,8 @@ void CPPBuild::generateWorkspace()
 				projConfig->clCompile.preprocessorDefinitions = defines;
 				projConfig->clCompile.additionalIncludeDirectories = includes;
 				projConfig->link.subSystem = "Windows";
+				projConfig->link.additionalLibraryDirectories = libraryPaths;
+				projConfig->link.additionalDependencies = dependencies;
 			}
 			else if (projectType == "dll")
 			{
@@ -335,6 +353,8 @@ void CPPBuild::generateWorkspace()
 				projConfig->clCompile.preprocessorDefinitions = defines;
 				projConfig->clCompile.additionalIncludeDirectories = includes;
 				projConfig->link.subSystem = "Windows";
+				projConfig->link.additionalLibraryDirectories = libraryPaths;
+				projConfig->link.additionalDependencies = dependencies;
 			}
 
 			if (configName == "Debug")

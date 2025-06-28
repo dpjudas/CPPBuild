@@ -6,9 +6,9 @@
 class JsonValueImpl
 {
 public:
-	static void write(const JsonValue& value, std::string& json);
-	static void write_array(const JsonValue& value, std::string& json);
-	static void write_object(const JsonValue& value, std::string& json);
+	static void write(const JsonValue& value, std::string& json, int indent);
+	static void write_array(const JsonValue& value, std::string& json, int indent);
+	static void write_object(const JsonValue& value, std::string& json, int indent);
 	static void write_string(const std::string& str, std::string& json);
 	static void write_number(const JsonValue& value, std::string& json);
 
@@ -24,10 +24,10 @@ public:
 	static std::string from_utf32(unsigned int value);
 };
 
-std::string JsonValue::to_json() const
+std::string JsonValue::to_json(JsonFormatting formatting) const
 {
 	std::string result;
-	JsonValueImpl::write(*this, result);
+	JsonValueImpl::write(*this, result, formatting == JsonFormatting::indent ? 0 : -1);
 	return result;
 }
 
@@ -39,7 +39,7 @@ JsonValue JsonValue::parse(const std::string& json)
 
 /////////////////////////////////////////////////////////////////////////
 
-void JsonValueImpl::write(const JsonValue& value, std::string& json)
+void JsonValueImpl::write(const JsonValue& value, std::string& json, int indent)
 {
 	switch (value.type())
 	{
@@ -47,10 +47,10 @@ void JsonValueImpl::write(const JsonValue& value, std::string& json)
 		json += "null";
 		break;
 	case JsonType::object:
-		write_object(value, json);
+		write_object(value, json, indent);
 		break;
 	case JsonType::array:
-		write_array(value, json);
+		write_array(value, json, indent);
 		break;
 	case JsonType::string:
 		write_string(value.to_string(), json);
@@ -66,30 +66,68 @@ void JsonValueImpl::write(const JsonValue& value, std::string& json)
 	}
 }
 
-void JsonValueImpl::write_array(const JsonValue& value, std::string& json)
+void JsonValueImpl::write_array(const JsonValue& value, std::string& json, int indent)
 {
+	if (indent != -1)
+		indent++;
+
 	json += "[";
 	for (size_t i = 0; i < value.items().size(); i++)
 	{
 		if (i > 0)
 			json += ",";
-		write(value.items()[i], json);
+		if (indent != -1)
+		{
+			json.push_back('\n');
+			for (int j = 0; j < indent; j++)
+				json += "  ";
+		}
+		write(value.items()[i], json, indent);
 	}
+
+	if (indent != -1)
+	{
+		indent--;
+		json.push_back('\n');
+		for (int j = 0; j < indent; j++)
+			json += "  ";
+	}
+
 	json += "]";
 }
 
-void JsonValueImpl::write_object(const JsonValue& value, std::string& json)
+void JsonValueImpl::write_object(const JsonValue& value, std::string& json, int indent)
 {
+	if (indent != -1)
+		indent++;
+
 	json += "{";
 	std::map<std::string, JsonValue>::const_iterator it;
 	for (it = value.properties().begin(); it != value.properties().end(); ++it)
 	{
 		if (it != value.properties().begin())
 			json += ",";
+
+		if (indent != -1)
+		{
+			json.push_back('\n');
+			for (int j = 0; j < indent; j++)
+				json += "  ";
+		}
+
 		write_string(it->first, json);
 		json += ":";
-		write(it->second, json);
+		write(it->second, json, indent);
 	}
+
+	if (indent != -1)
+	{
+		indent--;
+		json.push_back('\n');
+		for (int j = 0; j < indent; j++)
+			json += "  ";
+	}
+
 	json += "}";
 }
 

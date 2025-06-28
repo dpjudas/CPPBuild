@@ -88,6 +88,7 @@ void CPPBuild::validateConfig(const JsonValue& config)
 	{
 		if (config["project"]["configurations"].items().empty())
 			throw std::runtime_error("No configurations specified");
+		return;
 	}
 
 	throw std::runtime_error("No targets or installers specified");

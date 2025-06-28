@@ -11,6 +11,7 @@
 #include "Javascript/ScriptContext.h"
 #include "Json/JsonValue.h"
 #include <iostream>
+#include <chrono>
 
 CPPBuild::CPPBuild(std::string workDir) : workDir(workDir)
 {
@@ -42,7 +43,7 @@ void CPPBuild::updateMakefile()
 	configure(config["sourcePath"].to_string());
 }
 
-void CPPBuild::checkMakefile(std::string target, std::string configuration)
+void CPPBuild::checkMakefile()
 {
 	bool needsUpdate = false;
 	try
@@ -72,6 +73,10 @@ void CPPBuild::checkMakefile(std::string target, std::string configuration)
 
 	if (needsUpdate)
 		updateMakefile();
+
+	// msbuild wants an output file that always gets updated, so we give it that.
+	int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
+	File::writeAllText(FilePath::combine(cppbuildDir, "Makefile.timestamp"), std::to_string(timestamp));
 }
 
 void CPPBuild::validateConfig(const JsonValue& config)
@@ -351,8 +356,8 @@ void CPPBuild::generateWorkspace()
 			if (!project->customBuildFile.file.empty())
 			{
 				// To do: fill customBuildFile.additionalInputs with everything included by javascript
-				projConfig->customBuildFile.command = cppbuildexe + " -workdir $(SolutionDir) update-makefile";
-				projConfig->customBuildFile.outputs.push_back(FilePath::combine(cppbuildDir, "config.json"));
+				projConfig->customBuildFile.command = cppbuildexe + " -workdir $(SolutionDir) check-makefile";
+				projConfig->customBuildFile.outputs.push_back(FilePath::combine(cppbuildDir, "Makefile.timestamp"));
 			}
 
 			project->configurations.push_back(std::move(projConfig));
@@ -367,21 +372,21 @@ void CPPBuild::generateWorkspace()
 
 void CPPBuild::build(std::string target, std::string configuration)
 {
-	checkMakefile(target, configuration);
+	checkMakefile();
 	WebTarget webTarget(workDir, target, configuration);
 	webTarget.build();
 }
 
 void CPPBuild::clean(std::string target, std::string configuration)
 {
-	checkMakefile(target, configuration);
+	checkMakefile();
 	WebTarget webTarget(workDir, target, configuration);
 	webTarget.clean();
 }
 
 void CPPBuild::rebuild(std::string target, std::string configuration)
 {
-	checkMakefile(target, configuration);
+	checkMakefile();
 	WebTarget webTarget(workDir, target, configuration);
 	webTarget.rebuild();
 }

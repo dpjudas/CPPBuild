@@ -16,6 +16,7 @@ class Target
 		this.files = [];
 		this.filters = [];
 		this.linkLibraries = [];
+		this.libraryPaths = [];
 		this.wwwRootDir = "wwwroot";
 		this.cssRootFile = name + ".css";
 		this.htmlShellFile = "shell.html";
@@ -66,6 +67,15 @@ class Target
 		this.linkLibraries.push(lib);
 	}
 
+	addLibraryPaths(paths) {
+		var self = this;
+		paths.forEach(function(path) { self.addLibraryPath(path); });
+	}
+
+	addLibraryPath(path) {
+		this.libraryPaths.push(path);
+	}
+
 	setWebRootPath(path) {
 		this.wwwrootDir = path;
 	}
@@ -88,6 +98,7 @@ class Target
 			files: this.files,
 			filters: this.filters,
 			linkLibraries: this.linkLibraries,
+			libraryPaths: this.libraryPaths,
 			wwwRootDir: this.wwwRootDir,
 			cssRootFile: this.cssRootFile,
 			htmlShellFile: this.htmlShellFile

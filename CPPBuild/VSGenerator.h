@@ -87,6 +87,7 @@ public:
 		std::string enableCOMDATFolding = "true";
 		std::string optimizeReferences = "true";
 		std::string generateDebugInformation = "true";
+		std::vector<std::string> additionalLibraryDirectories;
 	} link;
 
 	struct

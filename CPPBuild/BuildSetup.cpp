@@ -116,6 +116,26 @@ BuildProject BuildProject::fromJson(const JsonValue& json)
 	return proj;
 }
 
+const BuildConfiguration& BuildProject::getConfiguration(const std::string& name) const
+{
+	for (const BuildConfiguration& config : configurations)
+	{
+		if (config.name == name)
+			return config;
+	}
+	throw std::runtime_error("Configuration '" + name + "' not found");
+}
+
+const BuildTarget& BuildProject::getTarget(const std::string& name) const
+{
+	for (const BuildTarget& target : targets)
+	{
+		if (target.name == name)
+			return target;
+	}
+	throw std::runtime_error("Target '" + name + "' not found");
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 BuildSetup BuildSetup::fromJson(const JsonValue& json)

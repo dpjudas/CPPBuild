@@ -51,9 +51,6 @@ private:
 	void linkCSS();
 	void package();
 
-	JsonValue getConfigDef(const JsonValue& config);
-	JsonValue getTargetDef(const JsonValue& config);
-
 	std::string getLibPrefix() const { return targetType == WebTargetType::library ? "lib" : ""; }
 
 	std::string runCommand(const std::string& commandline, const std::string& errorMessage);

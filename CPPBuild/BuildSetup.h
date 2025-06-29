@@ -88,6 +88,9 @@ public:
 	std::vector<BuildConfiguration> configurations;
 	std::vector<BuildInstaller> installers;
 
+	const BuildConfiguration& getConfiguration(const std::string& name) const;
+	const BuildTarget& getTarget(const std::string& name) const;
+
 	static BuildProject fromJson(const JsonValue& json);
 };
 

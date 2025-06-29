@@ -2,6 +2,7 @@
 #include "Precomp.h"
 #include "WebTarget.h"
 #include "CSSTokenizer.h"
+#include "BuildSetup.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 #include "IOData/Directory.h"
@@ -431,22 +432,20 @@ void WebTarget::addFolder(ZipWriter* zip, std::string srcdir, std::string destdi
 void WebTarget::loadTargets()
 {
 	std::string cppbuildDir = FilePath::combine(workDir, ".cppbuild");
-	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
+	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
 
-	JsonValue configDef = getConfigDef(config);
-	JsonValue targetDef = getTargetDef(config);
+	const BuildConfiguration& configDef = setup.project.getConfiguration(configuration);
+	const BuildTarget& targetDef = setup.project.getTarget(target);
 
-	std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
+	std::string sourcePath = FilePath::combine(setup.sourcePath, targetDef.subdirectory);
 
-	std::string platform = configDef["platform"].to_string();
-
-	std::string type = targetDef["type"].to_string();
-	binDir = FilePath::combine(workDir, { "Build", configuration, platform, "bin" });
-	objDir = FilePath::combine(workDir, { "Build", configuration, platform, "obj", target });
+	binDir = FilePath::combine(workDir, { "Build", configuration, configDef.platform, "bin" });
+	objDir = FilePath::combine(workDir, { "Build", configuration, configDef.platform, "obj", target });
 
 	Directory::create(binDir);
 	Directory::create(objDir);
 
+	std::string type = targetDef.type;
 	if (type == "webcomponent")
 		targetType = WebTargetType::component;
 	else if (type == "website")
@@ -458,26 +457,23 @@ void WebTarget::loadTargets()
 	else
 		throw std::runtime_error("Invalid project type '" + type + "'");
 
-	for (const JsonValue& item : targetDef["linkLibraries"].items())
-		dependencies.push_back(item.to_string());
+	dependencies = targetDef.linkLibraries;
 
-	wwwrootDir = FilePath::combine(sourcePath, targetDef["wwwRootDir"].to_string());
+	wwwrootDir = FilePath::combine(sourcePath, targetDef.wwwRootDir);
 
-	for (const JsonValue& item : targetDef["files"].items())
+	for (const std::string& name : targetDef.files)
 	{
-		std::string name = item.to_string();
 		if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc"))
 		{
 			sourceFiles.push_back(FilePath::combine(sourcePath, name));
 		}
 	}
 
-	cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef["cssRootFile"].to_string()));
-	shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef["htmlShellFile"].to_string()));
+	cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.cssRootDir));
+	shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.htmlShellFile));
 
-	for (const JsonValue& item : targetDef["includePaths"].items())
+	for (const std::string& path: targetDef.includePaths)
 	{
-		std::string path = item.to_string();
 		if (path.empty())
 			continue;
 
@@ -506,32 +502,6 @@ void WebTarget::loadTargets()
 
 	compileFlags = "-O1 " + compileFlags;
 	linkFlags = "-O1 " + linkFlags;
-}
-
-JsonValue WebTarget::getConfigDef(const JsonValue& config)
-{
-	for (const JsonValue& def : config["project"]["configurations"].items())
-	{
-		std::string configName = def["name"].to_string();
-		if (configName == configuration)
-		{
-			return def;
-		}
-	}
-	throw std::runtime_error("Configuration '" + configuration + "' not found");
-}
-
-JsonValue WebTarget::getTargetDef(const JsonValue& config)
-{
-	for (const JsonValue& def : config["project"]["targets"].items())
-	{
-		std::string targetName = def["name"].to_string();
-		if (targetName == target)
-		{
-			return def;
-		}
-	}
-	throw std::runtime_error("Target '" + target + "' not found");
 }
 
 bool WebTarget::isCppFile(const std::string& filename)

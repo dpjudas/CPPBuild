@@ -344,6 +344,10 @@ void CPPBuild::generateWorkspace()
 			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, platform);
 			if (isMakefileProject)
 			{
+				// Emscripten based projects always wants the emscripten headers for intellisense
+				if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
+					configIncludes.push_back("$(EMSDK)\\upstream\\emscripten\\system\\include");
+
 				projConfig->general.configurationType = "Makefile";
 				projConfig->general.nmakePreprocessorDefinitions = configDefines;
 				projConfig->general.nmakeIncludeSearchPath = configIncludes;

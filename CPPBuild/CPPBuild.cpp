@@ -3,6 +3,7 @@
 #include "CPPBuild.h"
 #include "VSGenerator.h"
 #include "WebTarget.h"
+#include "BuildSetup.h"
 #include "Msi/MSIGenerator.h"
 #include "Guid/Guid.h"
 #include "IOData/Directory.h"
@@ -27,13 +28,15 @@ void CPPBuild::configure(std::string sourcePath)
 	config["version"] = JsonValue::number(1);
 	config["sourcePath"] = JsonValue::string(sourcePath);
 	config["project"] = runConfigureScript(sourcePath);
-	validateConfig(config);
+
+	BuildSetup setup = BuildSetup::fromJson(config);
+	validateConfig(setup);
 
 	Directory::create(cppbuildDir);
 	Directory::trySetHidden(cppbuildDir);
 	File::writeAllText(FilePath::combine(cppbuildDir, "config.json"), config.to_json());
 
-	if (!config["project"]["targets"].items().empty())
+	if (!setup.project.targets.empty())
 		generateWorkspace();
 }
 
@@ -48,14 +51,13 @@ void CPPBuild::checkMakefile()
 	bool needsUpdate = false;
 	try
 	{
-		int64_t makefileTime = File::getLastWriteTime(FilePath::combine(cppbuildDir, "config.json"));
-		JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
+		std::string configFilename = FilePath::combine(cppbuildDir, "config.json");
+		int64_t makefileTime = File::getLastWriteTime(configFilename);
+		BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(configFilename)));
 
-		for (const JsonValue& targetDef : config["project"]["targets"].items())
+		for (const BuildTarget& target : setup.project.targets)
 		{
-			std::string projectType = targetDef["type"].to_string();
-			std::string projectName = targetDef["name"].to_string();
-			std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
+			std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
 
 			// To do: need to check all files that Configure.js included
 			int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(sourcePath, "Configure.js"));
@@ -79,19 +81,18 @@ void CPPBuild::checkMakefile()
 	File::writeAllText(FilePath::combine(cppbuildDir, "Makefile.timestamp"), std::to_string(timestamp));
 }
 
-void CPPBuild::validateConfig(const JsonValue& config)
+void CPPBuild::validateConfig(const BuildSetup& setup)
 {
-	std::string name = config["project"]["name"].to_string();
-	if (name.empty())
+	if (setup.project.name.empty())
 		throw std::runtime_error("No project name specified");
 
-	if (!config["project"]["installers"].items().empty())
+	if (!setup.project.installers.empty())
 	{
 		return;
 	}
-	if (!config["project"]["targets"].items().empty())
+	if (!setup.project.targets.empty())
 	{
-		if (config["project"]["configurations"].items().empty())
+		if (setup.project.configurations.empty())
 			throw std::runtime_error("No configurations specified");
 		return;
 	}
@@ -157,32 +158,29 @@ void CPPBuild::generateWorkspace()
 {
 	std::string cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
 
-	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
-
-	std::string solutionName = config["project"]["name"].to_string();
+	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
 
 	VSGuids guids = loadSolutionGuids();
 	if (guids.solutionGuid.empty())
 		guids.solutionGuid = Guid::makeGuid().toString();
 
-	auto solution = std::make_unique<VSSolution>(solutionName, workDir, guids.solutionGuid);
+	auto solution = std::make_unique<VSSolution>(setup.project.name, workDir, guids.solutionGuid);
 
-	for (const JsonValue& configDef : config["project"]["configurations"].items())
-		solution->configurations.push_back(std::make_unique<VSSolutionConfiguration>(configDef["name"].to_string(), configDef["platform"].to_string()));
+	for (const BuildConfiguration& configDef : setup.project.configurations)
+		solution->configurations.push_back(std::make_unique<VSSolutionConfiguration>(configDef.name, configDef.platform));
 
-	for (const JsonValue& targetDef : config["project"]["targets"].items())
+	for (const BuildTarget& targetDef : setup.project.targets)
 	{
-		std::string projectName = targetDef["name"].to_string();
-		auto& guid = guids.projectGuids[projectName];
+		auto& guid = guids.projectGuids[targetDef.name];
 		if (guid.empty())
 			guid = Guid::makeGuid().toString();
 	}
 
-	for (const JsonValue& targetDef : config["project"]["targets"].items())
+	for (const BuildTarget& targetDef : setup.project.targets)
 	{
-		std::string projectType = targetDef["type"].to_string();
-		std::string projectName = targetDef["name"].to_string();
-		std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), targetDef["subdirectory"].to_string());
+		std::string projectType = targetDef.type;
+		std::string projectName = targetDef.name;
+		std::string sourcePath = FilePath::combine(setup.sourcePath, targetDef.subdirectory);
 
 		bool isMakefileProject = projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary";
 		std::string customBuildFile;
@@ -196,10 +194,10 @@ void CPPBuild::generateWorkspace()
 
 		std::map<std::string, std::unique_ptr<VSCppProjectFilter>> filters;
 
-		for (const JsonValue& item : targetDef["files"].items())
+		for (const std::string& item : targetDef.files)
 		{
 			VSCppProjectFilter* filter = nullptr;
-			std::string folder = FilePath::forceBackslash(FilePath::removeLastComponent(item.to_string()));
+			std::string folder = FilePath::forceBackslash(FilePath::removeLastComponent(item));
 			if (!folder.empty())
 			{
 				auto& item = filters[folder];
@@ -219,7 +217,7 @@ void CPPBuild::generateWorkspace()
 				}
 			}
 
-			std::string name = FilePath::combine(sourcePath, item.to_string());
+			std::string name = FilePath::combine(sourcePath, item);
 			if (!isMakefileProject && customBuildFile.empty() && FilePath::lastComponent(name) == "Configure.js")
 			{
 				customBuildFile = name;
@@ -246,14 +244,13 @@ void CPPBuild::generateWorkspace()
 			}
 		}
 
-		for (const JsonValue& item : targetDef["defines"].items())
-			defines.push_back(item.to_string());
+		defines = targetDef.defines;
 
-		for (const JsonValue& item : targetDef["includePaths"].items())
-			includes.push_back(FilePath::combine(sourcePath, item.to_string()));
+		for (const std::string& item : targetDef.includePaths)
+			includes.push_back(FilePath::combine(sourcePath, item));
 
-		for (const JsonValue& item : targetDef["libraryPaths"].items())
-			libraryPaths.push_back(FilePath::combine(sourcePath, item.to_string()));
+		for (const std::string& item : targetDef.libraryPaths)
+			libraryPaths.push_back(FilePath::combine(sourcePath, item));
 
 		std::string outputFile;
 		if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
@@ -282,9 +279,8 @@ void CPPBuild::generateWorkspace()
 		for (auto& it : filters)
 			project->filters.push_back(std::move(it.second));
 
-		for (const JsonValue& item : targetDef["linkLibraries"].items())
+		for (const std::string& libName : targetDef.linkLibraries)
 		{
-			std::string libName = item.to_string();
 			auto it = guids.projectGuids.find(libName);
 			if (it != guids.projectGuids.end())
 			{
@@ -300,31 +296,30 @@ void CPPBuild::generateWorkspace()
 			}
 		}
 
-		for (const JsonValue& configDef : config["project"]["configurations"].items())
+		for (const BuildConfiguration& configDef : setup.project.configurations)
 		{
-			std::string configName = configDef["name"].to_string();
-			std::string platform = configDef["platform"].to_string();
+			std::string configName = configDef.name;
 
 			std::vector<std::string> configDefines = defines;
 			std::vector<std::string> configIncludes = includes;
 			std::vector<std::string> configLibraryPaths = libraryPaths;
 			std::vector<std::string> configDependencies = dependencies;
 
-			const JsonValue& targetConfigDef = targetDef["configurations"][configName];
-			if (targetConfigDef.is_object())
+			auto itTargetConfig = targetDef.configurations.find(configName);
+			if (itTargetConfig != targetDef.configurations.end())
 			{
-				for (const JsonValue& item : targetConfigDef["defines"].items())
-					configDefines.push_back(item.to_string());
+				const BuildTargetConfiguration& targetConfigDef = itTargetConfig->second;
 
-				for (const JsonValue& item : targetConfigDef["includePaths"].items())
-					configIncludes.push_back(FilePath::combine(sourcePath, item.to_string()));
+				configDefines.insert(configDefines.end(), targetConfigDef.defines.begin(), targetConfigDef.defines.end());
 
-				for (const JsonValue& item : targetConfigDef["libraryPaths"].items())
-					configLibraryPaths.push_back(FilePath::combine(sourcePath, item.to_string()));
+				for (const std::string& item : targetConfigDef.includePaths)
+					configIncludes.push_back(FilePath::combine(sourcePath, item));
 
-				for (const JsonValue& item : targetConfigDef["linkLibraries"].items())
+				for (const std::string& item : targetConfigDef.libraryPaths)
+					configLibraryPaths.push_back(FilePath::combine(sourcePath, item));
+
+				for (const std::string& libName : targetConfigDef.linkLibraries)
 				{
-					std::string libName = item.to_string();
 					auto it = guids.projectGuids.find(libName);
 					if (it != guids.projectGuids.end())
 					{
@@ -341,7 +336,7 @@ void CPPBuild::generateWorkspace()
 				}
 			}
 
-			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, platform);
+			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, configDef.platform);
 			if (isMakefileProject)
 			{
 				// Emscripten based projects always wants the emscripten headers for intellisense
@@ -449,50 +444,15 @@ void CPPBuild::rebuild(std::string target, std::string configuration)
 
 void CPPBuild::createInstaller()
 {
-	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
+	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
 
 	std::string binDir = FilePath::combine(workDir, { "Build", "Installer" });
 	Directory::create(binDir);
 
 	auto msi = MSIGenerator::create();
-	for (const JsonValue& defJson : config["project"]["installers"].items())
+	for (const BuildInstaller& def : setup.project.installers)
 	{
-		std::string sourcePath = FilePath::combine(config["sourcePath"].to_string(), defJson["subdirectory"].to_string());
-
-		InstallerDefinition def;
-		def.name = defJson["name"].to_string();
-		def.installDir = defJson["installDir"].to_string();
-		def.msiProductName = defJson["msiProductName"].to_string();
-		def.msiProductVersion = defJson["msiProductVersion"].to_string();
-		def.msiManufacturer = defJson["msiManufacturer"].to_string();
-		def.msiProductCode = defJson["msiProductCode"].to_string();
-		def.msiUpgradeCode = defJson["msiUpgradeCode"].to_string();
-		def.msiPackageCode = defJson["msiPackageCode"].to_string();
-
-		for (const JsonValue& keywordJson : defJson["msiProductKeywords"].items())
-		{
-			def.msiProductKeywords.push_back(keywordJson.to_string());
-		}
-
-		for (const JsonValue& defComponentJson : defJson["components"].items())
-		{
-			InstallerComponent component;
-			component.name = defComponentJson["name"].to_string();
-			component.msiComponentId = defComponentJson["msiComponentId"].to_string();
-			for (const JsonValue& file : defComponentJson["files"].items())
-				component.files.push_back(file.to_string());
-			def.components.push_back(std::move(component));
-		}
-
-		for (const JsonValue& defFeatureJson : defJson["features"].items())
-		{
-			InstallerFeature feature;
-			feature.name = defFeatureJson["name"].to_string();
-			for (const JsonValue& file : defFeatureJson["components"].items())
-				feature.components.push_back(file.to_string());
-			def.features.push_back(std::move(feature));
-		}
-
+		std::string sourcePath = FilePath::combine(setup.sourcePath, def.subdirectory);
 		msi->generate(binDir, sourcePath, def);
 	}
 }

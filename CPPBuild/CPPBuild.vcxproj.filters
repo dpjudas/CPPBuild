@@ -157,6 +157,7 @@
     <ClCompile Include="Msi\MSISequence.cpp">
       <Filter>Msi</Filter>
     </ClCompile>
+    <ClCompile Include="BuildSetup.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -327,6 +328,7 @@
     <ClInclude Include="Msi\Dialogs\WelcomeDlgLink.h">
       <Filter>Msi\Dialogs</Filter>
     </ClInclude>
+    <ClInclude Include="BuildSetup.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

@@ -101,6 +101,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Base64\Base64.cpp" />
+    <ClCompile Include="BuildSetup.cpp" />
     <ClCompile Include="CPPBuild.cpp" />
     <ClCompile Include="CSSTokenizer.cpp" />
     <ClCompile Include="Guid\Guid.cpp" />
@@ -174,6 +175,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Base64\Base64.h" />
+    <ClInclude Include="BuildSetup.h" />
     <ClInclude Include="CPPBuild.h" />
     <ClInclude Include="CPPBuildJS.h" />
     <ClInclude Include="CSSTokenizer.h" />

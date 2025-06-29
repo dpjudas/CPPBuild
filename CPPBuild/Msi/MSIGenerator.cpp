@@ -17,7 +17,7 @@
 class MSIGeneratorImpl : public MSIGenerator
 {
 public:
-	void generate(const std::string& binDir, const std::string& sourcePath, const InstallerDefinition& installerDef) override
+	void generate(const std::string& binDir, const std::string& sourcePath, const BuildInstaller& installerDef) override
 	{
 #if 0
 		MSISchema::saveBinaries("C:\\Development\\UISample.Msi", "C:\\Development\\UISampleBinaries");
@@ -66,7 +66,7 @@ public:
 		std::vector<std::string> cabFiles;
 		std::vector<MSIFile> files;
 		int sequence = 1;
-		for (const InstallerComponent& component : installerDef.components)
+		for (const BuildInstallerComponent& component : installerDef.components)
 		{
 			components.push_back({
 				.component = component.name,
@@ -110,7 +110,7 @@ public:
 		};
 
 		std::vector<MSIFeature> features;
-		for (const InstallerFeature& feature : installerDef.features)
+		for (const BuildInstallerFeature& feature : installerDef.features)
 		{
 			features.push_back({
 				.feature = feature.name,
@@ -126,7 +126,7 @@ public:
 		// "Each Windows Installer Feature uses one or more Windows Installer Components, and features may share components"
 
 		std::vector<MSIFeatureComponents> featureComponents;
-		for (const InstallerFeature& feature : installerDef.features)
+		for (const BuildInstallerFeature& feature : installerDef.features)
 		{
 			for (const std::string& component : feature.components)
 			{

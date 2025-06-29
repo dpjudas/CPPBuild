@@ -1,6 +1,7 @@
 #pragma once
 
 class JsonValue;
+class BuildSetup;
 
 class VSGuids
 {
@@ -18,7 +19,7 @@ public:
 	void updateMakefile();
 	void checkMakefile();
 	JsonValue runConfigureScript(const std::string& sourcePath);
-	void validateConfig(const JsonValue& config);
+	void validateConfig(const BuildSetup& setup);
 	void generateWorkspace();
 	void build(std::string target, std::string configuration);
 	void rebuild(std::string target, std::string configuration);

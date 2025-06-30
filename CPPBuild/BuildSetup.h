@@ -35,7 +35,7 @@ public:
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;
 	std::string wwwRootDir;
-	std::string cssRootDir;
+	std::string cssRootFile;
 	std::string htmlShellFile;
 	std::map<std::string, BuildTargetConfiguration> configurations;
 

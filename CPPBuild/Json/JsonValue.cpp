@@ -117,6 +117,8 @@ void JsonValueImpl::write_object(const JsonValue& value, std::string& json, int 
 
 		write_string(it->first, json);
 		json += ":";
+		if (indent != -1)
+			json += " ";
 		write(it->second, json, indent);
 	}
 

@@ -136,8 +136,6 @@ void WebTarget::link()
 		}
 	}
 
-	std::string libraryPath = binDir;
-
 	std::string outputFile;
 	if (targetType == WebTargetType::library)
 		outputFile = "lib" + target + ".a";
@@ -162,7 +160,7 @@ void WebTarget::link()
 			}
 		}
 
-		for (const auto& dep : dependencies)
+		for (const auto& dep : linkLibraries)
 		{
 			std::string depFilename = FilePath::combine(binDir, "lib" + dep + ".a");
 			int64_t depTime = File::getLastWriteTime(depFilename);
@@ -218,11 +216,13 @@ void WebTarget::link()
 				responsefile += FilePath::forceSlash(file);
 			}
 
-			responsefile += " -L " + FilePath::forceSlash(libraryPath);
-			for (const auto& dep : dependencies)
-			{
+			responsefile += " -L \"" + FilePath::forceSlash(binDir) + "\"";
+
+			for (const auto& path : libraryPaths)
+				responsefile += " -L \"" + FilePath::forceSlash(path) + "\"";
+
+			for (const auto& dep : linkLibraries)
 				responsefile += " -l" + dep;
-			}
 
 			File::writeAllText(responsefilename, responsefile);
 
@@ -266,9 +266,25 @@ void WebTarget::linkCSS()
 		std::vector<std::string> includes;
 		std::string css;
 
-		for (const auto& dep : dependencies)
+		for (const auto& dep : linkLibraries)
 		{
-			std::string depFilename = FilePath::combine(binDir, "lib" + dep + ".css");
+			std::string cssFilename = "lib" + dep + ".css";
+			std::string depFilename = FilePath::combine(binDir, cssFilename);
+			bool found = File::exists(depFilename);
+			if (!found)
+			{
+				for (const std::string& libPath : libraryPaths)
+				{
+					depFilename = FilePath::combine(libPath, cssFilename);
+					found = File::exists(depFilename);
+					if (found)
+						break;
+				}
+			}
+
+			if (!found)
+				throw std::runtime_error("Could not find " + cssFilename);
+
 			css += File::readAllText(depFilename);
 #ifdef WIN32
 			css += "\r\n";
@@ -457,7 +473,7 @@ void WebTarget::loadTargets()
 	else
 		throw std::runtime_error("Invalid project type '" + type + "'");
 
-	dependencies = targetDef.linkLibraries;
+	linkLibraries = targetDef.linkLibraries;
 
 	wwwrootDir = FilePath::combine(sourcePath, targetDef.wwwRootDir);
 
@@ -469,16 +485,30 @@ void WebTarget::loadTargets()
 		}
 	}
 
-	cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.cssRootDir));
+	cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.cssRootFile));
 	shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.htmlShellFile));
 
-	for (const std::string& path: targetDef.includePaths)
-	{
-		if (path.empty())
-			continue;
+	defines = targetDef.defines;
 
-		std::string fullPath = FilePath::combine(sourcePath, path);
-		includePaths.push_back(fullPath);
+	for (const std::string& path: targetDef.includePaths)
+		includePaths.push_back(FilePath::combine(sourcePath, path));
+
+	for (const std::string& item : targetDef.libraryPaths)
+		libraryPaths.push_back(FilePath::combine(sourcePath, item));
+
+	auto itTargetConfig = targetDef.configurations.find(configuration);
+	if (itTargetConfig != targetDef.configurations.end())
+	{
+		const BuildTargetConfiguration& targetConfigDef = itTargetConfig->second;
+
+		defines.insert(defines.end(), targetConfigDef.defines.begin(), targetConfigDef.defines.end());
+		linkLibraries.insert(linkLibraries.end(), targetConfigDef.linkLibraries.begin(), targetConfigDef.linkLibraries.end());
+
+		for (const std::string& item : targetConfigDef.includePaths)
+			includePaths.push_back(FilePath::combine(sourcePath, item));
+
+		for (const std::string& item : targetConfigDef.libraryPaths)
+			libraryPaths.push_back(FilePath::combine(sourcePath, item));
 	}
 
 	// To do: use -gseparate-dwarf[=FILENAME] maybe

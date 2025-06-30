@@ -35,7 +35,7 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 	target.type = json["type"].to_string();
 	target.name = json["name"].to_string();
 	target.wwwRootDir = json["wwwRootDir"].to_string();
-	target.cssRootDir = json["cssRootDir"].to_string();
+	target.cssRootFile = json["cssRootFile"].to_string();
 	target.htmlShellFile = json["htmlShellFile"].to_string();
 	for (const JsonValue& item : json["defines"].items())
 		target.defines.push_back(item.to_string());

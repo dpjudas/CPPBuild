@@ -341,7 +341,11 @@ void CPPBuild::generateWorkspace()
 			{
 				// Emscripten based projects always wants the emscripten headers for intellisense
 				if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
+				{
 					configIncludes.push_back("$(EMSDK)\\upstream\\emscripten\\system\\include");
+					configDefines.push_back("__EMSCRIPTEN__");
+					configDefines.push_back("INTELLISENSE");
+				}
 
 				projConfig->general.configurationType = "Makefile";
 				projConfig->general.nmakePreprocessorDefinitions = configDefines;

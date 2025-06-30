@@ -25,12 +25,14 @@ public:
 
 	WebTargetType targetType = WebTargetType::website;
 	std::vector<std::string> sourceFiles;
-	std::vector<std::string> dependencies;
+	std::vector<std::string> linkLibraries;
 
 	std::string wwwrootDir;
 	std::string cssFile;
 	std::string shellFile;
 	std::vector<std::string> includePaths;
+	std::vector<std::string> defines;
+	std::vector<std::string> libraryPaths;
 
 	std::vector<std::string> outputFiles;
 

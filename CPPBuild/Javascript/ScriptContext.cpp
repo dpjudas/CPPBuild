@@ -27,16 +27,63 @@ ScriptContext::ScriptContext(const std::string& sourcePath) : sourcePath(sourceP
 	native.setPropertyStr("addSubdirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::addSubdirectory, "addSubdirectory", 1)));
 	native.setPropertyStr("subdirectory", ScriptValue(context, JS_NewString(context, "")));
 	native.setPropertyStr("getEnvironmentVar", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getEnvironmentVar, "getEnvironmentVar", 1)));
+
+	// To do: we should detect/ask this at runtime, since the compiler building CPPBuild may not be what is to be used.
+
+#if defined(_MSC_VER)
 	native.setPropertyStr("environmentMsvc", ScriptValue(context, JS_NewBool(context, true)));
 	native.setPropertyStr("environmentClang", ScriptValue(context, JS_NewBool(context, false)));
 	native.setPropertyStr("environmentGCC", ScriptValue(context, JS_NewBool(context, false)));
+#elif defined(__clang__)
+	native.setPropertyStr("environmentMsvc", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentClang", ScriptValue(context, JS_NewBool(context, true)));
+	native.setPropertyStr("environmentGCC", ScriptValue(context, JS_NewBool(context, false)));
+#elif defined(__GNUC__)
+	native.setPropertyStr("environmentMsvc", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentClang", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentGCC", ScriptValue(context, JS_NewBool(context, true)));
+#else
+	#error "Unknown compiler"
+#endif
+
+#if defined(WIN32)
 	native.setPropertyStr("environmentWindows", ScriptValue(context, JS_NewBool(context, true)));
 	native.setPropertyStr("environmentUnix", ScriptValue(context, JS_NewBool(context, false)));
+#else
+	native.setPropertyStr("environmentWindows", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentUnix", ScriptValue(context, JS_NewBool(context, true)));
+#endif
+
+#if defined(__APPLE__)
+	native.setPropertyStr("environmentApple", ScriptValue(context, JS_NewBool(context, true)));
+#else
 	native.setPropertyStr("environmentApple", ScriptValue(context, JS_NewBool(context, false)));
+#endif
+
+#if defined(_M_X64) || defined(__x86_64__)
+	native.setPropertyStr("environmentX86", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentX64", ScriptValue(context, JS_NewBool(context, true)));
+	native.setPropertyStr("environmentARM32", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentARM64", ScriptValue(context, JS_NewBool(context, false)));
+#elif defined(_M_ARM64) || defined(__aarch64__)
 	native.setPropertyStr("environmentX86", ScriptValue(context, JS_NewBool(context, false)));
 	native.setPropertyStr("environmentX64", ScriptValue(context, JS_NewBool(context, false)));
 	native.setPropertyStr("environmentARM32", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentARM64", ScriptValue(context, JS_NewBool(context, true)));
+#elif defined(_M_IX86) || defined(__i386__)
+	native.setPropertyStr("environmentX86", ScriptValue(context, JS_NewBool(context, true)));
+	native.setPropertyStr("environmentX64", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentARM32", ScriptValue(context, JS_NewBool(context, false)));
 	native.setPropertyStr("environmentARM64", ScriptValue(context, JS_NewBool(context, false)));
+#elif defined(_M_ARM) || defined(__arm__)
+	native.setPropertyStr("environmentX86", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentX64", ScriptValue(context, JS_NewBool(context, false)));
+	native.setPropertyStr("environmentARM32", ScriptValue(context, JS_NewBool(context, true)));
+	native.setPropertyStr("environmentARM64", ScriptValue(context, JS_NewBool(context, false)));
+#else
+	#error "Unknown platform"
+#endif
+
 	native.setPropertyStr("createDirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::createDirectory, "createDirectory", 1)));
 	native.setPropertyStr("getFiles", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFiles, "getFiles", 1)));
 	native.setPropertyStr("getFolders", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFolders, "getFolders", 1)));

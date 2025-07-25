@@ -149,6 +149,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 			output.writeLine("    <NMakeReBuildCommandLine>" + configuration->general.nmakeReBuildCommandLine + "</NMakeReBuildCommandLine>");
 			output.writeLine("    <NMakePreprocessorDefinitions>" + nmakePreprocessorDefinitions + "</NMakePreprocessorDefinitions>");
 			output.writeLine("    <NMakeIncludeSearchPath>" + nmakeIncludeSearchPath + "</NMakeIncludeSearchPath>");
+			output.writeLine("    <AdditionalOptions>/std:c++20</AdditionalOptions>"); // For intellisense
 		}
 		output.writeLine("    <OutDir>" + configuration->general.outDir + "</OutDir>");
 		output.writeLine("    <IntDir>" + configuration->general.intDir + "</IntDir>");

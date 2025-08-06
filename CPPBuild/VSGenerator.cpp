@@ -456,5 +456,15 @@ void VSLineWriter::writeLine(const std::string& text)
 
 void VSLineWriter::save(const std::string& filename)
 {
+	try
+	{
+		// Don't touch file if nothing changed
+		if (File::readAllText(filename) == lines)
+			return;
+	}
+	catch (...)
+	{
+	}
+
 	File::writeAllText(filename, lines);
 }

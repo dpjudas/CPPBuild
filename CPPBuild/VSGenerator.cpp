@@ -89,7 +89,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		output.writeLine("    <ConfigurationType>" + configuration->general.configurationType + "</ConfigurationType>");
 		output.writeLine("    <UseDebugLibraries>" + configuration->general.useDebugLibraries + "</UseDebugLibraries>");
 		output.writeLine("    <PlatformToolset>" + configuration->general.platformToolset + "</PlatformToolset>");
-		if (configuration->general.configurationType != "Makefile")
+		if (configuration->general.configurationType != "Makefile" && configuration->general.configurationType != "Utility")
 		{
 			output.writeLine("    <WholeProgramOptimization>" + configuration->general.wholeProgramOptimization + "</WholeProgramOptimization>");
 			output.writeLine("    <CharacterSet>" + configuration->general.characterSet + "</CharacterSet>");
@@ -111,7 +111,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 	for (const auto& configuration : project->configurations)
 	{
 		output.writeLine("  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">");
-		if (configuration->general.configurationType != "Makefile")
+		if (configuration->general.configurationType != "Makefile" && configuration->general.configurationType != "Utility")
 		{
 			output.writeLine("    <LinkIncremental>" + configuration->general.linkIncremental + "</LinkIncremental>");
 		}
@@ -210,7 +210,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		}
 
 		output.writeLine("  <ItemDefinitionGroup Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">");
-		if (configuration->general.configurationType != "Makefile")
+		if (configuration->general.configurationType != "Makefile" && configuration->general.configurationType != "Utility")
 		{
 			output.writeLine("    <ClCompile>");
 			output.writeLine("      <WarningLevel>" + configuration->clCompile.warningLevel + "</WarningLevel>");
@@ -272,7 +272,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 			if (!additionalInputs.empty())
 			{
 				additionalInputs += ";";
-				additionalInputs += "%(AdditionalIncludeDirectories)";
+				additionalInputs += "%(AdditionalInputs)";
 			}
 
 			for (const auto& value : configuration->customBuildFile.outputs)

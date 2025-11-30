@@ -55,12 +55,18 @@ void CPPBuild::checkMakefile()
 		int64_t makefileTime = File::getLastWriteTime(configFilename);
 		BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(configFilename)));
 
+		int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(setup.sourcePath, "Configure.js"));
+		if (makefileTime < srcFileTime)
+		{
+			needsUpdate = true;
+		}
+
 		for (const BuildTarget& target : setup.project.targets)
 		{
 			std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
 
 			// To do: need to check all files that Configure.js included
-			int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(sourcePath, "Configure.js"));
+			int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(sourcePath, target.subdirectory + ".js"));
 			if (makefileTime < srcFileTime)
 			{
 				needsUpdate = true;
@@ -169,6 +175,40 @@ void CPPBuild::generateWorkspace()
 	for (const BuildConfiguration& configDef : setup.project.configurations)
 		solution->configurations.push_back(std::make_unique<VSSolutionConfiguration>(configDef.name, configDef.platform));
 
+	// Create CPPBuildCheck utility project that runs the cppbuild update check
+	{
+		std::string projectName = "CPPBuildCheck";
+		auto& guid = guids.projectGuids[projectName];
+		if (guid.empty())
+			guid = Guid::makeGuid().toString();
+
+		std::string customBuildFile = FilePath::combine(setup.sourcePath, "Configure.js");
+		//if (filter)
+		//	filter->customBuildFile = customBuildFile;
+
+		auto project = std::make_unique<VSCppProject>(projectName, cppbuildDir, guids.projectGuids[projectName]);
+		project->customBuildFile.file = customBuildFile;
+
+		for (const BuildConfiguration& configDef : setup.project.configurations)
+		{
+			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configDef.name, configDef.platform);
+			projConfig->general.configurationType = "Utility";
+
+			for (const BuildTarget& target : setup.project.targets)
+			{
+				std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
+				projConfig->customBuildFile.additionalInputs.push_back(FilePath::combine(sourcePath, target.subdirectory + ".js"));
+			}
+
+			projConfig->customBuildFile.command = cppbuildexe + " -workdir $(SolutionDir) check-makefile";
+			projConfig->customBuildFile.outputs.push_back(FilePath::combine(cppbuildDir, "Makefile.timestamp"));
+
+			project->configurations.push_back(std::move(projConfig));
+		}
+
+		solution->projects.push_back(std::move(project));
+	}
+
 	for (const BuildTarget& targetDef : setup.project.targets)
 	{
 		auto& guid = guids.projectGuids[targetDef.name];
@@ -183,7 +223,6 @@ void CPPBuild::generateWorkspace()
 		std::string sourcePath = FilePath::combine(setup.sourcePath, targetDef.subdirectory);
 
 		bool isMakefileProject = projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary";
-		std::string customBuildFile;
 		std::vector<std::string> sourceFiles;
 		std::vector<std::string> headerFiles;
 		std::vector<std::string> extraFiles;
@@ -218,13 +257,7 @@ void CPPBuild::generateWorkspace()
 			}
 
 			std::string name = FilePath::combine(sourcePath, item);
-			if (!isMakefileProject && customBuildFile.empty() && FilePath::lastComponent(name) == "Configure.js")
-			{
-				customBuildFile = name;
-				if (filter)
-					filter->customBuildFile = name;
-			}
-			else if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
+			if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
 			{
 				sourceFiles.push_back(name);
 				if (filter)
@@ -274,10 +307,11 @@ void CPPBuild::generateWorkspace()
 		project->sourceFiles = sourceFiles;
 		project->headerFiles = headerFiles;
 		project->extraFiles = extraFiles;
-		project->customBuildFile.file = customBuildFile;
 
 		for (auto& it : filters)
 			project->filters.push_back(std::move(it.second));
+
+		project->references.emplace_back("CPPBuildCheck", cppbuildDir, guids.projectGuids["CPPBuildCheck"]);
 
 		for (const std::string& libName : targetDef.linkLibraries)
 		{
@@ -408,12 +442,6 @@ void CPPBuild::generateWorkspace()
 				projConfig->clCompile.intrinsicFunctions = "true";
 			}
 
-			if (!project->customBuildFile.file.empty())
-			{
-				// To do: fill customBuildFile.additionalInputs with everything included by javascript
-				projConfig->customBuildFile.command = cppbuildexe + " -workdir $(SolutionDir) check-makefile";
-				projConfig->customBuildFile.outputs.push_back(FilePath::combine(cppbuildDir, "Makefile.timestamp"));
-			}
 
 			project->configurations.push_back(std::move(projConfig));
 		}

@@ -36,7 +36,7 @@ var files = [
 	"Basic.h"
 ];
 
-var basic = Targets.addExecutable("Basic");
+var basic = Targets.addConsole("Basic");
 
 if (Environment.isWindows()) {
 	basic.addDefines(["WIN32", "_WIN32", "UNICODE", "_UNICODE"]);
@@ -69,18 +69,18 @@ class Project
 
 ## Targets class
 
-The Targets class is used to add targets to the project.
+The Targets class is used to add targets to the project. There are currently 7 target types:
 
 ```js
 class Targets
 {
-	static addApplication(name);
-	static addConsole(name);
-	static addStaticLibrary(name);
-	static addDynamicLibrary(name);
-	static addWebsite(name);
-	static addWebComponent(name);
-	static addWebLibrary(name);
+	static addApplication(name);    // UI application (/subsystem:windows, app bundle)
+	static addConsole(name);        // Console application (/subsystem:console)
+	static addStaticLibrary(name);  // Static library (.lib or .a)
+	static addDynamicLibrary(name); // Dynamic library (.dll or .so)
+	static addWebsite(name);        // Emscripten website project
+	static addWebComponent(name);   // Emscripten web component project
+	static addWebLibrary(name);     // Emscripten static library with CSS resources
 }
 ```
 

@@ -55,24 +55,24 @@ public:
 		mz_zip_reader_end(&zip);
 	}
 
-	const std::vector<ZipFileEntry>& ZipReader::getFiles() override
+	const std::vector<ZipFileEntry>& getFiles() override
 	{
 		return files;
 	}
 
-	std::string ZipReader::readAllText(uint32_t file_index)
+	std::string readAllText(uint32_t file_index)
 	{
 		auto data = readAllBytes(file_index);
 		return std::string(data->data(), data->size());
 	}
 
-	std::string ZipReader::readAllText(const std::string& filename)
+	std::string readAllText(const std::string& filename)
 	{
 		auto data = readAllBytes(filename);
 		return std::string(data->data(), data->size());
 	}
 
-	std::shared_ptr<DataBuffer> ZipReader::readAllBytes(const std::string& filename) override
+	std::shared_ptr<DataBuffer> readAllBytes(const std::string& filename) override
 	{
 		if (filenameToIndex.empty())
 		{
@@ -88,7 +88,7 @@ public:
 		return readAllBytes(file_index);
 	}
 
-	std::shared_ptr<DataBuffer> ZipReader::readAllBytes(uint32_t file_index) override
+	std::shared_ptr<DataBuffer> readAllBytes(uint32_t file_index) override
 	{
 		if (files[file_index].uncompSize == 0)
 			return {};

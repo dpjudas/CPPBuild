@@ -1,6 +1,8 @@
 
 #include "Precomp.h"
 #include "MSIGenerator.h"
+
+#ifdef WIN32
 #include "MSIDatabase.h"
 #include "MSISchema.h"
 #include "MSISequence.h"
@@ -11,8 +13,6 @@
 #include "IOData/Directory.h"
 #include "Zip/ZipReader.h"
 #include <iostream>
-
-#ifdef WIN32
 
 class MSIGeneratorImpl : public MSIGenerator
 {
@@ -243,6 +243,9 @@ std::shared_ptr<MSIGenerator> MSIGenerator::create()
 class MSIGeneratorImpl : public MSIGenerator
 {
 public:
+	void generate(const std::string& binDir, const std::string& sourcePath, const BuildInstaller& installerDef) override
+	{
+	}
 };
 
 std::shared_ptr<MSIGenerator> MSIGenerator::create()

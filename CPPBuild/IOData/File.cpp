@@ -212,7 +212,7 @@ public:
 		return seek(offset, SeekPoint::end);
 	}
 
-	void seek(int64_t offset, SeekPoint origin) override
+	int64_t seek(int64_t offset, SeekPoint origin)
 	{
 		if (origin == SeekPoint::current)
 		{
@@ -267,6 +267,17 @@ std::shared_ptr<File> File::openExisting(const std::string& filename)
 int64_t File::getLastWriteTime(const std::string& filename)
 {
 	throw std::runtime_error("File::getLastWriteTime not implemented on posix");
+}
+
+bool File::tryDelete(const std::string& filename)
+{
+	return unlink(filename.c_str()) == 0;
+}
+
+void File::deleteAlways(const std::string& filename)
+{
+	if (!tryDelete(filename))
+		throw std::runtime_error("Could not delete " + filename);
 }
 
 #endif

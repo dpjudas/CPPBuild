@@ -13,6 +13,10 @@
 #include <unistd.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <limits.h>
+#ifndef PATH_MAX
+#include <linux/limits.h>
+#endif
 #else
 #define NOMINMAX
 #define WIN32_MEAN_AND_LEAN

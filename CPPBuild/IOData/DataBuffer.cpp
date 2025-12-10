@@ -1,6 +1,7 @@
 
 #include "Precomp.h"
 #include "DataBuffer.h"
+#include <cstring>
 
 class DataBufferImpl : public DataBuffer
 {

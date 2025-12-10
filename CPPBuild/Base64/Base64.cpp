@@ -2,6 +2,7 @@
 #include "Precomp.h"
 #include "Base64.h"
 #include "IOData/DataBuffer.h"
+#include <cstring>
 
 /*
 	'A','B','C','D','E','F','G','H','I','J','K','L','M',

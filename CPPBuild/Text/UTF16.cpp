@@ -3,6 +3,8 @@
 #include "UTF16.h"
 #include <stdexcept>
 
+#ifdef WIN32
+
 #define WIN32_LEAN_AND_MEAN
 #define NOMINMAX
 #include <Windows.h>
@@ -34,3 +36,17 @@ std::string from_utf16(const std::wstring& str)
 		throw std::runtime_error("WideCharToMultiByte failed");
 	return result;
 }
+
+#else
+
+std::wstring to_utf16(const std::string& str)
+{
+	throw std::runtime_error("to_utf16 not supported on this platform");
+}
+
+std::string from_utf16(const std::wstring& str)
+{
+	throw std::runtime_error("from_utf16 not supported on this platform");
+}
+
+#endif

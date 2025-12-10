@@ -1,6 +1,9 @@
 
 #include "Precomp.h"
 #include "CSSTokenizer.h"
+#ifndef WIN32
+#include <strings.h>
+#endif
 
 class CSSTokenizerImpl : public CSSTokenizer
 {

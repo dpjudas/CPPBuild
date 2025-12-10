@@ -22,6 +22,21 @@ Guid Guid::makeGuid()
 	return guid;
 }
 
+#else
+
+#include <random>
+
+Guid Guid::makeGuid()
+{
+	static std::random_device rd;
+	static std::mt19937_64 gen(rd());
+
+	Guid guid;
+	guid.data[0] = gen();
+	guid.data[1] = gen();
+	return guid;
+}
+
 #endif
 
 Guid Guid::fromString(const std::string& value)

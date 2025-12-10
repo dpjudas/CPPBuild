@@ -158,6 +158,7 @@
       <Filter>Msi</Filter>
     </ClCompile>
     <ClCompile Include="BuildSetup.cpp" />
+    <ClCompile Include="Process.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -329,6 +330,7 @@
       <Filter>Msi\Dialogs</Filter>
     </ClInclude>
     <ClInclude Include="BuildSetup.h" />
+    <ClInclude Include="Process.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

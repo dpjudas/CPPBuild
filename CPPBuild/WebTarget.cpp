@@ -3,6 +3,7 @@
 #include "WebTarget.h"
 #include "CSSTokenizer.h"
 #include "BuildSetup.h"
+#include "Process.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 #include "IOData/Directory.h"
@@ -34,7 +35,7 @@ void WebTarget::clean()
 		if (isCppFile(inputFile))
 		{
 			std::string objFilename = FilePath::removeExtension(FilePath::lastComponent(inputFile)) + ".obj";
-			std::cout << "Cleaning " << objFilename << std::endl;
+			printLine("Cleaning " + objFilename);
 			std::string objFile = FilePath::combine(objDir, objFilename);
 			File::tryDelete(objFile);
 		}
@@ -42,12 +43,12 @@ void WebTarget::clean()
 
 	for (const auto& filename : outputFiles)
 	{
-		std::cout << "Cleaning " << filename << std::endl;
+		printLine("Cleaning " + filename);
 		File::tryDelete(FilePath::combine(binDir, filename));
 	}
 
 	std::string outputCSS = getLibPrefix() + target + ".css";
-	std::cout << "Cleaning " << outputCSS << std::endl;
+	printLine("Cleaning " + outputCSS);
 	File::tryDelete(FilePath::combine((targetType == WebTargetType::library) ? binDir : objDir, outputCSS));
 }
 
@@ -64,64 +65,86 @@ void WebTarget::compile()
 	int numThreads = std::max((int)(std::thread::hardware_concurrency() * 3) / 4, 2);
 	for (int threadIndex = 0; threadIndex < numThreads; threadIndex++)
 	{
-		auto threadMain = [=]()
-			{
-				int i = 0;
-				for (const std::string& inputFile : sourceFiles)
-				{
-					std::string filename = FilePath::lastComponent(inputFile);
-					if (isCppFile(filename))
-					{
-						if (i++ % numThreads != threadIndex)
-							continue;
-
-						std::string cppFile = inputFile;
-						std::string objFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".obj");
-						std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".d");
-
-						bool needsCompile = false;
-						try
-						{
-							int64_t objTime = File::getLastWriteTime(objFile);
-							for (const std::string& dependency : readMakefileDependencyFile(depFile))
-							{
-								int64_t depTime = File::getLastWriteTime(dependency);
-								if (depTime > objTime)
-								{
-									needsCompile = true;
-									break;
-								}
-							}
-						}
-						catch (...)
-						{
-							needsCompile = true;
-						}
-
-						if (needsCompile)
-						{
-							std::cout << filename << std::endl;
-							std::string commandline = emcc + " " + compileFlags + " -MD -c " + cppFile + " -o " + objFile;
-							std::string result = runCommand(commandline, "Could not compile " + filename);
-							if (!result.empty())
-								std::cout << result << std::endl;
-						}
-					}
-				}
-			};
-		results.push_back(std::async(threadMain));
+		results.push_back(std::async([=]() { compileThreadMain(threadIndex, numThreads); }));
 	}
 
 	for (auto& result : results)
 		result.get();
+
+	std::unique_lock lock(mutex);
+	if (compileFailed)
+		throw std::runtime_error("Compile failed");
 }
 
-std::string WebTarget::runCommand(const std::string& commandline, const std::string& errorMessage)
+void WebTarget::compileThreadMain(int threadIndex, int numThreads)
 {
-	int result = std::system(commandline.c_str());
+	try
+	{
+		int i = 0;
+		for (const std::string& inputFile : sourceFiles)
+		{
+			std::string filename = FilePath::lastComponent(inputFile);
+			if (isCppFile(filename))
+			{
+				if (i++ % numThreads != threadIndex)
+					continue;
+
+				std::unique_lock lock(mutex);
+				if (compileFailed)
+					break;
+				lock.unlock();
+
+				std::string cppFile = inputFile;
+				std::string objFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".obj");
+				std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".d");
+
+				bool needsCompile = false;
+				try
+				{
+					int64_t objTime = File::getLastWriteTime(objFile);
+					for (const std::string& dependency : readMakefileDependencyFile(depFile))
+					{
+						int64_t depTime = File::getLastWriteTime(dependency);
+						if (depTime > objTime)
+						{
+							needsCompile = true;
+							break;
+						}
+					}
+				}
+				catch (...)
+				{
+					needsCompile = true;
+				}
+
+				if (needsCompile)
+				{
+					printLine(filename);
+					std::string commandline = emcc + " " + compileFlags + " -MD -c " + cppFile + " -o " + objFile;
+					runCommand(commandline, "Could not compile " + filename);
+				}
+			}
+		}
+	}
+	catch (const std::exception& e)
+	{
+		printLine(e.what());
+		std::unique_lock lock(mutex);
+		compileFailed = true;
+	}
+}
+
+void WebTarget::printLine(const std::string& text)
+{
+	std::unique_lock lock(mutex);
+	std::cout << text.c_str() << std::endl;
+}
+
+void WebTarget::runCommand(const std::string& commandline, const std::string& errorMessage)
+{
+	int result = Process::runCommand(commandline, [=, this](const std::string& line) { printLine(line); });
 	if (result != 0)
 		throw std::runtime_error(errorMessage);
-	return std::string();
 }
 
 void WebTarget::link()
@@ -180,7 +203,7 @@ void WebTarget::link()
 	{
 		if (targetType == WebTargetType::library)
 		{
-			std::cout << "Creating static library " << outputFile << std::endl;
+			printLine("Creating static library " + outputFile);
 
 			std::string responsefilename = FilePath::combine(objDir, "responsefile.1");
 			std::string responsefile;
@@ -201,7 +224,7 @@ void WebTarget::link()
 		}
 		else
 		{
-			std::cout << "Linking " << outputFile << std::endl;
+			printLine("Linking " + outputFile);
 
 			std::string responsefilename = FilePath::combine(objDir, "responsefile.1");
 			std::string responsefile;
@@ -261,7 +284,7 @@ void WebTarget::linkCSS()
 
 	if (needsCompile)
 	{
-		std::cout << FilePath::lastComponent(cssFile).c_str() << std::endl;
+		printLine(FilePath::lastComponent(cssFile));
 
 		std::vector<std::string> includes;
 		std::string css;
@@ -402,7 +425,7 @@ void WebTarget::package()
 
 	if (needsCompile)
 	{
-		std::cout << "Building web package " << outputPackage.c_str() << std::endl;
+		printLine("Building web package " + outputPackage);
 
 		auto memdevice = MemoryDevice::create();
 		auto zip = ZipWriter::create(memdevice);

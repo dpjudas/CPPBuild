@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Json/JsonValue.h"
+#include <mutex>
 
 class ZipWriter;
 
@@ -46,6 +47,7 @@ public:
 	void rebuild();
 
 private:
+	void compileThreadMain(int threadIndex, int numThreads);
 	void loadTargets();
 	bool isCppFile(const std::string& filename);
 	void compile();
@@ -55,7 +57,8 @@ private:
 
 	std::string getLibPrefix() const { return targetType == WebTargetType::library ? "lib" : ""; }
 
-	std::string runCommand(const std::string& commandline, const std::string& errorMessage);
+	void printLine(const std::string& text);
+	void runCommand(const std::string& commandline, const std::string& errorMessage);
 	std::string processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level = 0);
 	void addFolder(ZipWriter* zip, std::string srcdir, std::string destdir);
 
@@ -76,4 +79,7 @@ private:
 	static std::vector<std::string> readMakefileDependencyFile(const std::string& filename);
 	static std::vector<std::string> readDependencyFile(const std::string& filename);
 	static void writeDependencyFile(const std::string& filename, const std::string& inputFile, const std::vector<std::string>& includes);
+
+	std::mutex mutex;
+	bool compileFailed = false;
 };

@@ -160,6 +160,8 @@ void CPPBuild::saveSolutionGuids(const VSGuids& guids)
 	File::writeAllText(FilePath::combine(cppbuildDir, "vsguids.json"), file.to_json());
 }
 
+#ifdef WIN32
+
 void CPPBuild::generateWorkspace()
 {
 	std::string cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
@@ -452,6 +454,29 @@ void CPPBuild::generateWorkspace()
 	solution->generate();
 	saveSolutionGuids(guids);
 }
+
+#else
+
+void CPPBuild::generateWorkspace()
+{
+	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
+
+	std::string configName = "Release"; // To do: needs to be changable via cppbuild configure commandline
+
+	std::string makefile = "\nall: ForceCppBuild\n\t@cppbuild build all " + configName + "\n\n";
+
+	for (const BuildTarget& targetDef : setup.project.targets)
+	{
+		makefile += targetDef.name + ": ForceCppBuild\n";
+		makefile += "\t@cppbuild build " + targetDef.name + " " + configName + "\n\n";
+	}
+
+	makefile += "ForceCppBuild:\n\n";
+
+	File::writeAllText(FilePath::combine(workDir, "Makefile"), makefile);
+}
+
+#endif
 
 void CPPBuild::build(std::string target, std::string configuration)
 {

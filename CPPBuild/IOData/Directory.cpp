@@ -255,7 +255,31 @@ void Directory::create(const std::string& path)
 		throw std::runtime_error("Could not create directory for path " + path);
 	}
 #else
-	throw std::runtime_error("Directory::create not implemented");
+	int result = mkdir(path.c_str(), 0777);
+	if (result < 0)
+	{
+		if (errno == EEXIST)
+		{
+			return;
+		}
+		else if (errno == ENOENT)
+		{
+			try
+			{
+				std::string parent = FilePath::removeLastComponent(path);
+				if (!parent.empty())
+				{
+					Directory::create(parent);
+					if (mkdir(path.c_str(), 0777) == 0)
+						return;
+				}
+			}
+			catch (...)
+			{
+			}
+		}
+		throw std::runtime_error("Could not create directory for path " + path);
+	}
 #endif
 }
 

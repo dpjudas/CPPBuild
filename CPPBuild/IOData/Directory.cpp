@@ -10,6 +10,7 @@
 #include <strings.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <dirent.h>
 #include <unistd.h>
 #include <libgen.h>
 #include <unistd.h>
@@ -17,6 +18,7 @@
 #ifndef PATH_MAX
 #include <linux/limits.h>
 #endif
+#include <fnmatch.h>
 #else
 #define NOMINMAX
 #define WIN32_MEAN_AND_LEAN
@@ -82,7 +84,47 @@ std::vector<std::string> Directory::files(const std::string& filename)
 
 	return files;
 #else
-	throw std::runtime_error("Directory::files not implemented");
+	std::string pattern = FilePath::lastComponent(filename);
+	std::string path = FilePath::removeLastComponent(filename);
+	if (path.empty())
+		path = ".";
+	DIR* dir = opendir(path.c_str());
+	if (!dir)
+		return {};
+
+	std::vector<std::string> files;
+	try
+	{
+		while (true)
+		{
+			dirent* entry = readdir(dir);
+			if (!entry)
+				break;
+
+			if (fnmatch(pattern.c_str(), entry->d_name, FNM_PATHNAME) != 0)
+				continue;
+
+			std::string name = entry->d_name;
+			std::string fullname = FilePath::combine(path, name);
+
+			struct stat s = {};
+			int result = stat(fullname.c_str(), &s);
+			if (result == 0)
+			{
+				if ((s.st_mode & S_IFDIR) != S_IFDIR)
+				{
+					files.push_back(name);
+				}
+			}
+		}
+		closedir(dir);
+	}
+	catch (...)
+	{
+		closedir(dir);
+		throw;
+	}
+	return files;
 #endif
 }
 
@@ -118,7 +160,47 @@ std::vector<std::string> Directory::folders(const std::string& filename)
 
 	return files;
 #else
-	throw std::runtime_error("Directory::folders not implemented");
+	std::string pattern = FilePath::lastComponent(filename);
+	std::string path = FilePath::removeLastComponent(filename);
+	if (path.empty())
+		path = ".";
+	DIR* dir = opendir(path.c_str());
+	if (!dir)
+		return {};
+
+	std::vector<std::string> files;
+	try
+	{
+		while (true)
+		{
+			dirent* entry = readdir(dir);
+			if (!entry)
+				break;
+
+			if (fnmatch(pattern.c_str(), entry->d_name, FNM_PATHNAME) != 0)
+				continue;
+
+			std::string name = entry->d_name;
+			std::string fullname = FilePath::combine(path, name);
+
+			struct stat s = {};
+			int result = stat(fullname.c_str(), &s);
+			if (result == 0)
+			{
+				if ((s.st_mode & S_IFDIR) == S_IFDIR)
+				{
+					files.push_back(name);
+				}
+			}
+		}
+		closedir(dir);
+	}
+	catch (...)
+	{
+		closedir(dir);
+		throw;
+	}
+	return files;
 #endif
 }
 

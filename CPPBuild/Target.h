@@ -5,17 +5,21 @@
 
 class ZipWriter;
 
-enum class WebTargetType
+enum class TargetType
 {
-	library,
-	component,
+	application,
+	console,
+	lib,
+	dll,
+	webLibrary,
+	webComponent,
 	website
 };
 
-class WebTarget
+class Target
 {
 public:
-	WebTarget(const std::string& workDir, const std::string& target, const std::string& configuration);
+	Target(const std::string& workDir, const std::string& target, const std::string& configuration);
 
 	std::string workDir;
 	std::string target;
@@ -24,7 +28,7 @@ public:
 	std::string binDir;
 	std::string objDir;
 
-	WebTargetType targetType = WebTargetType::website;
+	TargetType targetType = TargetType::website;
 	std::vector<std::string> sourceFiles;
 	std::vector<std::string> linkLibraries;
 
@@ -37,8 +41,8 @@ public:
 
 	std::vector<std::string> outputFiles;
 
-	std::string emcc;
-	std::string emar;
+	std::string cc;
+	std::string ar;
 	std::string compileFlags;
 	std::string linkFlags;
 
@@ -55,7 +59,7 @@ private:
 	void linkCSS();
 	void package();
 
-	std::string getLibPrefix() const { return targetType == WebTargetType::library ? "lib" : ""; }
+	std::string getLibPrefix() const;
 
 	void printLine(const std::string& text);
 	void runCommand(const std::string& commandline, const std::string& errorMessage);

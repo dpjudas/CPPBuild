@@ -1,6 +1,6 @@
 
 #include "Precomp.h"
-#include "WebTarget.h"
+#include "Target.h"
 #include "CSSTokenizer.h"
 #include "BuildSetup.h"
 #include "Process.h"
@@ -12,15 +12,12 @@
 #include <iostream>
 #include <future>
 
-WebTarget::WebTarget(const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
+Target::Target(const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
 {
-	emcc = "emcc";
-	emar = "emar";
-
 	loadTargets();
 }
 
-void WebTarget::build()
+void Target::build()
 {
 	compile();
 	link();
@@ -28,7 +25,7 @@ void WebTarget::build()
 	package();
 }
 
-void WebTarget::clean()
+void Target::clean()
 {
 	for (const std::string& inputFile : sourceFiles)
 	{
@@ -47,18 +44,30 @@ void WebTarget::clean()
 		File::tryDelete(FilePath::combine(binDir, filename));
 	}
 
-	std::string outputCSS = getLibPrefix() + target + ".css";
-	printLine("Cleaning " + outputCSS);
-	File::tryDelete(FilePath::combine((targetType == WebTargetType::library) ? binDir : objDir, outputCSS));
+	if (targetType == TargetType::webComponent ||
+		targetType == TargetType::webLibrary ||
+		targetType == TargetType::website)
+	{
+		std::string outputCSS = getLibPrefix() + target + ".css";
+		printLine("Cleaning " + outputCSS);
+		if (targetType == TargetType::webLibrary)
+		{
+			File::tryDelete(FilePath::combine(binDir, outputCSS));
+		}
+		else
+		{
+			File::tryDelete(FilePath::combine(objDir, outputCSS));
+		}
+	}
 }
 
-void WebTarget::rebuild()
+void Target::rebuild()
 {
 	clean();
 	build();
 }
 
-void WebTarget::compile()
+void Target::compile()
 {
 	std::vector<std::future<void>> results;
 
@@ -76,7 +85,7 @@ void WebTarget::compile()
 		throw std::runtime_error("Compile failed");
 }
 
-void WebTarget::compileThreadMain(int threadIndex, int numThreads)
+void Target::compileThreadMain(int threadIndex, int numThreads)
 {
 	try
 	{
@@ -120,7 +129,7 @@ void WebTarget::compileThreadMain(int threadIndex, int numThreads)
 				if (needsCompile)
 				{
 					printLine(filename);
-					std::string commandline = emcc + " " + compileFlags + " -MD -c " + cppFile + " -o " + objFile;
+					std::string commandline = cc + " " + compileFlags + " -MD -c " + cppFile + " -o " + objFile;
 					runCommand(commandline, "Could not compile " + filename);
 				}
 			}
@@ -134,20 +143,20 @@ void WebTarget::compileThreadMain(int threadIndex, int numThreads)
 	}
 }
 
-void WebTarget::printLine(const std::string& text)
+void Target::printLine(const std::string& text)
 {
 	std::unique_lock lock(mutex);
 	std::cout << text.c_str() << std::endl;
 }
 
-void WebTarget::runCommand(const std::string& commandline, const std::string& errorMessage)
+void Target::runCommand(const std::string& commandline, const std::string& errorMessage)
 {
 	int result = Process::runCommand(commandline, [=, this](const std::string& line) { printLine(line); });
 	if (result != 0)
 		throw std::runtime_error(errorMessage);
 }
 
-void WebTarget::link()
+void Target::link()
 {
 	std::vector<std::string> objFiles;
 	for (const std::string& inputFile : sourceFiles)
@@ -159,15 +168,43 @@ void WebTarget::link()
 		}
 	}
 
-	std::string outputFile;
-	if (targetType == WebTargetType::library)
-		outputFile = "lib" + target + ".a";
-	else if (targetType == WebTargetType::component)
-		outputFile = target + ".js";
-	else
-		outputFile = target + ".html";
+	std::string outputFile, outputPath;
 
-	std::string outputPath = (targetType == WebTargetType::library) ? binDir : objDir;
+	if (targetType == TargetType::application)
+	{
+		outputFile = target;
+		outputPath = binDir;
+	}
+	else if (targetType == TargetType::console)
+	{
+		outputFile = target;
+		outputPath = binDir;
+	}
+	else if (targetType == TargetType::lib)
+	{
+		outputFile = "lib" + target + ".a";
+		outputPath = binDir;
+	}
+	else if (targetType == TargetType::dll)
+	{
+		outputFile = "lib" + target + ".so";
+		outputPath = binDir;
+	}
+	else if (targetType == TargetType::webLibrary)
+	{
+		outputFile = "lib" + target + ".a";
+		outputPath = binDir;
+	}
+	else if (targetType == TargetType::webComponent)
+	{
+		outputFile = target + ".js";
+		outputPath = objDir;
+	}
+	else if (targetType == TargetType::website)
+	{
+		outputFile = target + ".html";
+		outputPath = objDir;
+	}
 
 	bool needsLink = false;
 	try
@@ -201,7 +238,7 @@ void WebTarget::link()
 
 	if (needsLink)
 	{
-		if (targetType == WebTargetType::library)
+		if (targetType == TargetType::webLibrary || targetType == TargetType::lib)
 		{
 			printLine("Creating static library " + outputFile);
 
@@ -217,7 +254,7 @@ void WebTarget::link()
 			}
 			File::writeAllText(responsefilename, responsefile);
 
-			std::string cmdline = emar + " \"@" + responsefilename + "\"";
+			std::string cmdline = ar + " \"@" + responsefilename + "\"";
 			runCommand(cmdline, "Could not link " + outputFile);
 		}
 		else
@@ -247,16 +284,23 @@ void WebTarget::link()
 
 			File::writeAllText(responsefilename, responsefile);
 
-			std::string cmdline = emcc + " \"@" + responsefilename + "\"";
+			std::string cmdline = cc + " \"@" + responsefilename + "\"";
 			runCommand(cmdline, "Could not link " + outputFile);
 		}
 	}
 }
 
-void WebTarget::linkCSS()
+void Target::linkCSS()
 {
+	if (targetType != TargetType::webLibrary &&
+		targetType != TargetType::webComponent &&
+		targetType != TargetType::website)
+	{
+		return;
+	}
+
 	std::string outputCSS = getLibPrefix() + target + ".css";
-	std::string objFile = FilePath::combine((targetType == WebTargetType::library) ? binDir : objDir, outputCSS);
+	std::string objFile = FilePath::combine((targetType == TargetType::webLibrary) ? binDir : objDir, outputCSS);
 	std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(outputCSS) + ".cssdep");
 
 	bool needsCompile = false;
@@ -320,7 +364,7 @@ void WebTarget::linkCSS()
 	}
 }
 
-std::string WebTarget::processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level)
+std::string Target::processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level)
 {
 	auto tokenizer = CSSTokenizer::create(text);
 
@@ -387,9 +431,9 @@ std::string WebTarget::processCSSFile(const std::string& filename, std::string t
 	return includeCSS + text.substr(importEnd);
 }
 
-void WebTarget::package()
+void Target::package()
 {
-	if (targetType != WebTargetType::component && targetType != WebTargetType::website)
+	if (targetType != TargetType::webComponent && targetType != TargetType::website)
 		return;
 
 	std::string outputHtml = target + ".html";
@@ -428,7 +472,7 @@ void WebTarget::package()
 
 		std::vector<std::string> outputFiles;
 		outputFiles.push_back(outputCSS);
-		if (targetType == WebTargetType::website)
+		if (targetType == TargetType::website)
 			outputFiles.push_back(outputHtml);
 		outputFiles.push_back(outputJS);
 		outputFiles.push_back(outputWasm);
@@ -450,7 +494,7 @@ void WebTarget::package()
 	}
 }
 
-void WebTarget::addFolder(ZipWriter* zip, std::string srcdir, std::string destdir)
+void Target::addFolder(ZipWriter* zip, std::string srcdir, std::string destdir)
 {
 	for (const std::string& filename : Directory::files(FilePath::combine(srcdir, "*.*")))
 	{
@@ -464,7 +508,22 @@ void WebTarget::addFolder(ZipWriter* zip, std::string srcdir, std::string destdi
 	}
 }
 
-void WebTarget::loadTargets()
+std::string Target::getLibPrefix() const
+{
+#ifndef WIN32
+	if (targetType == TargetType::lib || targetType == TargetType::dll)
+	{
+		return "lib";
+	}
+#endif
+	if (targetType == TargetType::webLibrary)
+	{
+		return "lib";
+	}
+	return {};
+}
+
+void Target::loadTargets()
 {
 	std::string cppbuildDir = FilePath::combine(workDir, ".cppbuild");
 	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
@@ -481,16 +540,45 @@ void WebTarget::loadTargets()
 	Directory::create(objDir);
 
 	std::string type = targetDef.type;
-	if (type == "webcomponent")
-		targetType = WebTargetType::component;
+	if (type == "application")
+		targetType = TargetType::application;
+	else if (type == "console")
+		targetType = TargetType::console;
+	else if (type == "lib")
+		targetType = TargetType::lib;
+	else if (type == "dll")
+		targetType = TargetType::dll;
+	else if (type == "webcomponent")
+		targetType = TargetType::webComponent;
 	else if (type == "website")
-		targetType = WebTargetType::website;
+		targetType = TargetType::website;
 	else if (type == "weblibrary")
-		targetType = WebTargetType::library;
+		targetType = TargetType::webLibrary;
 	else if (type.empty())
 		throw std::runtime_error("No project type specified");
 	else
 		throw std::runtime_error("Invalid project type '" + type + "'");
+
+	if (targetType == TargetType::webComponent ||
+		targetType == TargetType::webLibrary ||
+		targetType == TargetType::website)
+	{
+		cc = "emcc";
+		ar = "emar";
+	}
+	else
+	{
+#ifdef WIN32
+		cc = "cl";
+		ar = "link";
+#elif __APPLE__
+		cc = "clang";
+		ar = "ar";
+#else
+		cc = "g++";
+		ar = "ar";
+#endif
+	}
 
 	linkLibraries = targetDef.linkLibraries;
 
@@ -503,9 +591,6 @@ void WebTarget::loadTargets()
 			sourceFiles.push_back(FilePath::combine(sourcePath, name));
 		}
 	}
-
-	cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.cssRootFile));
-	shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.htmlShellFile));
 
 	defines = targetDef.defines;
 
@@ -530,30 +615,43 @@ void WebTarget::loadTargets()
 			libraryPaths.push_back(FilePath::combine(sourcePath, item));
 	}
 
-	// To do: use -gseparate-dwarf[=FILENAME] maybe
+	if (targetType == TargetType::webComponent ||
+		targetType == TargetType::webLibrary ||
+		targetType == TargetType::website)
+	{
+		cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.cssRootFile));
+		shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.htmlShellFile));
 
-	std::string flags = "-s DISABLE_EXCEPTION_CATCHING=0";
-	compileFlags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture";
+		std::string flags = "-s DISABLE_EXCEPTION_CATCHING=0";
+		compileFlags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture";
+
+		compileFlags = "-O1 " + compileFlags;
+		linkFlags = "-O1 " + linkFlags;
+
+		// To do: use -gseparate-dwarf[=FILENAME] maybe
+
+		if (targetType == TargetType::webComponent)
+		{
+			linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME=\"'" + target + "'\" -s MODULARIZE  -lembind";
+		}
+		else if (targetType == TargetType::website)
+		{
+			linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 --shell-file " + shellFile + " -lembind";
+		}
+	}
+	else
+	{
+		compileFlags = "--std=c++20 -O2 " + compileFlags;
+		linkFlags = "--std=c++20 -O2 " + linkFlags;
+	}
 
 	for (const std::string& includePath : includePaths)
 	{
 		compileFlags += " -I \"" + includePath + "\"";
 	}
-
-	if (targetType == WebTargetType::component)
-	{
-		linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME=\"'" + target + "'\" -s MODULARIZE  -lembind";
-	}
-	else if (targetType == WebTargetType::website)
-	{
-		linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 --shell-file " + shellFile + " -lembind";
-	}
-
-	compileFlags = "-O1 " + compileFlags;
-	linkFlags = "-O1 " + linkFlags;
 }
 
-bool WebTarget::isCppFile(const std::string& filename)
+bool Target::isCppFile(const std::string& filename)
 {
 	for (const char* ext : { "cpp", "cc", "c" })
 	{
@@ -565,7 +663,7 @@ bool WebTarget::isCppFile(const std::string& filename)
 	return false;
 }
 
-std::vector<std::string> WebTarget::readMakefileDependencyFile(const std::string& filename)
+std::vector<std::string> Target::readMakefileDependencyFile(const std::string& filename)
 {
 	std::vector<MakeToken> tokens = parseMakefile(File::readAllText(filename));
 
@@ -586,7 +684,7 @@ std::vector<std::string> WebTarget::readMakefileDependencyFile(const std::string
 	return files;
 }
 
-std::vector<WebTarget::MakeToken> WebTarget::parseMakefile(const std::string& text)
+std::vector<Target::MakeToken> Target::parseMakefile(const std::string& text)
 {
 	std::vector<MakeToken> tokens;
 
@@ -685,7 +783,7 @@ std::vector<WebTarget::MakeToken> WebTarget::parseMakefile(const std::string& te
 	return tokens;
 }
 
-std::vector<std::string> WebTarget::readDependencyFile(const std::string& filename)
+std::vector<std::string> Target::readDependencyFile(const std::string& filename)
 {
 	std::vector<std::string> files;
 
@@ -702,7 +800,7 @@ std::vector<std::string> WebTarget::readDependencyFile(const std::string& filena
 	return files;
 }
 
-void WebTarget::writeDependencyFile(const std::string& filename, const std::string& inputFile, const std::vector<std::string>& includes)
+void Target::writeDependencyFile(const std::string& filename, const std::string& inputFile, const std::vector<std::string>& includes)
 {
 	JsonValue depJson = JsonValue::object();
 	if (!inputFile.empty())

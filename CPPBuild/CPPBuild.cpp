@@ -2,7 +2,7 @@
 #include "Precomp.h"
 #include "CPPBuild.h"
 #include "VSGenerator.h"
-#include "WebTarget.h"
+#include "Target.h"
 #include "BuildSetup.h"
 #include "Msi/MSIGenerator.h"
 #include "Guid/Guid.h"
@@ -478,25 +478,25 @@ void CPPBuild::generateWorkspace()
 
 #endif
 
-void CPPBuild::build(std::string target, std::string configuration)
+void CPPBuild::build(std::string targetName, std::string configuration)
 {
 	checkMakefile();
-	WebTarget webTarget(workDir, target, configuration);
-	webTarget.build();
+	Target target(workDir, targetName, configuration);
+	target.build();
 }
 
-void CPPBuild::clean(std::string target, std::string configuration)
+void CPPBuild::clean(std::string targetName, std::string configuration)
 {
 	checkMakefile();
-	WebTarget webTarget(workDir, target, configuration);
-	webTarget.clean();
+	Target target(workDir, targetName, configuration);
+	target.clean();
 }
 
-void CPPBuild::rebuild(std::string target, std::string configuration)
+void CPPBuild::rebuild(std::string targetName, std::string configuration)
 {
 	checkMakefile();
-	WebTarget webTarget(workDir, target, configuration);
-	webTarget.rebuild();
+	Target target(workDir, targetName, configuration);
+	target.rebuild();
 }
 
 void CPPBuild::createInstaller()

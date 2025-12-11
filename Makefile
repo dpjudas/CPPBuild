@@ -14,7 +14,7 @@ _OBJ=\
 	CPPBuild/Main.o \
 	CPPBuild/Precomp.o \
 	CPPBuild/VSGenerator.o \
-	CPPBuild/WebTarget.o \
+	CPPBuild/Target.o \
 	CPPBuild/Process.o \
 	CPPBuild/Base64/Base64.o \
 	CPPBuild/Guid/Guid.o \

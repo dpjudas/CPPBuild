@@ -199,10 +199,13 @@ int Process::runCommand(const std::string& commandline, const std::function<void
 	if (!arg.empty())
 		args.push_back(arg);
 
-	std::vector<char*> argv;
+	std::vector<const char*> argv;
 	for (std::string& v : args)
 		argv.push_back(v.c_str());
 	argv.push_back(nullptr);
+
+	static std::mutex mutex;
+	std::unique_lock lock(mutex);
 
 	int stdoutfd[2] = {};
 	int result = pipe(stdoutfd);
@@ -210,7 +213,7 @@ int Process::runCommand(const std::string& commandline, const std::function<void
 		throw std::runtime_error("pipe failed");
 
 	int stderrfd[2] = {};
-	int result = pipe(stderrfd);
+	result = pipe(stderrfd);
 	if (result < 0)
 	{
 		close(stdoutfd[0]);
@@ -219,7 +222,7 @@ int Process::runCommand(const std::string& commandline, const std::function<void
 	}
 
 	int stdinfd[2] = {};
-	int result = pipe(stdinfd);
+	result = pipe(stdinfd);
 	if (result < 0)
 	{
 		close(stdoutfd[0]);
@@ -247,10 +250,10 @@ int Process::runCommand(const std::string& commandline, const std::function<void
 		close(stdinfd[1]);
 		close(stdoutfd[0]);
 		close(stderrfd[0]);
-		// stdin = stdinfd[0];
-		// stdout = stdoutfd[1];
-		// stderr = stderrfd[1];
-		execvp(argv[0], argv.data());
+		dup2(stdinfd[0], 0);
+		dup2(stdoutfd[1], 1);
+		dup2(stderrfd[1], 2);
+		execvp(argv[0], const_cast<char**>(argv.data()));
 		_exit(EXIT_FAILURE);
 		return 0;
 	}
@@ -260,6 +263,8 @@ int Process::runCommand(const std::string& commandline, const std::function<void
 		close(stdinfd[0]);
 		close(stdoutfd[1]);
 		close(stderrfd[1]);
+
+		lock.unlock(); // Is this enough on Linux? The other handles are still copied to forks...
 
 		// We have nothing to write to stdin
 		close(stdinfd[1]);

@@ -65,7 +65,7 @@ void WebTarget::compile()
 	int numThreads = std::max((int)(std::thread::hardware_concurrency() * 3) / 4, 2);
 	for (int threadIndex = 0; threadIndex < numThreads; threadIndex++)
 	{
-		results.push_back(std::async([=]() { compileThreadMain(threadIndex, numThreads); }));
+		results.push_back(std::async([=,this]() { compileThreadMain(threadIndex, numThreads); }));
 	}
 
 	for (auto& result : results)

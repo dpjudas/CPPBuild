@@ -2,7 +2,8 @@
 CC=gcc
 CX=g++
 
-CFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO
+CFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11
+CXXFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20
 LIBS=
 ODIR=build/obj
 
@@ -42,7 +43,7 @@ install: build/cppbuild
 
 build/cppbuild: build/createdir $(OBJ)
 	@echo Linking $@
-	@$(CX) -o $@ $^ $(CFLAGS) $(LIBS)
+	@$(CX) -o $@ $^ $(CXXFLAGS) $(LIBS)
 
 $(ODIR)/%.o: %.c build/createdir
 	@echo Compiling $@
@@ -50,7 +51,7 @@ $(ODIR)/%.o: %.c build/createdir
 
 $(ODIR)/%.o: %.cpp build/createdir
 	@echo Compiling $@
-	@$(CX) -c -o $@ $< $(CFLAGS)
+	@$(CX) -c -o $@ $< $(CXXFLAGS)
 
 build/createdir:
 	@echo Creating build directory

@@ -666,6 +666,12 @@ void Target::loadTargets()
 		cflags += " -I \"" + includePath + "\"";
 		cxxflags += " -I \"" + includePath + "\"";
 	}
+
+	for (const std::string& define : defines)
+	{
+		cflags += " -D \"" + define + "\"";
+		cxxflags += " -D \"" + define + "\"";
+	}
 }
 
 bool Target::isCppFile(const std::string& filename)

@@ -91,7 +91,6 @@ std::vector<std::string> Directory::files(const std::string& filename)
 	DIR* dir = opendir(path.c_str());
 	if (!dir)
 		return {};
-
 	std::vector<std::string> files;
 	try
 	{
@@ -105,6 +104,10 @@ std::vector<std::string> Directory::files(const std::string& filename)
 				continue;
 
 			std::string name = entry->d_name;
+
+			if (name == "." || name == "..")
+				continue;
+
 			std::string fullname = FilePath::combine(path, name);
 
 			struct stat s = {};
@@ -167,7 +170,6 @@ std::vector<std::string> Directory::folders(const std::string& filename)
 	DIR* dir = opendir(path.c_str());
 	if (!dir)
 		return {};
-
 	std::vector<std::string> files;
 	try
 	{
@@ -181,6 +183,10 @@ std::vector<std::string> Directory::folders(const std::string& filename)
 				continue;
 
 			std::string name = entry->d_name;
+
+			if (name == "." || name == "..")
+				continue;
+
 			std::string fullname = FilePath::combine(path, name);
 
 			struct stat s = {};

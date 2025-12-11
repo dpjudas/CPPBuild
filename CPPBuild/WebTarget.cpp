@@ -217,10 +217,8 @@ void WebTarget::link()
 			}
 			File::writeAllText(responsefilename, responsefile);
 
-			std::string cmdline = emar + " @\"" + responsefilename + "\"";
-			int result = std::system(("\"" + cmdline + "\"").c_str());
-			if (result != 0)
-				throw std::runtime_error("Could not link " + outputFile);
+			std::string cmdline = emar + " \"@" + responsefilename + "\"";
+			runCommand(cmdline, "Could not link " + outputFile);
 		}
 		else
 		{
@@ -249,10 +247,8 @@ void WebTarget::link()
 
 			File::writeAllText(responsefilename, responsefile);
 
-			std::string cmdline = emcc + " @\"" + responsefilename + "\"";
-			int result = std::system(("\"" + cmdline + "\"").c_str());
-			if (result != 0)
-				throw std::runtime_error("Could not link " + outputFile);
+			std::string cmdline = emcc + " \"@" + responsefilename + "\"";
+			runCommand(cmdline, "Could not link " + outputFile);
 		}
 	}
 }

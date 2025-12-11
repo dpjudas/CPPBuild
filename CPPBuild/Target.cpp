@@ -129,8 +129,17 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 				if (needsCompile)
 				{
 					printLine(filename);
-					std::string commandline = cc + " " + compileFlags + " -MD -c " + cppFile + " -o " + objFile;
-					runCommand(commandline, "Could not compile " + filename);
+
+					if (FilePath::hasExtension(filename, "c"))
+					{
+						std::string commandline = cc + " " + cflags + " -MD -c " + cppFile + " -o " + objFile;
+						runCommand(commandline, "Could not compile " + filename);
+					}
+					else
+					{
+						std::string commandline = ccpp + " " + cxxflags + " -MD -c " + cppFile + " -o " + objFile;
+						runCommand(commandline, "Could not compile " + filename);
+					}
 				}
 			}
 		}
@@ -284,7 +293,7 @@ void Target::link()
 
 			File::writeAllText(responsefilename, responsefile);
 
-			std::string cmdline = cc + " \"@" + responsefilename + "\"";
+			std::string cmdline = ccpp + " \"@" + responsefilename + "\"";
 			runCommand(cmdline, "Could not link " + outputFile);
 		}
 	}
@@ -564,18 +573,22 @@ void Target::loadTargets()
 		targetType == TargetType::website)
 	{
 		cc = "emcc";
+		ccpp = "emcc";
 		ar = "emar";
 	}
 	else
 	{
 #ifdef WIN32
 		cc = "cl";
+		ccpp = "cl";
 		ar = "link";
 #elif __APPLE__
 		cc = "clang";
+		ccpp = "clang";
 		ar = "ar";
 #else
-		cc = "g++";
+		cc = "gcc";
+		ccpp = "g++";
 		ar = "ar";
 #endif
 	}
@@ -586,7 +599,7 @@ void Target::loadTargets()
 
 	for (const std::string& name : targetDef.files)
 	{
-		if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc"))
+		if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
 		{
 			sourceFiles.push_back(FilePath::combine(sourcePath, name));
 		}
@@ -623,9 +636,11 @@ void Target::loadTargets()
 		shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.htmlShellFile));
 
 		std::string flags = "-s DISABLE_EXCEPTION_CATCHING=0";
-		compileFlags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture";
+		cflags = flags + " --std=c11 -Werror";
+		cxxflags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture";
 
-		compileFlags = "-O1 " + compileFlags;
+		cflags = "-O1 " + cflags;
+		cxxflags = "-O1 " + cxxflags;
 		linkFlags = "-O1 " + linkFlags;
 
 		// To do: use -gseparate-dwarf[=FILENAME] maybe
@@ -641,19 +656,21 @@ void Target::loadTargets()
 	}
 	else
 	{
-		compileFlags = "--std=c++20 -O2 " + compileFlags;
-		linkFlags = "--std=c++20 -O2 " + linkFlags;
+		cflags = "--std=gnu11 -O2 " + cflags;
+		cxxflags = "--std=gnu++20 -O2 " + cxxflags;
+		linkFlags = "--std=gnu++20 -O2 " + linkFlags;
 	}
 
 	for (const std::string& includePath : includePaths)
 	{
-		compileFlags += " -I \"" + includePath + "\"";
+		cflags += " -I \"" + includePath + "\"";
+		cxxflags += " -I \"" + includePath + "\"";
 	}
 }
 
 bool Target::isCppFile(const std::string& filename)
 {
-	for (const char* ext : { "cpp", "cc", "c" })
+	for (const char* ext : { "cpp", "cc", "c"})
 	{
 		if (FilePath::hasExtension(filename, ext))
 		{

@@ -41,9 +41,9 @@ public:
 
 	std::vector<std::string> outputFiles;
 
-	std::string cc;
+	std::string cc, ccpp;
 	std::string ar;
-	std::string compileFlags;
+	std::string cflags, cxxflags;
 	std::string linkFlags;
 
 	void build();

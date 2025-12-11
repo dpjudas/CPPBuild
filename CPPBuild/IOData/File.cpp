@@ -266,7 +266,11 @@ std::shared_ptr<File> File::openExisting(const std::string& filename)
 
 int64_t File::getLastWriteTime(const std::string& filename)
 {
-	throw std::runtime_error("File::getLastWriteTime not implemented on posix");
+	struct stat s = {};
+	int result = stat(filename.c_str(), &s);
+	if (result < 0)
+		throw std::runtime_error("Could not open " + filename);
+	return s.st_mtime;
 }
 
 bool File::tryDelete(const std::string& filename)

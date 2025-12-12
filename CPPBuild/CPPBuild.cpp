@@ -13,6 +13,8 @@
 #include "Json/JsonValue.h"
 #include <iostream>
 #include <chrono>
+#include <unordered_map>
+#include <unordered_set>
 
 CPPBuild::CPPBuild(std::string workDir) : workDir(workDir)
 {
@@ -471,6 +473,8 @@ void CPPBuild::generateWorkspace()
 		makefile += "\t@cppbuild build " + targetDef.name + " " + configName + "\n\n";
 	}
 
+	makefile += "\clean: ForceCppBuild\n\t@cppbuild clean all " + configName + "\n\n";
+
 	makefile += "ForceCppBuild:\n\n";
 
 	File::writeAllText(FilePath::combine(workDir, "Makefile"), makefile);
@@ -478,25 +482,83 @@ void CPPBuild::generateWorkspace()
 
 #endif
 
+static void addTarget(std::vector<std::string>& buildOrder, const BuildTarget* target, std::unordered_map<std::string, const BuildTarget*>& allTargets, std::unordered_set<std::string>& added, int depth)
+{
+	if (depth > 16)
+		throw std::runtime_error("Target dependency depth too large");
+
+	if (added.insert(target->name).second)
+	{
+		for (const std::string& lib : target->linkLibraries)
+		{
+			auto it = allTargets.find(lib);
+			if (it != allTargets.end())
+			{
+				addTarget(buildOrder, it->second, allTargets, added, depth + 1);
+			}
+		}
+		buildOrder.push_back(target->name);
+	}
+}
+
+std::vector<std::string> CPPBuild::getBuildOrder(std::string targetName, std::string configuration)
+{
+	std::string cppbuildDir = FilePath::combine(workDir, ".cppbuild");
+	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
+
+	std::unordered_map<std::string, const BuildTarget*> allTargets;
+	for (const BuildTarget& target : setup.project.targets)
+		allTargets[target.name] = &target;
+
+	std::vector<std::string> buildOrder;
+	std::unordered_set<std::string> added;
+
+	if (targetName == "all")
+	{
+		for (const BuildTarget& target : setup.project.targets)
+		{
+			addTarget(buildOrder, &target, allTargets, added, 0);
+		}
+	}
+	else
+	{
+		addTarget(buildOrder, &setup.project.getTarget(targetName), allTargets, added, 0);
+	}
+
+	return buildOrder;
+}
+
 void CPPBuild::build(std::string targetName, std::string configuration)
 {
 	checkMakefile();
-	Target target(workDir, targetName, configuration);
-	target.build();
+
+	for (std::string name : getBuildOrder(targetName, configuration))
+	{
+		Target target(workDir, name, configuration);
+		target.build();
+	}
 }
 
 void CPPBuild::clean(std::string targetName, std::string configuration)
 {
 	checkMakefile();
-	Target target(workDir, targetName, configuration);
-	target.clean();
+
+	for (std::string name : getBuildOrder(targetName, configuration))
+	{
+		Target target(workDir, name, configuration);
+		target.clean();
+	}
 }
 
 void CPPBuild::rebuild(std::string targetName, std::string configuration)
 {
 	checkMakefile();
-	Target target(workDir, targetName, configuration);
-	target.rebuild();
+
+	for (std::string name : getBuildOrder(targetName, configuration))
+	{
+		Target target(workDir, name, configuration);
+		target.rebuild();
+	}
 }
 
 void CPPBuild::createInstaller()

@@ -26,6 +26,8 @@ public:
 	void clean(std::string target, std::string configuration);
 	void createInstaller();
 
+	std::vector<std::string> getBuildOrder(std::string target, std::string configuration);
+
 	VSGuids loadSolutionGuids();
 	void saveSolutionGuids(const VSGuids& guids);
 

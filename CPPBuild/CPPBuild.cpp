@@ -473,7 +473,7 @@ void CPPBuild::generateWorkspace()
 		makefile += "\t@cppbuild build " + targetDef.name + " " + configName + "\n\n";
 	}
 
-	makefile += "\clean: ForceCppBuild\n\t@cppbuild clean all " + configName + "\n\n";
+	makefile += "clean: ForceCppBuild\n\t@cppbuild clean all " + configName + "\n\n";
 
 	makefile += "ForceCppBuild:\n\n";
 

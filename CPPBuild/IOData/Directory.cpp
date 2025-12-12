@@ -114,7 +114,7 @@ std::vector<std::string> Directory::files(const std::string& filename)
 			int result = stat(fullname.c_str(), &s);
 			if (result == 0)
 			{
-				if ((s.st_mode & S_IFDIR) != S_IFDIR)
+				if ((s.st_mode & S_IFMT) != S_IFDIR)
 				{
 					files.push_back(name);
 				}
@@ -193,7 +193,7 @@ std::vector<std::string> Directory::folders(const std::string& filename)
 			int result = stat(fullname.c_str(), &s);
 			if (result == 0)
 			{
-				if ((s.st_mode & S_IFDIR) == S_IFDIR)
+				if ((s.st_mode & S_IFMT) == S_IFDIR)
 				{
 					files.push_back(name);
 				}

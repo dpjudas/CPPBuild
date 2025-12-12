@@ -505,13 +505,13 @@ void Target::package()
 
 void Target::addFolder(ZipWriter* zip, std::string srcdir, std::string destdir)
 {
-	for (const std::string& filename : Directory::files(FilePath::combine(srcdir, "*.*")))
+	for (const std::string& filename : Directory::files(FilePath::combine(srcdir, "*")))
 	{
 		auto data = File::readAllBytes(FilePath::combine(srcdir, filename));
 		zip->addFile(FilePath::combine(destdir, filename), true, data->data(), data->size());
 	}
 
-	for (const std::string& filename : Directory::folders(FilePath::combine(srcdir, "*.*")))
+	for (const std::string& filename : Directory::folders(FilePath::combine(srcdir, "*")))
 	{
 		addFolder(zip, FilePath::combine(srcdir, filename), FilePath::combine(destdir, filename));
 	}

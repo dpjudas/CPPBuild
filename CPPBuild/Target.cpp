@@ -593,8 +593,6 @@ void Target::loadTargets()
 #endif
 	}
 
-	linkLibraries = targetDef.linkLibraries;
-
 	wwwrootDir = FilePath::combine(sourcePath, targetDef.wwwRootDir);
 
 	for (const std::string& name : targetDef.files)
@@ -605,7 +603,57 @@ void Target::loadTargets()
 		}
 	}
 
-	defines = targetDef.defines;
+	for (const std::string pkgName : targetDef.packages)
+	{
+		const BuildPackage& package = setup.project.getPackage(pkgName);
+		std::string pkgBasePath = FilePath::combine(setup.sourcePath, package.subdirectory);
+
+		for (const std::string& define : package.defines)
+			defines.push_back(define);
+
+		for (const std::string& linkLibrary : package.linkLibraries)
+			linkLibraries.push_back(linkLibrary);
+
+		for (const std::string& source : package.sources)
+		{
+			std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+
+			for (const std::string& path : package.includePaths)
+				includePaths.push_back(FilePath::combine(pkgSourcePath, path));
+
+			for (const std::string& item : package.libraryPaths)
+				libraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
+		}
+
+		auto itPackageConfig = package.configurations.find(configuration);
+		if (itPackageConfig != package.configurations.end())
+		{
+			const BuildPackageConfiguration& packageConfigDef = itPackageConfig->second;
+
+			for (const std::string& define : packageConfigDef.defines)
+				defines.push_back(define);
+
+			for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
+				linkLibraries.push_back(linkLibrary);
+
+			for (const std::string& source : package.sources)
+			{
+				std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+
+				for (const std::string& item : packageConfigDef.includePaths)
+					includePaths.push_back(FilePath::combine(pkgSourcePath, item));
+
+				for (const std::string& item : packageConfigDef.libraryPaths)
+					libraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
+			}
+		}
+	}
+
+	for (const std::string& define : targetDef.defines)
+		defines.push_back(define);
+
+	for (const std::string& linkLibrary : targetDef.linkLibraries)
+		linkLibraries.push_back(linkLibrary);
 
 	for (const std::string& path: targetDef.includePaths)
 		includePaths.push_back(FilePath::combine(sourcePath, path));
@@ -618,8 +666,11 @@ void Target::loadTargets()
 	{
 		const BuildTargetConfiguration& targetConfigDef = itTargetConfig->second;
 
-		defines.insert(defines.end(), targetConfigDef.defines.begin(), targetConfigDef.defines.end());
-		linkLibraries.insert(linkLibraries.end(), targetConfigDef.linkLibraries.begin(), targetConfigDef.linkLibraries.end());
+		for (const std::string& define : targetConfigDef.defines)
+			defines.push_back(define);
+
+		for (const std::string& linkLibrary : targetConfigDef.linkLibraries)
+			linkLibraries.push_back(linkLibrary);
 
 		for (const std::string& item : targetConfigDef.includePaths)
 			includePaths.push_back(FilePath::combine(sourcePath, item));

@@ -177,6 +177,16 @@ const BuildTarget& BuildProject::getTarget(const std::string& name) const
 	throw std::runtime_error("Target '" + name + "' not found");
 }
 
+const BuildPackage& BuildProject::getPackage(const std::string& name) const
+{
+	for (const BuildPackage& package : packages)
+	{
+		if (package.name == name)
+			return package;
+	}
+	throw std::runtime_error("Package '" + name + "' not found");
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 BuildSetup BuildSetup::fromJson(const JsonValue& json)

@@ -18,6 +18,7 @@ public:
 	std::vector<std::string> includePaths;
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;
+	std::vector<std::string> packages;
 
 	static BuildTargetConfiguration fromJson(const JsonValue& json);
 };
@@ -34,6 +35,7 @@ public:
 	std::vector<std::string> filters;
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;
+	std::vector<std::string> packages;
 	std::string wwwRootDir;
 	std::string cssRootFile;
 	std::string htmlShellFile;
@@ -80,6 +82,32 @@ public:
 	static BuildInstaller fromJson(const JsonValue& json);
 };
 
+class BuildPackageConfiguration
+{
+public:
+	std::vector<std::string> defines;
+	std::vector<std::string> includePaths;
+	std::vector<std::string> linkLibraries;
+	std::vector<std::string> libraryPaths;
+
+	static BuildPackageConfiguration fromJson(const JsonValue& json);
+};
+
+class BuildPackage
+{
+public:
+	std::string subdirectory;
+	std::string name;
+	std::vector<std::string> sources;
+	std::vector<std::string> defines;
+	std::vector<std::string> includePaths;
+	std::vector<std::string> linkLibraries;
+	std::vector<std::string> libraryPaths;
+	std::map<std::string, BuildPackageConfiguration> configurations;
+
+	static BuildPackage fromJson(const JsonValue& json);
+};
+
 class BuildProject
 {
 public:
@@ -87,6 +115,7 @@ public:
 	std::vector<BuildTarget> targets;
 	std::vector<BuildConfiguration> configurations;
 	std::vector<BuildInstaller> installers;
+	std::vector<BuildPackage> packages;
 
 	const BuildConfiguration& getConfiguration(const std::string& name) const;
 	const BuildTarget& getTarget(const std::string& name) const;

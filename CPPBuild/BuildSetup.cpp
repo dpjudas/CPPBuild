@@ -23,6 +23,8 @@ BuildTargetConfiguration BuildTargetConfiguration::fromJson(const JsonValue& jso
 		config.linkLibraries.push_back(item.to_string());
 	for (const JsonValue& item : json["libraryPaths"].items())
 		config.libraryPaths.push_back(item.to_string());
+	for (const JsonValue& item : json["packages"].items())
+		config.packages.push_back(item.to_string());
 	return config;
 }
 
@@ -49,9 +51,46 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 		target.linkLibraries.push_back(item.to_string());
 	for (const JsonValue& item : json["libraryPaths"].items())
 		target.libraryPaths.push_back(item.to_string());
-	for (auto it : json["configurations"].properties())
+	for (const JsonValue& item : json["packages"].items())
+		target.packages.push_back(item.to_string());
+	for (const auto& it : json["configurations"].properties())
 		target.configurations[it.first] = BuildTargetConfiguration::fromJson(it.second);
+	return target;
+}
 
+/////////////////////////////////////////////////////////////////////////////
+
+BuildPackageConfiguration BuildPackageConfiguration::fromJson(const JsonValue& json)
+{
+	BuildPackageConfiguration config;
+	for (const JsonValue& item : json["defines"].items())
+		config.defines.push_back(item.to_string());
+	for (const JsonValue& item : json["includePaths"].items())
+		config.includePaths.push_back(item.to_string());
+	for (const JsonValue& item : json["linkLibraries"].items())
+		config.linkLibraries.push_back(item.to_string());
+	for (const JsonValue& item : json["libraryPaths"].items())
+		config.libraryPaths.push_back(item.to_string());
+	return config;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+BuildPackage BuildPackage::fromJson(const JsonValue& json)
+{
+	BuildPackage target;
+	target.subdirectory = json["subdirectory"].to_string();
+	target.name = json["name"].to_string();
+	for (const JsonValue& item : json["defines"].items())
+		target.defines.push_back(item.to_string());
+	for (const JsonValue& item : json["includePaths"].items())
+		target.includePaths.push_back(item.to_string());
+	for (const JsonValue& item : json["linkLibraries"].items())
+		target.linkLibraries.push_back(item.to_string());
+	for (const JsonValue& item : json["libraryPaths"].items())
+		target.libraryPaths.push_back(item.to_string());
+	for (const auto& it : json["configurations"].properties())
+		target.configurations[it.first] = BuildPackageConfiguration::fromJson(it.second);
 	return target;
 }
 
@@ -113,6 +152,8 @@ BuildProject BuildProject::fromJson(const JsonValue& json)
 		proj.targets.push_back(BuildTarget::fromJson(target));
 	for (const JsonValue& installer : json["installers"].items())
 		proj.installers.push_back(BuildInstaller::fromJson(installer));
+	for (const JsonValue& package : json["packages"].items())
+		proj.packages.push_back(BuildPackage::fromJson(package));
 	return proj;
 }
 

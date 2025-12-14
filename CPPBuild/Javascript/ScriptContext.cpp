@@ -389,6 +389,7 @@ JSModuleDef* ScriptContext::moduleLoader(JSContext* ctx, const char* moduleName,
 		if (strcmp(moduleName, "cppbuild") == 0)
 		{
 			code = cppbuildJS;
+			code += cppbuildJS2;
 		}
 		else
 		{

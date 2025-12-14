@@ -21,6 +21,7 @@ class Target
 		this.filters = [];
 		this.linkLibraries = [];
 		this.libraryPaths = [];
+		this.packages = [];
 		this.wwwRootDir = "wwwroot";
 		this.cssRootFile = name + ".css";
 		this.htmlShellFile = "shell.html";
@@ -33,7 +34,8 @@ class Target
 				defines: [],
 				includePaths: [],
 				linkLibraries: [],
-				libraryPaths: []
+				libraryPaths: [],
+				packages: []
 			};
 		}
 		return this.configurations[name];
@@ -117,6 +119,21 @@ class Target
 		}
 	}
 
+	addPackage(name, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.packages.push(name);
+		}
+		else {
+			this.packages.push(name);
+		}
+	}
+
+	addPackages(names, options) {
+		var self = this;
+		names.forEach(function(name) { self.addPackage(name, options); });
+	}
+
 	setWebRootPath(path) {
 		this.wwwrootDir = path;
 	}
@@ -140,6 +157,7 @@ class Target
 			filters: this.filters,
 			linkLibraries: this.linkLibraries,
 			libraryPaths: this.libraryPaths,
+			packages: this.packages,
 			wwwRootDir: this.wwwRootDir,
 			cssRootFile: this.cssRootFile,
 			htmlShellFile: this.htmlShellFile,
@@ -178,7 +196,9 @@ class Configuration
 var projectName = "";
 var configList = [];
 var targetList = [];
+var packageList = [];
 var installerList = [];
+var packageInstallerList = [];
 
 class Targets
 {
@@ -404,6 +424,10 @@ class Directory
 		return native.createDirectory(path);
 	}
 }
+)xxxx";
+
+// This silly hack is to get around string length limits
+static const char* cppbuildJS2 = R"xxxx(
 
 class Environment
 {
@@ -590,12 +614,157 @@ class InstallerFeature
 	}
 }
 
+class PackageInstaller
+{
+	constructor(subdirectory, name) {
+		this.subdirectory = subdirectory;
+		this.name = name;
+	}
+
+	toInstallerDefinition() {
+		return {
+			subdirectory: this.subdirectory,
+			name: this.name,
+		};
+	}
+}
+
 class Installers
 {
 	static addInstaller(name) {
 		var installer = new Installer(native.subdirectory, name);
 		installerList.push(installer);
 		return installer;
+	}
+
+	static addPackage(name) {
+		var installer = new PackageInstaller(native.subdirectory, name);
+		packageInstallerList.push(installer);
+		return installer;
+	}
+}
+
+class Package
+{
+	constructor(subdirectory, name) {
+		this.subdirectory = subdirectory;
+		this.name = name;
+		this.sources = [];
+		this.defines = [];
+		this.includePaths = [];
+		this.linkLibraries = [];
+		this.libraryPaths = [];
+		this.configurations = {};
+	}
+
+	getConfiguration(name) {
+		if (this.configurations[name] === undefined) {
+			this.configurations[name] = {
+				sources: [],
+				defines: [],
+				includePaths: [],
+				linkLibraries: [],
+				libraryPaths: []
+			};
+		}
+		return this.configurations[name];
+	}
+
+	addSources(sources, options) {
+		var self = this;
+		sources.forEach(function(define) { self.addSource(source, options); });
+	}
+
+	addSource(source, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.sources.push(source);
+		}
+		else {
+			this.sources.push(source);
+		}
+	}
+
+	addDefines(defines, options) {
+		var self = this;
+		defines.forEach(function(define) { self.addDefine(define, options); });
+	}
+
+	addDefine(define, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.defines.push(define);
+		}
+		else {
+			this.defines.push(define);
+		}
+	}
+
+	addIncludePaths(paths, options) {
+		var self = this;
+		paths.forEach(function(path) { self.addIncludePath(path, options); });
+	}
+
+	addIncludePath(path, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.includePaths.push(path);
+		}
+		else {
+			this.includePaths.push(path);
+		}
+	}
+
+	addLinkLibraries(libs, options) {
+		var self = this;
+		libs.forEach(function(lib) { self.addLinkLibrary(lib, options); });
+	}
+
+	addLinkLibrary(lib, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.linkLibraries.push(lib);
+		}
+		else {
+			this.linkLibraries.push(lib);
+		}
+	}
+
+	addLibraryPaths(paths, options) {
+		var self = this;
+		paths.forEach(function(path) { self.addLibraryPath(path, options); });
+	}
+
+	addLibraryPath(path, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.libraryPaths.push(path);
+		}
+		else {
+			this.libraryPaths.push(path);
+		}
+	}
+
+	toPackageDefinition() {
+		return {
+			subdirectory: this.subdirectory,
+			name: this.name,
+			sources: this.sources,
+			defines: this.defines,
+			includePaths: this.includePaths,
+			linkLibraries: this.linkLibraries,
+			libraryPaths: this.libraryPaths,
+			configurations: this.configurations
+		};
+	}
+}
+
+class Packages
+{
+	static add(name) {
+		var package = new Package(native.subdirectory, name);
+		packageList.push(package);
+		return package;
 	}
 }
 
@@ -604,7 +773,9 @@ native.generate = function() {
 		name: projectName,
 		targets: targetList.map(function(target) { return target.toTargetDefinition(); }),
 		configurations: configList.map(function(config) { return config.toConfigDefinition(); }),
+		packages: packageList.map(function(package) { return package.toPackageDefinition(); }),
 		installers: installerList.map(function(installer) { return installer.toInstallerDefinition(); })
+		packageInstallers: packageInstallerList.map(function(installer) { return installer.toInstallerDefinition(); })
 	};
 };
 

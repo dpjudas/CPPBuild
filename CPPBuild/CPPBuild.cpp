@@ -231,8 +231,9 @@ void CPPBuild::generateWorkspace()
 		std::vector<std::string> headerFiles;
 		std::vector<std::string> extraFiles;
 		std::vector<std::string> defines;
-		std::vector<std::string> includes;
+		std::vector<std::string> includePaths;
 		std::vector<std::string> libraryPaths;
+		std::vector<std::string> linkLibraries;
 		std::vector<std::string> dependencies;
 
 		std::map<std::string, std::unique_ptr<VSCppProjectFilter>> filters;
@@ -281,10 +282,37 @@ void CPPBuild::generateWorkspace()
 			}
 		}
 
-		defines = targetDef.defines;
+		for (const std::string pkgName : targetDef.packages)
+		{
+			const BuildPackage& package = setup.project.getPackage(pkgName);
+			std::string pkgBasePath = FilePath::combine(setup.sourcePath, package.subdirectory);
+
+			for (const std::string& define : package.defines)
+				defines.push_back(define);
+
+			for (const std::string& linkLibrary : package.linkLibraries)
+				linkLibraries.push_back(linkLibrary);
+
+			for (const std::string& source : package.sources)
+			{
+				std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+
+				for (const std::string& path : package.includePaths)
+					includePaths.push_back(FilePath::combine(pkgSourcePath, path));
+
+				for (const std::string& item : package.libraryPaths)
+					libraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
+			}
+		}
+
+		for (const std::string& define : targetDef.defines)
+			defines.push_back(define);
+
+		for (const std::string& linkLibrary : targetDef.linkLibraries)
+			linkLibraries.push_back(linkLibrary);
 
 		for (const std::string& item : targetDef.includePaths)
-			includes.push_back(FilePath::combine(sourcePath, item));
+			includePaths.push_back(FilePath::combine(sourcePath, item));
 
 		for (const std::string& item : targetDef.libraryPaths)
 			libraryPaths.push_back(FilePath::combine(sourcePath, item));
@@ -317,7 +345,7 @@ void CPPBuild::generateWorkspace()
 
 		project->references.emplace_back("CPPBuildCheck", cppbuildDir, guids.projectGuids["CPPBuildCheck"]);
 
-		for (const std::string& libName : targetDef.linkLibraries)
+		for (const std::string& libName : linkLibraries)
 		{
 			auto it = guids.projectGuids.find(libName);
 			if (it != guids.projectGuids.end())
@@ -339,9 +367,39 @@ void CPPBuild::generateWorkspace()
 			std::string configName = configDef.name;
 
 			std::vector<std::string> configDefines = defines;
-			std::vector<std::string> configIncludes = includes;
+			std::vector<std::string> configIncludes = includePaths;
 			std::vector<std::string> configLibraryPaths = libraryPaths;
 			std::vector<std::string> configDependencies = dependencies;
+			std::vector<std::string> configLinkLibraries;
+
+			for (const std::string pkgName : targetDef.packages)
+			{
+				const BuildPackage& package = setup.project.getPackage(pkgName);
+				std::string pkgBasePath = FilePath::combine(setup.sourcePath, package.subdirectory);
+
+				auto itPackageConfig = package.configurations.find(configName);
+				if (itPackageConfig != package.configurations.end())
+				{
+					const BuildPackageConfiguration& packageConfigDef = itPackageConfig->second;
+
+					for (const std::string& define : packageConfigDef.defines)
+						configDefines.push_back(define);
+
+					for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
+						configLinkLibraries.push_back(linkLibrary);
+
+					for (const std::string& source : package.sources)
+					{
+						std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+
+						for (const std::string& item : packageConfigDef.includePaths)
+							configIncludes.push_back(FilePath::combine(pkgSourcePath, item));
+
+						for (const std::string& item : packageConfigDef.libraryPaths)
+							configLibraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
+					}
+				}
+			}
 
 			auto itTargetConfig = targetDef.configurations.find(configName);
 			if (itTargetConfig != targetDef.configurations.end())
@@ -357,20 +415,23 @@ void CPPBuild::generateWorkspace()
 					configLibraryPaths.push_back(FilePath::combine(sourcePath, item));
 
 				for (const std::string& libName : targetConfigDef.linkLibraries)
+					configLinkLibraries.push_back(libName);
+			}
+
+			for (const std::string& libName : configLinkLibraries)
+			{
+				auto it = guids.projectGuids.find(libName);
+				if (it != guids.projectGuids.end())
 				{
-					auto it = guids.projectGuids.find(libName);
-					if (it != guids.projectGuids.end())
-					{
-						throw std::runtime_error("Project link references must apply for all configurations");
-					}
+					throw std::runtime_error("Project link references must apply for all configurations");
+				}
+				else
+				{
+					// External lib reference.
+					if (FilePath::extension(libName).empty())
+						configDependencies.push_back(libName + ".lib");
 					else
-					{
-						// External lib reference.
-						if (FilePath::extension(libName).empty())
-							configDependencies.push_back(libName + ".lib");
-						else
-							configDependencies.push_back(libName);
-					}
+						configDependencies.push_back(libName);
 				}
 			}
 
@@ -445,7 +506,6 @@ void CPPBuild::generateWorkspace()
 				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
 				projConfig->clCompile.intrinsicFunctions = "true";
 			}
-
 
 			project->configurations.push_back(std::move(projConfig));
 		}

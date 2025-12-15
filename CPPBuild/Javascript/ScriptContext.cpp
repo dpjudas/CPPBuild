@@ -393,13 +393,17 @@ JSModuleDef* ScriptContext::moduleLoader(JSContext* ctx, const char* moduleName,
 		}
 		else
 		{
+			// Is this the correct way to get the path? moduleSetImportMeta is wrong? If only there was some documentation...
+			ScriptContext* context = static_cast<ScriptContext*>(opaque);
+			std::string current = context->native.getPropertyStr("subdirectory").toString();
+			std::string moduleFilename = FilePath::combine(context->sourcePath, { current, moduleName });
 			try
 			{
-				code = File::readAllText(moduleName);
+				code = File::readAllText(moduleFilename);
 			}
 			catch (...)
 			{
-				JS_ThrowReferenceError(ctx, "could not load module '%s'", moduleName);
+				JS_ThrowReferenceError(ctx, "could not load module '%s'", moduleFilename.c_str());
 				return nullptr;
 			}
 		}

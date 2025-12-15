@@ -686,6 +686,11 @@ void Target::loadTargets()
 		cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.cssRootFile));
 		shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.htmlShellFile));
 
+		for (std::string& path : includePaths)
+			path = FilePath::forceSlash(path);
+		for (std::string& path : libraryPaths)
+			path = FilePath::forceSlash(path);
+
 		std::string flags = "-s DISABLE_EXCEPTION_CATCHING=0";
 		cflags = flags + " --std=c11 -Werror";
 		cxxflags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture";
@@ -707,6 +712,11 @@ void Target::loadTargets()
 	}
 	else
 	{
+		for (std::string& path : includePaths)
+			path = FilePath::normalizePathDelimiters(path);
+		for (std::string& path : libraryPaths)
+			path = FilePath::normalizePathDelimiters(path);
+
 		cflags = "--std=gnu11 -O2 " + cflags;
 		cxxflags = "--std=gnu++20 -O2 " + cxxflags;
 		linkFlags = "--std=gnu++20 -O2 " + linkFlags;

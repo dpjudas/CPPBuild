@@ -81,6 +81,8 @@ BuildPackage BuildPackage::fromJson(const JsonValue& json)
 	BuildPackage target;
 	target.subdirectory = json["subdirectory"].to_string();
 	target.name = json["name"].to_string();
+	for (const JsonValue& item : json["sources"].items())
+		target.sources.push_back(item.to_string());
 	for (const JsonValue& item : json["defines"].items())
 		target.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["includePaths"].items())

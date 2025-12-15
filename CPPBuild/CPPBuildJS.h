@@ -3,7 +3,7 @@
 static const char* cppbuildJS = R"xxxx(
 
 import { native } from "cppbuild/native";
-export { Project, Targets, Installers, File, FilePath, Directory, Environment };
+export { Project, Packages, Targets, Installers, File, FilePath, Directory, Environment };
 
 function isObject(x) {
 	return typeof x === 'object' && !Array.isArray(x) && x !== null;

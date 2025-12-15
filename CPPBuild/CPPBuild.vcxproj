@@ -254,7 +254,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="Process.cpp" />
+    <ClCompile Include="ConsoleProcess.cpp" />
     <ClCompile Include="Text\Text.cpp" />
     <ClCompile Include="Text\UTF16.cpp" />
     <ClCompile Include="Text\UTF8Reader.cpp" />
@@ -323,7 +323,7 @@
     <ClInclude Include="Msi\MSISchema.h" />
     <ClInclude Include="Msi\MSISequence.h" />
     <ClInclude Include="Precomp.h" />
-    <ClInclude Include="Process.h" />
+    <ClInclude Include="ConsoleProcess.h" />
     <ClInclude Include="Text\Text.h" />
     <ClInclude Include="Text\UTF16.h" />
     <ClInclude Include="Text\UTF8Reader.h" />

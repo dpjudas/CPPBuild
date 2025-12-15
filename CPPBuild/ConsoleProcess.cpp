@@ -1,6 +1,6 @@
 
 #include "Precomp.h"
-#include "Process.h"
+#include "ConsoleProcess.h"
 #include "Text/UTF16.h"
 #include <stdexcept>
 #include <mutex>
@@ -11,7 +11,7 @@
 #define WIN32_MEAN_AND_LEAN
 #include <Windows.h>
 
-int Process::runCommand(const std::string& commandline, const std::function<void(const std::string& outputLine)> printLine)
+int ConsoleProcess::runCommand(const std::string& commandline, const std::function<void(const std::string& outputLine)> printLine)
 {
 	std::wstring cmd = to_utf16("cmd.exe /c " + commandline);
 

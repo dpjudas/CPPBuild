@@ -54,7 +54,7 @@ public:
 	std::string getExceptionStack()
 	{
 		checkContext();
-		if (!JS_IsError(context, value))
+		if (!JS_IsError(value))
 			return {};
 
 		return getPropertyStr("stack").toString();

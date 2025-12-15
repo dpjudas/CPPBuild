@@ -3,7 +3,7 @@
 #include "Target.h"
 #include "CSSTokenizer.h"
 #include "BuildSetup.h"
-#include "Process.h"
+#include "ConsoleProcess.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 #include "IOData/Directory.h"
@@ -160,7 +160,7 @@ void Target::printLine(const std::string& text)
 
 void Target::runCommand(const std::string& commandline, const std::string& errorMessage)
 {
-	int result = Process::runCommand(commandline, [=, this](const std::string& line) { printLine(line); });
+	int result = ConsoleProcess::runCommand(commandline, [=, this](const std::string& line) { printLine(line); });
 	if (result != 0)
 		throw std::runtime_error(errorMessage);
 }

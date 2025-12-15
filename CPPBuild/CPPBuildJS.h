@@ -762,9 +762,9 @@ class Package
 class Packages
 {
 	static add(name) {
-		var package = new Package(native.subdirectory, name);
-		packageList.push(package);
-		return package;
+		var pkg = new Package(native.subdirectory, name);
+		packageList.push(pkg);
+		return pkg;
 	}
 }
 
@@ -773,8 +773,8 @@ native.generate = function() {
 		name: projectName,
 		targets: targetList.map(function(target) { return target.toTargetDefinition(); }),
 		configurations: configList.map(function(config) { return config.toConfigDefinition(); }),
-		packages: packageList.map(function(package) { return package.toPackageDefinition(); }),
-		installers: installerList.map(function(installer) { return installer.toInstallerDefinition(); })
+		packages: packageList.map(function(pkg) { return pkg.toPackageDefinition(); }),
+		installers: installerList.map(function(installer) { return installer.toInstallerDefinition(); }),
 		packageInstallers: packageInstallerList.map(function(installer) { return installer.toInstallerDefinition(); })
 	};
 };

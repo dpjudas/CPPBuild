@@ -17,6 +17,12 @@ BuildTargetConfiguration BuildTargetConfiguration::fromJson(const JsonValue& jso
 	BuildTargetConfiguration config;
 	for (const JsonValue& item : json["defines"].items())
 		config.defines.push_back(item.to_string());
+	for (const JsonValue& item : json["cCompileOptions"].items())
+		config.cCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["cxxCompileOptions"].items())
+		config.cxxCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["linkOptions"].items())
+		config.linkOptions.push_back(item.to_string());
 	for (const JsonValue& item : json["includePaths"].items())
 		config.includePaths.push_back(item.to_string());
 	for (const JsonValue& item : json["linkLibraries"].items())
@@ -41,6 +47,12 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 	target.htmlShellFile = json["htmlShellFile"].to_string();
 	for (const JsonValue& item : json["defines"].items())
 		target.defines.push_back(item.to_string());
+	for (const JsonValue& item : json["cCompileOptions"].items())
+		target.cCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["cxxCompileOptions"].items())
+		target.cxxCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["linkOptions"].items())
+		target.linkOptions.push_back(item.to_string());
 	for (const JsonValue& item : json["includePaths"].items())
 		target.includePaths.push_back(item.to_string());
 	for (const JsonValue& item : json["files"].items())
@@ -65,6 +77,12 @@ BuildPackageConfiguration BuildPackageConfiguration::fromJson(const JsonValue& j
 	BuildPackageConfiguration config;
 	for (const JsonValue& item : json["defines"].items())
 		config.defines.push_back(item.to_string());
+	for (const JsonValue& item : json["cCompileOptions"].items())
+		config.cCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["cxxCompileOptions"].items())
+		config.cxxCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["linkOptions"].items())
+		config.linkOptions.push_back(item.to_string());
 	for (const JsonValue& item : json["includePaths"].items())
 		config.includePaths.push_back(item.to_string());
 	for (const JsonValue& item : json["linkLibraries"].items())
@@ -78,22 +96,28 @@ BuildPackageConfiguration BuildPackageConfiguration::fromJson(const JsonValue& j
 
 BuildPackage BuildPackage::fromJson(const JsonValue& json)
 {
-	BuildPackage target;
-	target.subdirectory = json["subdirectory"].to_string();
-	target.name = json["name"].to_string();
+	BuildPackage package;
+	package.subdirectory = json["subdirectory"].to_string();
+	package.name = json["name"].to_string();
 	for (const JsonValue& item : json["sources"].items())
-		target.sources.push_back(item.to_string());
+		package.sources.push_back(item.to_string());
 	for (const JsonValue& item : json["defines"].items())
-		target.defines.push_back(item.to_string());
+		package.defines.push_back(item.to_string());
+	for (const JsonValue& item : json["cCompileOptions"].items())
+		package.cCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["cxxCompileOptions"].items())
+		package.cxxCompileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["linkOptions"].items())
+		package.linkOptions.push_back(item.to_string());
 	for (const JsonValue& item : json["includePaths"].items())
-		target.includePaths.push_back(item.to_string());
+		package.includePaths.push_back(item.to_string());
 	for (const JsonValue& item : json["linkLibraries"].items())
-		target.linkLibraries.push_back(item.to_string());
+		package.linkLibraries.push_back(item.to_string());
 	for (const JsonValue& item : json["libraryPaths"].items())
-		target.libraryPaths.push_back(item.to_string());
+		package.libraryPaths.push_back(item.to_string());
 	for (const auto& it : json["configurations"].properties())
-		target.configurations[it.first] = BuildPackageConfiguration::fromJson(it.second);
-	return target;
+		package.configurations[it.first] = BuildPackageConfiguration::fromJson(it.second);
+	return package;
 }
 
 /////////////////////////////////////////////////////////////////////////////

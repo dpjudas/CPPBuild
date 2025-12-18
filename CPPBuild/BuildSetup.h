@@ -15,6 +15,9 @@ class BuildTargetConfiguration
 {
 public:
 	std::vector<std::string> defines;
+	std::vector<std::string> cCompileOptions;
+	std::vector<std::string> cxxCompileOptions;
+	std::vector<std::string> linkOptions;
 	std::vector<std::string> includePaths;
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;
@@ -30,6 +33,9 @@ public:
 	std::string type;
 	std::string name;
 	std::vector<std::string> defines;
+	std::vector<std::string> cCompileOptions;
+	std::vector<std::string> cxxCompileOptions;
+	std::vector<std::string> linkOptions;
 	std::vector<std::string> includePaths;
 	std::vector<std::string> files;
 	std::vector<std::string> filters;
@@ -86,6 +92,9 @@ class BuildPackageConfiguration
 {
 public:
 	std::vector<std::string> defines;
+	std::vector<std::string> cCompileOptions;
+	std::vector<std::string> cxxCompileOptions;
+	std::vector<std::string> linkOptions;
 	std::vector<std::string> includePaths;
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;
@@ -100,6 +109,9 @@ public:
 	std::string name;
 	std::vector<std::string> sources;
 	std::vector<std::string> defines;
+	std::vector<std::string> cCompileOptions;
+	std::vector<std::string> cxxCompileOptions;
+	std::vector<std::string> linkOptions;
 	std::vector<std::string> includePaths;
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;

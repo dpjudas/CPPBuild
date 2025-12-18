@@ -16,6 +16,9 @@ class Target
 		this.type = type;
 		this.name = name;
 		this.defines = [];
+		this.cCompileOptions = [];
+		this.cxxCompileOptions = [];
+		this.linkOptions = [];
 		this.includePaths = [];
 		this.files = [];
 		this.filters = [];
@@ -32,6 +35,9 @@ class Target
 		if (this.configurations[name] === undefined) {
 			this.configurations[name] = {
 				defines: [],
+				cCompileOptions: [],
+				cxxCompileOptions: [],
+				linkOptions: [],
 				includePaths: [],
 				linkLibraries: [],
 				libraryPaths: [],
@@ -71,6 +77,45 @@ class Target
 		}
 		else {
 			this.defines.push(define);
+		}
+	}
+
+	addCompileOptions(opts, options) {
+		var self = this;
+		opts.forEach(function(opt) { self.addCompileOption(opt, options); });
+	}
+
+	addCompileOption(opt, options) {
+		if (isObject(options)) {
+			var obj = this;
+			if (options.configuration !== undefined) {
+				obj = this.getConfiguration(options.configuration);
+			}
+			if (options.lang === undefined || options.lang == "c") {
+				obj.cCompileOptions.push(opt);
+			}
+			if (options.lang === undefined || options.lang == "c++") {
+				obj.cxxCompileOptions.push(opt);
+			}
+		}
+		else {
+			this.cCompileOptions.push(opt);
+			this.cxxCompileOptions.push(opt);
+		}
+	}
+
+	addLinkOptions(opts, options) {
+		var self = this;
+		opts.forEach(function(opt) { self.addLinkOption(opt, options); });
+	}
+
+	addLinkOption(opt, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.linkOptions.push(opt);
+		}
+		else {
+			this.linkOptions.push(opt);
 		}
 	}
 
@@ -152,6 +197,9 @@ class Target
 			type: this.type,
 			name: this.name,
 			defines: this.defines,
+			cCompileOptions: this.cCompileOptions,
+			cxxCompileOptions: this.cxxCompileOptions,
+			linkOptions: this.linkOptions,
 			includePaths: this.includePaths,
 			files: this.files,
 			filters: this.filters,
@@ -651,6 +699,9 @@ class Package
 		this.name = name;
 		this.sources = [];
 		this.defines = [];
+		this.cCompileOptions = [];
+		this.cxxCompileOptions = [];
+		this.linkOptions = [];
 		this.includePaths = [];
 		this.linkLibraries = [];
 		this.libraryPaths = [];
@@ -662,6 +713,9 @@ class Package
 			this.configurations[name] = {
 				sources: [],
 				defines: [],
+				cCompileOptions: [],
+				cxxCompileOptions: [],
+				linkOptions: [],
 				includePaths: [],
 				linkLibraries: [],
 				libraryPaths: []
@@ -697,6 +751,45 @@ class Package
 		}
 		else {
 			this.defines.push(define);
+		}
+	}
+
+	addCompileOptions(opts, options) {
+		var self = this;
+		opts.forEach(function(opt) { self.addCompileOption(opt, options); });
+	}
+
+	addCompileOption(opt, options) {
+		if (isObject(options)) {
+			var obj = this;
+			if (options.configuration !== undefined) {
+				obj = this.getConfiguration(options.configuration);
+			}
+			if (options.lang === undefined || options.lang == "c") {
+				obj.cCompileOptions.push(opt);
+			}
+			if (options.lang === undefined || options.lang == "c++") {
+				obj.cxxCompileOptions.push(opt);
+			}
+		}
+		else {
+			this.cCompileOptions.push(opt);
+			this.cxxCompileOptions.push(opt);
+		}
+	}
+
+	addLinkOptions(opts, options) {
+		var self = this;
+		opts.forEach(function(opt) { self.addLinkOption(opt, options); });
+	}
+
+	addLinkOption(opt, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.linkOptions.push(opt);
+		}
+		else {
+			this.linkOptions.push(opt);
 		}
 	}
 
@@ -751,6 +844,9 @@ class Package
 			name: this.name,
 			sources: this.sources,
 			defines: this.defines,
+			cCompileOptions: this.cCompileOptions,
+			cxxCompileOptions: this.cxxCompileOptions,
+			linkOptions: this.linkOptions,
 			includePaths: this.includePaths,
 			linkLibraries: this.linkLibraries,
 			libraryPaths: this.libraryPaths,

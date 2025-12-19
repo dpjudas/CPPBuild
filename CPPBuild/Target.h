@@ -4,6 +4,7 @@
 #include <mutex>
 
 class ZipWriter;
+class BuildSetup;
 
 enum class TargetType
 {
@@ -19,7 +20,7 @@ enum class TargetType
 class Target
 {
 public:
-	Target(const std::string& workDir, const std::string& target, const std::string& configuration);
+	Target(BuildSetup& setup, const std::string& workDir, const std::string& target, const std::string& configuration);
 
 	std::string workDir;
 	std::string target;
@@ -38,6 +39,9 @@ public:
 	std::vector<std::string> includePaths;
 	std::vector<std::string> defines;
 	std::vector<std::string> libraryPaths;
+	std::vector<std::string> cCompileOptions;
+	std::vector<std::string> cxxCompileOptions;
+	std::vector<std::string> linkOptions;
 
 	std::vector<std::string> outputFiles;
 
@@ -52,12 +56,15 @@ public:
 
 private:
 	void compileThreadMain(int threadIndex, int numThreads);
-	void loadTargets();
+	void loadTarget(BuildSetup& setup);
 	bool isCppFile(const std::string& filename);
 	void compile();
 	void link();
 	void linkCSS();
 	void package();
+
+	static void addArg(std::string& args, const std::string& arg);
+	static bool isOptionSpecified(const std::string& opt, std::vector<std::string> options);
 
 	std::string getLibPrefix() const;
 

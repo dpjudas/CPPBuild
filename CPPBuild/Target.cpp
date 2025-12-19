@@ -11,10 +11,11 @@
 #include "Zip/ZipWriter.h"
 #include <iostream>
 #include <future>
+#include <algorithm>
 
-Target::Target(const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
+Target::Target(BuildSetup& setup, const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
 {
-	loadTargets();
+	loadTarget(setup);
 }
 
 void Target::build()
@@ -354,16 +355,16 @@ void Target::linkCSS()
 				}
 			}
 
-			if (!found)
-				throw std::runtime_error("Could not find " + cssFilename);
-
-			css += File::readAllText(depFilename);
+			if (found)
+			{
+				css += File::readAllText(depFilename);
 #ifdef WIN32
-			css += "\r\n";
+				css += "\r\n";
 #else
-			css += "\n";
+				css += "\n";
 #endif
-			includes.push_back(depFilename);
+				includes.push_back(depFilename);
+			}
 		}
 
 		css += processCSSFile(cssFile, File::readAllText(cssFile), includes);
@@ -532,11 +533,8 @@ std::string Target::getLibPrefix() const
 	return {};
 }
 
-void Target::loadTargets()
+void Target::loadTarget(BuildSetup& setup)
 {
-	std::string cppbuildDir = FilePath::combine(workDir, ".cppbuild");
-	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
-
 	const BuildConfiguration& configDef = setup.project.getConfiguration(configuration);
 	const BuildTarget& targetDef = setup.project.getTarget(target);
 
@@ -611,6 +609,15 @@ void Target::loadTargets()
 		for (const std::string& define : package.defines)
 			defines.push_back(define);
 
+		for (const std::string& opt : package.cCompileOptions)
+			cCompileOptions.push_back(opt);
+
+		for (const std::string& opt : package.cxxCompileOptions)
+			cxxCompileOptions.push_back(opt);
+
+		for (const std::string& opt : package.linkOptions)
+			linkOptions.push_back(opt);
+
 		for (const std::string& linkLibrary : package.linkLibraries)
 			linkLibraries.push_back(linkLibrary);
 
@@ -633,6 +640,15 @@ void Target::loadTargets()
 			for (const std::string& define : packageConfigDef.defines)
 				defines.push_back(define);
 
+			for (const std::string& opt : packageConfigDef.cCompileOptions)
+				cCompileOptions.push_back(opt);
+
+			for (const std::string& opt : packageConfigDef.cxxCompileOptions)
+				cxxCompileOptions.push_back(opt);
+
+			for (const std::string& opt : packageConfigDef.linkOptions)
+				linkOptions.push_back(opt);
+
 			for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
 				linkLibraries.push_back(linkLibrary);
 
@@ -652,6 +668,15 @@ void Target::loadTargets()
 	for (const std::string& define : targetDef.defines)
 		defines.push_back(define);
 
+	for (const std::string& opt : targetDef.cCompileOptions)
+		cCompileOptions.push_back(opt);
+
+	for (const std::string& opt : targetDef.cxxCompileOptions)
+		cxxCompileOptions.push_back(opt);
+
+	for (const std::string& opt : targetDef.linkOptions)
+		linkOptions.push_back(opt);
+
 	for (const std::string& linkLibrary : targetDef.linkLibraries)
 		linkLibraries.push_back(linkLibrary);
 
@@ -669,6 +694,15 @@ void Target::loadTargets()
 		for (const std::string& define : targetConfigDef.defines)
 			defines.push_back(define);
 
+		for (const std::string& opt : targetConfigDef.cCompileOptions)
+			cCompileOptions.push_back(opt);
+
+		for (const std::string& opt : targetConfigDef.cxxCompileOptions)
+			cxxCompileOptions.push_back(opt);
+
+		for (const std::string& opt : targetConfigDef.linkOptions)
+			linkOptions.push_back(opt);
+
 		for (const std::string& linkLibrary : targetConfigDef.linkLibraries)
 			linkLibraries.push_back(linkLibrary);
 
@@ -679,10 +713,23 @@ void Target::loadTargets()
 			libraryPaths.push_back(FilePath::combine(sourcePath, item));
 	}
 
+	bool cLangVersion = isOptionSpecified("--std=", cCompileOptions);
+	bool cOptimizeSet = isOptionSpecified("-O", cCompileOptions);
+	bool cDebugOutput = isOptionSpecified("-g", cCompileOptions);
+	bool cxxLangVersion = isOptionSpecified("--std=", cxxCompileOptions);
+	bool cxxOptimizeSet = isOptionSpecified("-O", cxxCompileOptions);
+	bool cxxDebugOutput = isOptionSpecified("-g", cxxCompileOptions);
+
 	if (targetType == TargetType::webComponent ||
 		targetType == TargetType::webLibrary ||
 		targetType == TargetType::website)
 	{
+		bool cxxDisableExceptions = isOptionSpecified("-s DISABLE_EXCEPTION_CATCHING=", cxxCompileOptions);
+		bool linkAllowMemGrowth = isOptionSpecified("-s ALLOW_MEMORY_GROWTH=", linkOptions);
+		bool linkShellFile = isOptionSpecified("--shell-file", linkOptions);
+		bool linkExportName = isOptionSpecified("-s EXPORT_NAME=", linkOptions);
+		bool linkModularize = isOptionSpecified("-s MODULARIZE", linkOptions);
+
 		cssFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.cssRootFile));
 		shellFile = FilePath::forceSlash(FilePath::combine(sourcePath, targetDef.htmlShellFile));
 
@@ -691,23 +738,37 @@ void Target::loadTargets()
 		for (std::string& path : libraryPaths)
 			path = FilePath::forceSlash(path);
 
-		std::string flags = "-s DISABLE_EXCEPTION_CATCHING=0";
-		cflags = flags + " --std=c11 -Werror";
-		cxxflags = flags + " --std=c++23 -Werror -Wno-deprecated-this-capture";
+		// Emscripten defaults to dinosaur versions of the languages
+		if (!cLangVersion)
+			cCompileOptions.push_back("--std=c17");
+		if (!cxxLangVersion)
+			cxxCompileOptions.push_back("--std=c++23");
 
-		cflags = "-O1 " + cflags;
-		cxxflags = "-O1 " + cxxflags;
-		linkFlags = "-O1 " + linkFlags;
+		// Debugging webassembly in the browser is currently borderline useless. Better to optimize for size always for now.
+		if (!cOptimizeSet)
+			cCompileOptions.push_back("-O1");
+		if (!cxxOptimizeSet)
+			cxxCompileOptions.push_back("-O1");
 
 		// To do: use -gseparate-dwarf[=FILENAME] maybe
 
+		// Emscripten defaults are bad. Make them standards compliant C++
+		if (!cxxDisableExceptions)
+			cxxCompileOptions.push_back("-s DISABLE_EXCEPTION_CATCHING=0");
+		if (!linkAllowMemGrowth)
+			linkOptions.push_back("-s ALLOW_MEMORY_GROWTH=1");
+		if (!linkShellFile)
+			linkOptions.push_back("--shell-file \"" + shellFile + "\"");
+
+		// WebCPP always needs embind
+		linkLibraries.push_back("embind");
+
 		if (targetType == TargetType::webComponent)
 		{
-			linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 -s EXPORT_NAME=\"'" + target + "'\" -s MODULARIZE  -lembind";
-		}
-		else if (targetType == TargetType::website)
-		{
-			linkFlags = flags + " -s ALLOW_MEMORY_GROWTH=1 --shell-file " + shellFile + " -lembind";
+			if (!linkExportName)
+				linkOptions.push_back("-s EXPORT_NAME=\"'" + target + "'\"");
+			if (!linkModularize)
+				linkOptions.push_back("-s MODULARIZE");
 		}
 	}
 	else
@@ -717,22 +778,70 @@ void Target::loadTargets()
 		for (std::string& path : libraryPaths)
 			path = FilePath::normalizePathDelimiters(path);
 
-		cflags = "--std=gnu11 -O2 " + cflags;
-		cxxflags = "--std=gnu++20 -O2 " + cxxflags;
-		linkFlags = "--std=gnu++20 -O2 " + linkFlags;
+		// GCC defaults to dinosaur versions of the languages
+		if (!cLangVersion)
+			cCompileOptions.push_back("--std=gnu17");
+		if (!cxxLangVersion)
+			cxxCompileOptions.push_back("--std=gnu++20");
+
+		if (configuration == "Debug" || configuration == "debug")
+		{
+			if (!cOptimizeSet)
+				cCompileOptions.push_back("-O0");
+			if (!cDebugOutput)
+				cCompileOptions.push_back("-g");
+			if (!cxxOptimizeSet)
+				cxxCompileOptions.push_back("-O0");
+			if (!cxxDebugOutput)
+				cxxCompileOptions.push_back("-g");
+		}
+		else
+		{
+			if (!cOptimizeSet)
+				cCompileOptions.push_back("-O2");
+			if (!cxxOptimizeSet)
+				cxxCompileOptions.push_back("-O2");
+		}
 	}
+
+	for (const std::string& opt : cCompileOptions)
+		addArg(cflags, opt);
+
+	for (const std::string& opt : cxxCompileOptions)
+		addArg(cxxflags, opt);
+
+	for (const std::string& opt : linkOptions)
+		addArg(linkFlags, opt);
 
 	for (const std::string& includePath : includePaths)
 	{
-		cflags += " -I \"" + includePath + "\"";
-		cxxflags += " -I \"" + includePath + "\"";
+		addArg(cflags, " -I \"" + includePath + "\"");
+		addArg(cxxflags, " -I \"" + includePath + "\"");
 	}
 
 	for (const std::string& define : defines)
 	{
-		cflags += " -D \"" + define + "\"";
-		cxxflags += " -D \"" + define + "\"";
+		addArg(cflags, " -D \"" + define + "\"");
+		addArg(cxxflags, " -D \"" + define + "\"");
 	}
+}
+
+void Target::addArg(std::string& args, const std::string& arg)
+{
+	if (!arg.empty() && !args.empty())
+		args += ' ';
+	args += arg;
+}
+
+bool Target::isOptionSpecified(const std::string& opt, std::vector<std::string> options)
+{
+	// Check if any option begins with opt
+	for (const std::string& v : options)
+	{
+		if (v.size() >= opt.size() && std::equal(opt.begin(), opt.end(), v.begin()))
+			return true;
+	}
+	return false;
 }
 
 bool Target::isCppFile(const std::string& filename)

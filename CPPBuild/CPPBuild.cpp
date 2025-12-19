@@ -561,11 +561,8 @@ static void addTarget(std::vector<std::string>& buildOrder, const BuildTarget* t
 	}
 }
 
-std::vector<std::string> CPPBuild::getBuildOrder(std::string targetName, std::string configuration)
+std::vector<std::string> CPPBuild::getBuildOrder(BuildSetup& setup, std::string targetName, std::string configuration)
 {
-	std::string cppbuildDir = FilePath::combine(workDir, ".cppbuild");
-	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
-
 	std::unordered_map<std::string, const BuildTarget*> allTargets;
 	for (const BuildTarget& target : setup.project.targets)
 		allTargets[target.name] = &target;
@@ -592,9 +589,10 @@ void CPPBuild::build(std::string targetName, std::string configuration)
 {
 	checkMakefile();
 
-	for (std::string name : getBuildOrder(targetName, configuration))
+	BuildSetup setup = loadBuildSetup();
+	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
-		Target target(workDir, name, configuration);
+		Target target(setup, workDir, name, configuration);
 		target.build();
 	}
 }
@@ -603,9 +601,10 @@ void CPPBuild::clean(std::string targetName, std::string configuration)
 {
 	checkMakefile();
 
-	for (std::string name : getBuildOrder(targetName, configuration))
+	BuildSetup setup = loadBuildSetup();
+	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
-		Target target(workDir, name, configuration);
+		Target target(setup, workDir, name, configuration);
 		target.clean();
 	}
 }
@@ -614,16 +613,17 @@ void CPPBuild::rebuild(std::string targetName, std::string configuration)
 {
 	checkMakefile();
 
-	for (std::string name : getBuildOrder(targetName, configuration))
+	BuildSetup setup = loadBuildSetup();
+	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
-		Target target(workDir, name, configuration);
+		Target target(setup, workDir, name, configuration);
 		target.rebuild();
 	}
 }
 
 void CPPBuild::createInstaller()
 {
-	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
+	BuildSetup setup = loadBuildSetup();
 
 	std::string binDir = FilePath::combine(workDir, { "Build", "Installer" });
 	Directory::create(binDir);
@@ -634,4 +634,9 @@ void CPPBuild::createInstaller()
 		std::string sourcePath = FilePath::combine(setup.sourcePath, def.subdirectory);
 		msi->generate(binDir, sourcePath, def);
 	}
+}
+
+BuildSetup CPPBuild::loadBuildSetup()
+{
+	return BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
 }

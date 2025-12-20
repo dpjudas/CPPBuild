@@ -132,50 +132,9 @@ void CPPBuild::generateWorkspace()
 	VSWorkspace workspace;
 	workspace.generate(loadBuildSetup(), workDir, cppbuildDir);
 #else
+	MakefileWorkspace workspace;
+	workspace.generate(loadBuildSetup(), workDir, cppbuildDir);
 #endif
-}
-
-static void addTarget(std::vector<std::string>& buildOrder, const BuildTarget* target, std::unordered_map<std::string, const BuildTarget*>& allTargets, std::unordered_set<std::string>& added, int depth)
-{
-	if (depth > 16)
-		throw std::runtime_error("Target dependency depth too large");
-
-	if (added.insert(target->name).second)
-	{
-		for (const std::string& lib : target->linkLibraries)
-		{
-			auto it = allTargets.find(lib);
-			if (it != allTargets.end())
-			{
-				addTarget(buildOrder, it->second, allTargets, added, depth + 1);
-			}
-		}
-		buildOrder.push_back(target->name);
-	}
-}
-
-std::vector<std::string> CPPBuild::getBuildOrder(BuildSetup& setup, std::string targetName, std::string configuration)
-{
-	std::unordered_map<std::string, const BuildTarget*> allTargets;
-	for (const BuildTarget& target : setup.project.targets)
-		allTargets[target.name] = &target;
-
-	std::vector<std::string> buildOrder;
-	std::unordered_set<std::string> added;
-
-	if (targetName == "all")
-	{
-		for (const BuildTarget& target : setup.project.targets)
-		{
-			addTarget(buildOrder, &target, allTargets, added, 0);
-		}
-	}
-	else
-	{
-		addTarget(buildOrder, &setup.project.getTarget(targetName), allTargets, added, 0);
-	}
-
-	return buildOrder;
 }
 
 void CPPBuild::build(std::string targetName, std::string configuration)
@@ -232,4 +191,47 @@ void CPPBuild::createInstaller()
 BuildSetup CPPBuild::loadBuildSetup()
 {
 	return BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
+}
+
+std::vector<std::string> CPPBuild::getBuildOrder(BuildSetup& setup, std::string targetName, std::string configuration)
+{
+	std::unordered_map<std::string, const BuildTarget*> allTargets;
+	for (const BuildTarget& target : setup.project.targets)
+		allTargets[target.name] = &target;
+
+	std::vector<std::string> buildOrder;
+	std::unordered_set<std::string> added;
+
+	if (targetName == "all")
+	{
+		for (const BuildTarget& target : setup.project.targets)
+		{
+			addTarget(buildOrder, &target, allTargets, added, 0);
+		}
+	}
+	else
+	{
+		addTarget(buildOrder, &setup.project.getTarget(targetName), allTargets, added, 0);
+	}
+
+	return buildOrder;
+}
+
+void CPPBuild::addTarget(std::vector<std::string>& buildOrder, const BuildTarget* target, std::unordered_map<std::string, const BuildTarget*>& allTargets, std::unordered_set<std::string>& added, int depth)
+{
+	if (depth > 16)
+		throw std::runtime_error("Target dependency depth too large");
+
+	if (added.insert(target->name).second)
+	{
+		for (const std::string& lib : target->linkLibraries)
+		{
+			auto it = allTargets.find(lib);
+			if (it != allTargets.end())
+			{
+				addTarget(buildOrder, it->second, allTargets, added, depth + 1);
+			}
+		}
+		buildOrder.push_back(target->name);
+	}
 }

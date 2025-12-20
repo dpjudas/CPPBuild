@@ -257,7 +257,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 			output.writeProperty(indent, "CLRSupportLastError", configuration->link.clrSupportLastError);
 			output.writeProperty(indent, "CLRThreadAttribute", configuration->link.clrThreadAttribute);
 			output.writeProperty(indent, "CLRUnmanagedCodeCheck", configuration->link.clrUnmanagedCodeCheck);
-			output.writeProperty(indent, "CLRCreateHotPatchableImage", configuration->link.clrCreateHotPatchableImage);
+			output.writeProperty(indent, "CreateHotPatchableImage", configuration->link.createHotPatchableImage);
 			output.writeProperty(indent, "DataExecutionPrevention", configuration->link.dataExecutionPrevention);
 			output.writeProperty(indent, "DelayLoadDLLs", configuration->link.delayLoadDLLs);
 			output.writeProperty(indent, "DelaySign", configuration->link.delaySign);

@@ -607,7 +607,6 @@ void VSWorkspace::applyCompileOptions(VSCppProjectConfiguration* projConfig, con
 
 	// To do: handle the undocumented sdlCheck, conformanceMode and languageStandard properties
 
-	std::vector<std::string> additionalOptions;
 	for (const std::string& opt : options)
 	{
 		if (opt.empty())
@@ -715,4 +714,312 @@ void VSWorkspace::applyCompileOptions(VSCppProjectConfiguration* projConfig, con
 
 void VSWorkspace::applyLinkOptions(VSCppProjectConfiguration* projConfig, const std::vector<std::string>& options)
 {
+	std::map<std::string, SimpleOption> simpleOptions =
+	{
+		{ "/ALLOWISOLATION", { "true", &projConfig->link.allowIsolation }},
+		{ "/ALLOWISOLATION:NO", { "false", &projConfig->link.allowIsolation }},
+		{ "/ASSEMBLYDEBUG", { "true", &projConfig->link.assemblyDebug }},
+		{ "/ASSEMBLYDEBUG:DISABLE", { "false", &projConfig->link.assemblyDebug }},
+		{ "/CLRIMAGETYPE:IJW", { "ForceIJWImage", &projConfig->link.clrImageType }},
+		{ "/CLRIMAGETYPE:PURE", { "ForcePureILImage", &projConfig->link.clrImageType }},
+		{ "/CLRIMAGETYPE:SAFE", { "ForceSafeILImage", &projConfig->link.clrImageType }},
+		{ "/CLRSUPPORTLASTERROR", { "Enabled", &projConfig->link.clrSupportLastError }},
+		{ "/CLRSUPPORTLASTERROR:NO", { "Disabled", &projConfig->link.clrSupportLastError }},
+		{ "/CLRSUPPORTLASTERROR:SYSTEMDLL", { "SystemDlls", &projConfig->link.clrSupportLastError }},
+		{ "/CLRTHREADATTRIBUTE:NONE", { "DefaultThreadingAttribute", &projConfig->link.clrThreadAttribute }},
+		{ "/CLRTHREADATTRIBUTE:MTA", { "MTAThreadingAttribute", &projConfig->link.clrThreadAttribute }},
+		{ "/CLRTHREADATTRIBUTE:STA", { "STAThreadingAttribute", &projConfig->link.clrThreadAttribute }},
+		{ "/CLRUNMANAGEDCODECHECK", { "true", &projConfig->link.clrUnmanagedCodeCheck }},
+		{ "/CLRUNMANAGEDCODECHECK:NO", { "false", &projConfig->link.clrUnmanagedCodeCheck }},
+		{ "/FUNCTIONPADMIN", { "Enabled", &projConfig->link.createHotPatchableImage }},
+		{ "/FUNCTIONPADMIN:5", { "X86Image", &projConfig->link.createHotPatchableImage }},
+		{ "/FUNCTIONPADMIN:6", { "X64Image", &projConfig->link.createHotPatchableImage }},
+		{ "/FUNCTIONPADMIN:16", { "ItaniumImage", &projConfig->link.createHotPatchableImage }},
+		{ "/NXCOMPAT", { "true", &projConfig->link.dataExecutionPrevention }},
+		{ "/NXCOMPAT:NO", { "false", &projConfig->link.dataExecutionPrevention }},
+		{ "/DELAYSIGN", { "true", &projConfig->link.delaySign }},
+		{ "/DELAYSIGN:NO", { "false", &projConfig->link.delaySign }},
+		{ "/DRIVER", { "Driver", &projConfig->link.driver }},
+		{ "/DRIVER:UPONLY", { "UpOnly", &projConfig->link.driver }},
+		{ "/DRIVER:WDM", { "WDM", &projConfig->link.driver }},
+		{ "/OPT:ICF", { "true", &projConfig->link.enableCOMDATFolding }},
+		{ "/OPT:NOICF", { "false", &projConfig->link.enableCOMDATFolding }},
+		{ "/MANIFESTUAC", { "true", &projConfig->link.enableUAC }},
+		{ "/MANIFESTUAC:NO", { "false", &projConfig->link.enableUAC }},
+		{ "/FIXED", { "true", &projConfig->link.fixedBaseAddress }},
+		{ "/FIXED:NO", { "false", &projConfig->link.fixedBaseAddress }},
+		{ "/FORCE", { "Enabled", &projConfig->link.forceFileOutput }},
+		{ "/FORCE:MULTIPLE", { "MultiplyDefinedSymbolOnly", &projConfig->link.forceFileOutput }},
+		{ "/FORCE:UNRESOLVED", { "UndefinedSymbolOnly", &projConfig->link.forceFileOutput }},
+		{ "/DEBUG", { "true", &projConfig->link.generateDebugInformation }},
+		{ "/DEBUG:NONE", { "false", &projConfig->link.generateDebugInformation }},
+		{ "/MAP", { "true", &projConfig->link.generateMapFile }},
+		{ "/NODEFAULTLIB", { "true", &projConfig->link.ignoreAllDefaultLibraries }},
+		{ "/IGNOREIDL", { "true", &projConfig->link.ignoreEmbeddedIDL }},
+		{ "/SAFESEH", { "true", &projConfig->link.imageHasSafeExceptionHandlers }},
+		{ "/SAFESEH:NO", { "false", &projConfig->link.imageHasSafeExceptionHandlers }},
+		{ "/LARGEADDRESSAWARE", { "true", &projConfig->link.largeAddressAware }},
+		{ "/LARGEADDRESSAWARE:NO", { "false", &projConfig->link.largeAddressAware }},
+		{ "/DLL", { "true", &projConfig->link.linkDLL }},
+		{ "/ERRORREPORT:NONE", { "NoErrorReport", &projConfig->link.linkErrorReporting }},
+		{ "/ERRORREPORT:PROMPT", { "PromptImmediately", &projConfig->link.linkErrorReporting }},
+		{ "/ERRORREPORT:QUEUE", { "QueueForNextLogin", &projConfig->link.linkErrorReporting }},
+		{ "/ERRORREPORT:SEND", { "SendErrorReport", &projConfig->link.linkErrorReporting }},
+		{ "/INCREMENTAL", { "true", &projConfig->link.linkIncremental }},
+		{ "/INCREMENTAL:NO", { "false", &projConfig->link.linkIncremental }},
+		{ "/LTCG:STATUS", { "true", &projConfig->link.linkStatus }},
+		{ "/LTCG:OFF", { "Default", &projConfig->link.linkTimeCodeGeneration }},
+		{ "/LTCG", { "UseLinkTimeCodeGeneration", &projConfig->link.linkTimeCodeGeneration }},
+		{ "/LTCG:PGInstrument", { "PGInstrument", &projConfig->link.linkTimeCodeGeneration }},
+		{ "/LTCG:PGOptimize", { "PGOptimization", &projConfig->link.linkTimeCodeGeneration }},
+		{ "/LTCG:PGUpdate", { "PGUpdate", &projConfig->link.linkTimeCodeGeneration }},
+		{ "/MAPINFO:EXPORTS", { "true", &projConfig->link.mapExports }},
+		{ "/NOENTRY", { "true", &projConfig->link.noEntryPoint }},
+		{ "/OPT:REF", { "true", &projConfig->link.optimizeReferences }},
+		{ "/OPT:NOREF", { "false", &projConfig->link.optimizeReferences }},
+		{ "/ALLOWBIND", { "true", &projConfig->link.preventDllBinding }},
+		{ "/ALLOWBIND:NO", { "false", &projConfig->link.preventDllBinding }},
+		{ "/PROFILE", { "true", &projConfig->link.profile }},
+		{ "/DYNAMICBASE", { "true", &projConfig->link.randomizedBaseAddress }},
+		{ "/DYNAMICBASE:NO", { "false", &projConfig->link.randomizedBaseAddress }},
+		{ "/RELEASE", { "true", &projConfig->link.setChecksum }},
+		{ "/VERBOSE", { "LinkVerbose", &projConfig->link.showProgress }},
+		{ "/VERBOSE:LIB", { "LinkVerboseLib", &projConfig->link.showProgress }},
+		{ "/VERBOSE:ICF", { "LinkVerboseICF", &projConfig->link.showProgress }},
+		{ "/VERBOSE:REF", { "LinkVerboseREF", &projConfig->link.showProgress }},
+		{ "/VERBOSE:SAFESEH", { "LinkVerboseSAFESEH", &projConfig->link.showProgress }},
+		{ "/VERBOSE:CLR", { "LinkVerboseCLR", &projConfig->link.showProgress }},
+		{ "/VERBOSE:NO", { "NotSet", &projConfig->link.showProgress }},
+		{ "/SUBSYSTEM:CONSOLE", { "Console", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:WINDOWS", { "Windows", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:NATIVE", { "Native", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:EFI_APPLICATION", { "EFI Application", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER", { "EFI Boot Service Driver", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:EFI_ROM", { "EFI ROM", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:EFI_RUNTIME_DRIVER", { "EFI Runtime", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:WINDOWSCE", { "WindowsCE", &projConfig->link.subSystem }},
+		{ "/SUBSYSTEM:POSIX", { "POSIX", &projConfig->link.subSystem }},
+		{ "/DELAY:NOBIND", { "true", &projConfig->link.supportNobindOfDelayLoadedDLL }},
+		{ "/DELAY:UNLOAD", { "true", &projConfig->link.supportUnloadOfDelayLoadedDLL }},
+		{ "/NOLOGO", { "", &projConfig->link.suppressStartupBanner }},
+		{ "/SWAPRUN:CD", { "true", &projConfig->link.swapRunFromCD }},
+		{ "/SWAPRUN:NET", { "true", &projConfig->link.swapRunFromNET }},
+		{ "/MACHINE:ARM", { "MachineARM", &projConfig->link.targetMachine }},
+		{ "/MACHINE:ARM64", { "MachineARM64", &projConfig->link.targetMachine }},
+		{ "/MACHINE:ARMEC", { "MachineARM64EC", &projConfig->link.targetMachine }},
+		{ "/MACHINE:EBC", { "MachineEBC", &projConfig->link.targetMachine }},
+		{ "/MACHINE:IA64", { "MachineIA64", &projConfig->link.targetMachine }},
+		{ "/MACHINE:MIPS", { "MachineMIPS", &projConfig->link.targetMachine }},
+		{ "/MACHINE:MIPS16", { "MachineMIPS16", &projConfig->link.targetMachine }},
+		{ "/MACHINE:MIPSFPU", { "MachineMIPSFPU", &projConfig->link.targetMachine }},
+		{ "/MACHINE:MIPSFPU16", { "MachineMIPSFPU16", &projConfig->link.targetMachine }},
+		{ "/MACHINE:SH4", { "MachineSH4", &projConfig->link.targetMachine }},
+		{ "/MACHINE:THUMB", { "MachineTHUMB", &projConfig->link.targetMachine }},
+		{ "/MACHINE:X64", { "MachineX64", &projConfig->link.targetMachine }},
+		{ "/MACHINE:X86", { "MachineX86", &projConfig->link.targetMachine }},
+		{ "/TSAWARE", { "true", &projConfig->link.terminalServerAware }},
+		{ "/TSAWARE:NO", { "false", &projConfig->link.terminalServerAware } },
+		{ "/WX", { "true", &projConfig->link.treatLinkerWarningAsErrors } },
+		{ "/WX:NO", { "false", &projConfig->link.treatLinkerWarningAsErrors } },
+		{ "/NOASSEMBLY", { "true", &projConfig->link.turnOffAssemblyGeneration } },
+	};
+
+	for (const std::string& opt : options)
+	{
+		if (opt.empty())
+			continue;
+
+		std::string upper = opt;
+		for (char& c : upper)
+		{
+			if (c >= 'a' && c <= 'Z')
+				c += 'A' - 'a';
+		}
+
+		auto it = simpleOptions.find(upper);
+		if (it != simpleOptions.end())
+		{
+			const SimpleOption& simple = it->second;
+			*simple.prop = simple.value;
+		}
+		else if (upper.starts_with("/LIBPATH:"))
+		{
+			projConfig->link.additionalLibraryDirectories.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/MANIFESTDEPENDENCY:"))
+		{
+			projConfig->link.additionalManifestDependencies.push_back(opt.substr(20));
+		}
+		else if (upper.starts_with("/ASSEMBLYMODULE:"))
+		{
+			projConfig->link.addModuleNamesToAssembly.push_back(opt.substr(16));
+		}
+		else if (upper.starts_with("/ASSEMBLYLINKRESOURCE:"))
+		{
+			projConfig->link.assemblyLinkResource.push_back(opt.substr(22));
+		}
+		else if (upper.starts_with("/BASE:"))
+		{
+			projConfig->link.baseAddress = opt.substr(6);
+		}
+		else if (upper.starts_with("/DELAYLOAD:"))
+		{
+			projConfig->link.delayLoadDLLs.push_back(opt.substr(11));
+		}
+		else if (upper.starts_with("/ASSEMBLYRESOURCE:"))
+		{
+			projConfig->link.embedManagedResourceFile.push_back(opt.substr(18));
+		}
+		else if (upper.starts_with("/ENTRY:"))
+		{
+			projConfig->link.entryPointSymbol = opt.substr(7);
+		}
+		else if (upper.starts_with("/INCLUDE:"))
+		{
+			projConfig->link.forceSymbolReferences.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/ORDER:"))
+		{
+			projConfig->link.functionOrder = opt.substr(7);
+		}
+		else if (upper.starts_with("/MAP:"))
+		{
+			projConfig->link.generateMapFile = "true";
+			projConfig->link.mapFileName = opt.substr(5);
+		}
+		else if (upper.starts_with("/HEAP:"))
+		{
+			size_t split = opt.find(',', 6);
+			if (split != std::string::npos)
+			{
+				projConfig->link.heapReserveSize = opt.substr(6);
+			}
+			else
+			{
+				projConfig->link.heapReserveSize = opt.substr(6, split - 6);
+				projConfig->link.heapCommitSize = opt.substr(split + 1);
+			}
+		}
+		else if (upper.starts_with("/NODEFAULTLIB:"))
+		{
+			projConfig->link.ignoreSpecificDefaultLibraries.push_back(opt.substr(14));
+		}
+		else if (upper.starts_with("/IMPLIB:"))
+		{
+			projConfig->link.importLibrary = opt.substr(8);
+		}
+		else if (upper.starts_with("/KEYCONTAINER:"))
+		{
+			projConfig->link.keyContainer = opt.substr(14);
+		}
+		else if (upper.starts_with("/KEYFILE:"))
+		{
+			projConfig->link.keyFile = opt.substr(9);
+		}
+		else if (upper.starts_with("/MANIFESTFILE:"))
+		{
+			projConfig->link.manifestFile = opt.substr(14);
+		}
+		else if (upper.starts_with("/IDLOUT:"))
+		{
+			projConfig->link.mergedIDLBaseFileName = opt.substr(8);
+		}
+		else if (upper.starts_with("/MIDL:"))
+		{
+			projConfig->link.midlCommandFile = opt.substr(6);
+		}
+		else if (upper.starts_with("/DEF:"))
+		{
+			projConfig->link.moduleDefinitionFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/STUB:"))
+		{
+			projConfig->link.msdosStubFileName = opt.substr(6);
+		}
+		else if (upper.starts_with("/OUT:"))
+		{
+			projConfig->link.outputFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/PGD:"))
+		{
+			projConfig->link.profileGuidedDatabase = opt.substr(5);
+		}
+		else if (upper.starts_with("/PDB:"))
+		{
+			projConfig->link.programDatabaseFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/ALIGN:"))
+		{
+			projConfig->link.sectionAlignment = opt.substr(7);
+		}
+		else if (upper.starts_with("/SECTION:"))
+		{
+			projConfig->link.specifySectionAttributes.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/STACK:"))
+		{
+			size_t split = opt.find(',', 7);
+			if (split != std::string::npos)
+			{
+				projConfig->link.stackReserveSize = opt.substr(7);
+			}
+			else
+			{
+				projConfig->link.stackReserveSize = opt.substr(7, split - 7);
+				projConfig->link.stackCommitSize = opt.substr(split + 1);
+			}
+		}
+		else if (upper.starts_with("/PDBSTRIPPED:"))
+		{
+			projConfig->link.stripPrivateSymbols = opt.substr(13);
+		}
+		else if (upper.starts_with("/TLBOUT:"))
+		{
+			projConfig->link.typeLibraryFile = opt.substr(8);
+		}
+		else if (upper.starts_with("/TLBID:"))
+		{
+			projConfig->link.typeLibraryResourceID = opt.substr(7);
+		}
+		else if (upper.starts_with("/MANIFESTUAC:"))
+		{
+			std::string arg = opt.substr(13);
+			if (arg == "level='asInvoker'")
+			{
+				projConfig->link.uacExecutionLevel = "AsInvoker";
+			}
+			else if (arg == "level='highestAvailable'")
+			{
+				projConfig->link.uacExecutionLevel = "HighestAvailable";
+			}
+			else if (arg == "level='requireAdministrator'")
+			{
+				projConfig->link.uacExecutionLevel = "RequireAdministrator";
+			}
+			else if (arg == "uiAccess='false'")
+			{
+				projConfig->link.uacUIAccess = "false";
+			}
+			else if (arg == "uiAccess='true'")
+			{
+				projConfig->link.uacUIAccess = "true";
+			}
+			else
+			{
+				if (!projConfig->clCompile.additionalOptions.empty())
+					projConfig->clCompile.additionalOptions += ' ';
+				projConfig->clCompile.additionalOptions += opt;
+			}
+		}
+		else if (upper.starts_with("/VERSION:"))
+		{
+			projConfig->link.version = opt.substr(9);
+		}
+		else
+		{
+			if (!projConfig->clCompile.additionalOptions.empty())
+				projConfig->clCompile.additionalOptions += ' ';
+			projConfig->clCompile.additionalOptions += opt;
+		}
+	}
 }

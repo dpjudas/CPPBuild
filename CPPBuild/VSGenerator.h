@@ -170,7 +170,7 @@ public:
 		std::string clrSupportLastError;
 		std::string clrThreadAttribute;
 		std::string clrUnmanagedCodeCheck;
-		std::string clrCreateHotPatchableImage;
+		std::string createHotPatchableImage;
 		std::string dataExecutionPrevention;
 		std::vector<std::string> delayLoadDLLs;
 		std::string delaySign;

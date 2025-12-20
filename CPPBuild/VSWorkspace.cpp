@@ -301,7 +301,18 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->general.configurationType = "Application";
 				projConfig->clCompile.preprocessorDefinitions = configDefines;
 				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
+				projConfig->clCompile.warningLevel = "Level3";
+				projConfig->clCompile.functionLevelLinking = "true";
+				projConfig->clCompile.intrinsicFunctions = "true";
+				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
+				projConfig->clCompile.multiProcessorCompilation = "true";
+				projConfig->clCompile.sdlCheck = "true";
+				projConfig->clCompile.conformanceMode = "true";
+				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Windows";
+				projConfig->link.enableCOMDATFolding = "true";
+				projConfig->link.optimizeReferences = "true";
+				projConfig->link.generateDebugInformation = "true";
 				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
 				projConfig->link.additionalDependencies = configDependencies;
 			}
@@ -310,7 +321,18 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->general.configurationType = "Application";
 				projConfig->clCompile.preprocessorDefinitions = configDefines;
 				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
+				projConfig->clCompile.warningLevel = "Level3";
+				projConfig->clCompile.functionLevelLinking = "true";
+				projConfig->clCompile.intrinsicFunctions = "true";
+				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
+				projConfig->clCompile.multiProcessorCompilation = "true";
+				projConfig->clCompile.sdlCheck = "true";
+				projConfig->clCompile.conformanceMode = "true";
+				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Console";
+				projConfig->link.enableCOMDATFolding = "true";
+				projConfig->link.optimizeReferences = "true";
+				projConfig->link.generateDebugInformation = "true";
 				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
 				projConfig->link.additionalDependencies = configDependencies;
 			}
@@ -319,7 +341,18 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->general.configurationType = "StaticLibrary";
 				projConfig->clCompile.preprocessorDefinitions = configDefines;
 				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
+				projConfig->clCompile.warningLevel = "Level3";
+				projConfig->clCompile.functionLevelLinking = "true";
+				projConfig->clCompile.intrinsicFunctions = "true";
+				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
+				projConfig->clCompile.multiProcessorCompilation = "true";
+				projConfig->clCompile.sdlCheck = "true";
+				projConfig->clCompile.conformanceMode = "true";
+				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Windows";
+				projConfig->link.enableCOMDATFolding = "true";
+				projConfig->link.optimizeReferences = "true";
+				projConfig->link.generateDebugInformation = "true";
 				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
 				projConfig->link.additionalDependencies = configDependencies;
 			}
@@ -328,7 +361,18 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->general.configurationType = "DynamicLibrary";
 				projConfig->clCompile.preprocessorDefinitions = configDefines;
 				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
+				projConfig->clCompile.warningLevel = "Level3";
+				projConfig->clCompile.functionLevelLinking = "true";
+				projConfig->clCompile.intrinsicFunctions = "true";
+				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
+				projConfig->clCompile.multiProcessorCompilation = "true";
+				projConfig->clCompile.sdlCheck = "true";
+				projConfig->clCompile.conformanceMode = "true";
+				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Windows";
+				projConfig->link.enableCOMDATFolding = "true";
+				projConfig->link.optimizeReferences = "true";
+				projConfig->link.generateDebugInformation = "true";
 				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
 				projConfig->link.additionalDependencies = configDependencies;
 			}

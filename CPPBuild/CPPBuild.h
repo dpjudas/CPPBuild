@@ -3,13 +3,6 @@
 class JsonValue;
 class BuildSetup;
 
-class VSGuids
-{
-public:
-	std::string solutionGuid;
-	std::map<std::string, std::string> projectGuids;
-};
-
 class CPPBuild
 {
 public:
@@ -28,9 +21,6 @@ public:
 	BuildSetup loadBuildSetup();
 
 	std::vector<std::string> getBuildOrder(BuildSetup& setup, std::string target, std::string configuration);
-
-	VSGuids loadSolutionGuids();
-	void saveSolutionGuids(const VSGuids& guids);
 
 	std::string workDir;
 	std::string cppbuildDir;

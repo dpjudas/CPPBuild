@@ -214,6 +214,7 @@
     <ClCompile Include="Javascript\ScriptContext.cpp" />
     <ClCompile Include="Json\JsonValue.cpp" />
     <ClCompile Include="Main.cpp" />
+    <ClCompile Include="MakefileWorkspace.cpp" />
     <ClCompile Include="Msi\Dialogs\AdminBrowseDlg.cpp" />
     <ClCompile Include="Msi\Dialogs\AdminInstallPointDlg.cpp" />
     <ClCompile Include="Msi\Dialogs\AdminRegistrationDlg.cpp" />
@@ -260,6 +261,7 @@
     <ClCompile Include="Text\UTF8Reader.cpp" />
     <ClCompile Include="VSGenerator.cpp" />
     <ClCompile Include="Target.cpp" />
+    <ClCompile Include="VSWorkspace.cpp" />
     <ClCompile Include="Zip\miniz.c">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">NotUsing</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">NotUsing</PrecompiledHeader>
@@ -287,6 +289,7 @@
     <ClInclude Include="Javascript\ScriptContext.h" />
     <ClInclude Include="Javascript\ScriptValue.h" />
     <ClInclude Include="Json\JsonValue.h" />
+    <ClInclude Include="MakefileWorkspace.h" />
     <ClInclude Include="Msi\Dialogs\AdminBrowseDlg.h" />
     <ClInclude Include="Msi\Dialogs\AdminInstallPointDlg.h" />
     <ClInclude Include="Msi\Dialogs\AdminRegistrationDlg.h" />
@@ -329,6 +332,7 @@
     <ClInclude Include="Text\UTF8Reader.h" />
     <ClInclude Include="VSGenerator.h" />
     <ClInclude Include="Target.h" />
+    <ClInclude Include="VSWorkspace.h" />
     <ClInclude Include="Zip\miniz.h" />
     <ClInclude Include="Zip\ZipReader.h" />
     <ClInclude Include="Zip\ZipWriter.h" />

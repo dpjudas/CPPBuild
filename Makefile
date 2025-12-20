@@ -16,6 +16,8 @@ _OBJ=\
 	CPPBuild/VSGenerator.o \
 	CPPBuild/Target.o \
 	CPPBuild/ConsoleProcess.o \
+	CPPBuild/VSWorkspace.o \
+	CPPBuild/MakefileWorkspace.o \
 	CPPBuild/Base64/Base64.o \
 	CPPBuild/Guid/Guid.o \
 	CPPBuild/IOData/DataBuffer.o \

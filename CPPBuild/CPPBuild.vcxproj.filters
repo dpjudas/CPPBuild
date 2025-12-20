@@ -159,6 +159,8 @@
     </ClCompile>
     <ClCompile Include="BuildSetup.cpp" />
     <ClCompile Include="ConsoleProcess.cpp" />
+    <ClCompile Include="MakefileWorkspace.cpp" />
+    <ClCompile Include="VSWorkspace.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -331,6 +333,8 @@
     </ClInclude>
     <ClInclude Include="BuildSetup.h" />
     <ClInclude Include="ConsoleProcess.h" />
+    <ClInclude Include="MakefileWorkspace.h" />
+    <ClInclude Include="VSWorkspace.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

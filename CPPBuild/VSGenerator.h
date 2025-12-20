@@ -138,11 +138,11 @@ public:
 		std::string structMemberAlignment;
 		std::string suppressStartupBanner;
 		std::string trackerLogDirectory;
-		std::string treatSpecificWarningsAsErrors;
+		std::vector<std::string> treatSpecificWarningsAsErrors;
 		std::string treatWarningAsError;
 		std::string treatWChar_tAsBuiltInType;
 		std::string undefineAllPreprocessorDefinitions;
-		std::string undefinePreprocessorDefinitions;
+		std::vector<std::string> undefinePreprocessorDefinitions;
 		std::string useFullPaths;
 		std::string useUnicodeForAssemblerListing;
 		std::string warningLevel;

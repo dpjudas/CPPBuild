@@ -73,6 +73,9 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		std::vector<std::string> headerFiles;
 		std::vector<std::string> extraFiles;
 		std::vector<std::string> defines;
+		std::vector<std::string> cCompileOptions;
+		std::vector<std::string> cxxCompileOptions;
+		std::vector<std::string> linkOptions;
 		std::vector<std::string> includePaths;
 		std::vector<std::string> libraryPaths;
 		std::vector<std::string> linkLibraries;
@@ -132,6 +135,15 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			for (const std::string& define : package.defines)
 				defines.push_back(define);
 
+			for (const std::string& opt : package.cCompileOptions)
+				cCompileOptions.push_back(opt);
+
+			for (const std::string& opt : package.cxxCompileOptions)
+				cxxCompileOptions.push_back(opt);
+
+			for (const std::string& opt : package.linkOptions)
+				linkOptions.push_back(opt);
+
 			for (const std::string& linkLibrary : package.linkLibraries)
 				linkLibraries.push_back(linkLibrary);
 
@@ -149,6 +161,15 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 		for (const std::string& define : targetDef.defines)
 			defines.push_back(define);
+
+		for (const std::string& opt : targetDef.cCompileOptions)
+			cCompileOptions.push_back(opt);
+
+		for (const std::string& opt : targetDef.cxxCompileOptions)
+			cxxCompileOptions.push_back(opt);
+
+		for (const std::string& opt : targetDef.linkOptions)
+			linkOptions.push_back(opt);
 
 		for (const std::string& linkLibrary : targetDef.linkLibraries)
 			linkLibraries.push_back(linkLibrary);
@@ -209,6 +230,9 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			std::string configName = configDef.name;
 
 			std::vector<std::string> configDefines = defines;
+			std::vector<std::string> configCCompileOptions = cCompileOptions;
+			std::vector<std::string> configCxxCompileOptions = cxxCompileOptions;
+			std::vector<std::string> configLinkOptions = linkOptions;
 			std::vector<std::string> configIncludes = includePaths;
 			std::vector<std::string> configLibraryPaths = libraryPaths;
 			std::vector<std::string> configDependencies = dependencies;
@@ -226,6 +250,15 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 					for (const std::string& define : packageConfigDef.defines)
 						configDefines.push_back(define);
+
+					for (const std::string& opt : packageConfigDef.cCompileOptions)
+						configCCompileOptions.push_back(opt);
+
+					for (const std::string& opt : packageConfigDef.cxxCompileOptions)
+						configCxxCompileOptions.push_back(opt);
+
+					for (const std::string& opt : packageConfigDef.linkOptions)
+						configLinkOptions.push_back(opt);
 
 					for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
 						configLinkLibraries.push_back(linkLibrary);
@@ -248,7 +281,17 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			{
 				const BuildTargetConfiguration& targetConfigDef = itTargetConfig->second;
 
-				configDefines.insert(configDefines.end(), targetConfigDef.defines.begin(), targetConfigDef.defines.end());
+				for (const std::string& define : targetConfigDef.defines)
+					configDefines.push_back(define);
+
+				for (const std::string& opt : targetConfigDef.cCompileOptions)
+					configCCompileOptions.push_back(opt);
+
+				for (const std::string& opt : targetConfigDef.cxxCompileOptions)
+					configCxxCompileOptions.push_back(opt);
+
+				for (const std::string& opt : targetConfigDef.linkOptions)
+					configLinkOptions.push_back(opt);
 
 				for (const std::string& item : targetConfigDef.includePaths)
 					configIncludes.push_back(FilePath::combine(sourcePath, item));
@@ -278,6 +321,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			}
 
 			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, configDef.platform);
+
 			if (isMakefileProject)
 			{
 				// Emscripten based projects always wants the emscripten headers for intellisense
@@ -393,6 +437,12 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->clCompile.intrinsicFunctions = "true";
 			}
 
+			// TBD: what should the defaults be? MSBuild defaults will bomb us decades back in time and build insecure executables
+			// To do: deal with configCCompileOptions - apply it to every C file encountered?
+
+			applyCompileOptions(projConfig.get(), configCxxCompileOptions);
+			applyLinkOptions(projConfig.get(), configLinkOptions);
+
 			project->configurations.push_back(std::move(projConfig));
 		}
 
@@ -438,4 +488,231 @@ void VSWorkspace::saveSolutionGuids(const VSGuids& guids, const std::string& cpp
 	file["solutionGuid"] = JsonValue::string(guids.solutionGuid);
 	file["projectGuids"] = std::move(projectGuids);
 	File::writeAllText(FilePath::combine(cppbuildDir, "vsguids.json"), file.to_json());
+}
+
+void VSWorkspace::applyCompileOptions(VSCppProjectConfiguration* projConfig, const std::vector<std::string>& options)
+{
+	std::map<std::string, SimpleOption> simpleOptions =
+	{
+		{ "/FA", { "AssemblyCode", &projConfig->clCompile.assemblerOutput }},
+		{ "/FAc", { "AssemblyAndMachineCode", &projConfig->clCompile.assemblerOutput }},
+		{ "/FAs", { "AssemblyAndSourceCode", &projConfig->clCompile.assemblerOutput }},
+		{ "/FAcs", { "All", &projConfig->clCompile.assemblerOutput }},
+		{ "/RTC-", { "Default", &projConfig->clCompile.assemblerOutput }},
+		{ "/RTCs", { "StackFrameRuntimeCheck", &projConfig->clCompile.assemblerOutput }},
+		{ "/RTCu", { "UninitializedLocalUsageCheck", &projConfig->clCompile.assemblerOutput }},
+		{ "/RTC1", { "EnableFastChecks", &projConfig->clCompile.assemblerOutput }},
+		{ "/FR", { "true", &projConfig->clCompile.browseInformation }},
+		{ "/Fr", { "true", &projConfig->clCompile.browseInformation }},
+		{ "/GS", { "true", &projConfig->clCompile.bufferSecurityCheck }},
+		{ "/GS-", { "false", &projConfig->clCompile.bufferSecurityCheck }},
+		{ "/Gd", { "Cdecl", &projConfig->clCompile.callingConvention }},
+		{ "/Gr", { "FastCall", &projConfig->clCompile.callingConvention }},
+		{ "/Gz", { "StdCall", &projConfig->clCompile.callingConvention }},
+		{ "/TC", { "CompileAsC", &projConfig->clCompile.compileAs }},
+		{ "/TP", { "CompileAsCpp", &projConfig->clCompile.compileAs }},
+		{ "/interface", { "CompileAsCppModule", &projConfig->clCompile.compileAs }},
+		{ "/internalPartition", { "CompileAsCppModuleInternalPartition", &projConfig->clCompile.compileAs }},
+		{ "/exportHeader", { "CompileAsHeaderUnit", &projConfig->clCompile.compileAs }},
+		{ "/clr", { "true", &projConfig->clCompile.compileAsManaged }},
+		{ "/clr:pure", { "Pure", &projConfig->clCompile.compileAsManaged }},
+		{ "/clr:safe", { "Safe", &projConfig->clCompile.compileAsManaged }},
+		{ "/clr:oldSyntax", { "OldSyntax", &projConfig->clCompile.compileAsManaged }},
+		{ "/hotpatch", { "true", &projConfig->clCompile.createHotpatchableImage }},
+		{ "/Z7", { "OldStyle", &projConfig->clCompile.debugInformationFormat }},
+		{ "/Zi", { "ProgramDatabase", &projConfig->clCompile.debugInformationFormat }},
+		{ "/ZI", { "EditAndContinue", &projConfig->clCompile.debugInformationFormat }},
+		{ "/arch:IA32", { "NoExtensions", &projConfig->clCompile.enableEnhancedInstructionSet }},
+		{ "/arch:SSE", { "StreamingSIMDExtensions", &projConfig->clCompile.enableEnhancedInstructionSet }},
+		{ "/arch:SSE2", { "StreamingSIMDExtensions2", &projConfig->clCompile.enableEnhancedInstructionSet }},
+		{ "/arch:AVX", { "AdvancedVectorExtensions", &projConfig->clCompile.enableEnhancedInstructionSet }},
+		{ "/arch:AVX2", { "AdvancedVectorExtensions2", &projConfig->clCompile.enableEnhancedInstructionSet }},
+		{ "/arch:AVX512", { "AdvancedVectorExtensions512", &projConfig->clCompile.enableEnhancedInstructionSet }},
+		{ "/GT", { "true", &projConfig->clCompile.enableFiberSafeOptimizations }},
+		{ "/GT-", { "false", &projConfig->clCompile.enableFiberSafeOptimizations }},
+		{ "/analyze", { "true", &projConfig->clCompile.enablePREfast }},
+		{ "/analyze-", { "false", &projConfig->clCompile.enablePREfast }},
+		{ "/errorReport:none", { "None", &projConfig->clCompile.errorReporting }},
+		{ "/errorReport:prompt", { "Prompt", &projConfig->clCompile.errorReporting }},
+		{ "/errorReport:queue", { "Queue", &projConfig->clCompile.errorReporting }},
+		{ "/errorReport:send", { "Send", &projConfig->clCompile.errorReporting }},
+		{ "/EH-", { "false", &projConfig->clCompile.exceptionHandling }},
+		{ "/EHa", { "Async", &projConfig->clCompile.exceptionHandling }},
+		{ "/EHsc", { "Sync", &projConfig->clCompile.exceptionHandling }},
+		{ "/EHs", { "SyncCThrow", &projConfig->clCompile.exceptionHandling }},
+		{ "/Fx", { "true", &projConfig->clCompile.expandAttributedSource }},
+		{ "/O-", { "Neither", &projConfig->clCompile.favorSizeOrSpeed }},
+		{ "/Os", { "Size", &projConfig->clCompile.favorSizeOrSpeed }},
+		{ "/Ot", { "Speed", &projConfig->clCompile.favorSizeOrSpeed }},
+		{ "/fp:except", { "true", &projConfig->clCompile.floatingPointExceptions }},
+		{ "/fp:except-", { "false", &projConfig->clCompile.floatingPointExceptions }},
+		{ "/fp:precise", { "Precise", &projConfig->clCompile.floatingPointModel }},
+		{ "/fp:strict", { "Strict", &projConfig->clCompile.floatingPointModel }},
+		{ "/fp:fast", { "Fast", &projConfig->clCompile.floatingPointModel }},
+		{ "/Zc:forScope", { "true", &projConfig->clCompile.forceConformanceInForLoopScope }},
+		{ "/Zc:forScope-", { "false", &projConfig->clCompile.forceConformanceInForLoopScope }},
+		{ "/Gy", { "true", &projConfig->clCompile.functionLevelLinking }},
+		{ "/Gy-", { "false", &projConfig->clCompile.functionLevelLinking }},
+		{ "/doc", { "true", &projConfig->clCompile.generateXMLDocumentationFiles }},
+		{ "/X", { "true", &projConfig->clCompile.ignoreStandardIncludePath }},
+		{ "/Ob-", { "Default", &projConfig->clCompile.inlineFunctionExpansion }},
+		{ "/Ob0", { "Disabled", &projConfig->clCompile.inlineFunctionExpansion }},
+		{ "/Ob1", { "OnlyExplicitInline", &projConfig->clCompile.inlineFunctionExpansion }},
+		{ "/Ob2", { "AnySuitable", &projConfig->clCompile.inlineFunctionExpansion }},
+		{ "/Oi", { "true", &projConfig->clCompile.intrinsicFunctions }},
+		{ "/Oi-", { "false", &projConfig->clCompile.intrinsicFunctions }},
+		{ "/Gm", { "true", &projConfig->clCompile.minimalRebuild }},
+		{ "/Zl", { "true", &projConfig->clCompile.omitDefaultLibName }},
+		{ "/Oy", { "true", &projConfig->clCompile.omitFramePointers }},
+		{ "/openmp", { "true", &projConfig->clCompile.openMPSupport }},
+		{ "/Od", { "Disabled", &projConfig->clCompile.optimization }},
+		{ "/O1", { "MinSpace", &projConfig->clCompile.optimization }},
+		{ "/O2", { "MaxSpeed", &projConfig->clCompile.optimization }},
+		{ "/Ox", { "Full", &projConfig->clCompile.optimization }},
+		{ "/Y-", { "NotUsing", &projConfig->clCompile.precompiledHeader }},
+		{ "/Yc", { "Create", &projConfig->clCompile.precompiledHeader }},
+		{ "/Yu", { "Use", &projConfig->clCompile.precompiledHeader }},
+		{ "/C", { "true", &projConfig->clCompile.preprocessKeepComments }},
+		{ "/EP", { "true", &projConfig->clCompile.preprocessSuppressLineNumbers }},
+		{ "/P", { "true", &projConfig->clCompile.preprocessToFile }},
+		{ "/MT", { "MultiThreaded", &projConfig->clCompile.runtimeLibrary }},
+		{ "/MTd", { "MultiThreadedDebug", &projConfig->clCompile.runtimeLibrary }},
+		{ "/MD", { "MultiThreadedDLL", &projConfig->clCompile.runtimeLibrary }},
+		{ "/MDd", { "MultiThreadedDebugDLL", &projConfig->clCompile.runtimeLibrary }},
+		{ "/GR", { "true", &projConfig->clCompile.runtimeTypeInfo }},
+		{ "/GR-", { "false", &projConfig->clCompile.runtimeTypeInfo }},
+		{ "/showIncludes", { "true", &projConfig->clCompile.showIncludes }},
+		{ "/RTCc", { "true", &projConfig->clCompile.smallerTypeCheck }},
+		{ "/GF", { "true", &projConfig->clCompile.stringPooling }},
+		{ "/Zp1", { "1Byte", &projConfig->clCompile.structMemberAlignment }},
+		{ "/Zp2", { "2Bytes", &projConfig->clCompile.structMemberAlignment }},
+		{ "/Zp4", { "4Bytes", &projConfig->clCompile.structMemberAlignment }},
+		{ "/Zp8", { "8Bytes", &projConfig->clCompile.structMemberAlignment }},
+		{ "/Zp16", { "16Bytes", &projConfig->clCompile.structMemberAlignment }},
+		{ "/nologo", { "true", &projConfig->clCompile.suppressStartupBanner }},
+		{ "/WX", { "true", &projConfig->clCompile.treatWarningAsError }},
+		{ "/Zc:wchar_t", { "true", &projConfig->clCompile.treatWChar_tAsBuiltInType }},
+		{ "/Zc:wchar_t-", { "false", &projConfig->clCompile.treatWChar_tAsBuiltInType }},
+		{ "/u", { "true", &projConfig->clCompile.undefineAllPreprocessorDefinitions }},
+		{ "/FC", { "true", &projConfig->clCompile.useFullPaths }},
+		{ "/FAu", { "true", &projConfig->clCompile.useUnicodeForAssemblerListing }},
+		{ "/W0", { "TurnOffAllWarnings", &projConfig->clCompile.warningLevel }},
+		{ "/W1", { "Level1", &projConfig->clCompile.warningLevel }},
+		{ "/W2", { "Level2", &projConfig->clCompile.warningLevel }},
+		{ "/W3", { "Level3", &projConfig->clCompile.warningLevel }},
+		{ "/W4", { "Level4", &projConfig->clCompile.warningLevel }},
+		{ "/Wall", { "EnableAllWarnings", &projConfig->clCompile.warningLevel }},
+		{ "/GL", { "true", &projConfig->clCompile.wholeProgramOptimization }},
+	};
+
+	// To do: handle the undocumented sdlCheck, conformanceMode and languageStandard properties
+
+	std::vector<std::string> additionalOptions;
+	for (const std::string& opt : options)
+	{
+		if (opt.empty())
+			continue;
+
+		auto it = simpleOptions.find(opt);
+		if (it != simpleOptions.end())
+		{
+			const SimpleOption& simple = it->second;
+			*simple.prop = simple.value;
+		}
+		else if (opt.starts_with("/I "))
+		{
+			projConfig->clCompile.additionalIncludeDirectories.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/I"))
+		{
+			projConfig->clCompile.additionalIncludeDirectories.push_back(opt.substr(2));
+		}
+		else if (opt.starts_with("/AI"))
+		{
+			projConfig->clCompile.additionalUsingDirectories.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/Fa"))
+		{
+			projConfig->clCompile.assemblerListingLocation = opt.substr(3);
+		}
+		else if (opt.starts_with("/FR") || opt.starts_with("/Fr"))
+		{
+			projConfig->clCompile.browseInformation = "true";
+			projConfig->clCompile.browseInformationFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/wd"))
+		{
+			projConfig->clCompile.disableSpecificWarnings.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/FI "))
+		{
+			projConfig->clCompile.forcedIncludeFiles.push_back(opt.substr(4));
+		}
+		else if (opt.starts_with("/FI"))
+		{
+			projConfig->clCompile.forcedIncludeFiles.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/Fo "))
+		{
+			projConfig->clCompile.objectFileName = opt.substr(4);
+		}
+		else if (opt.starts_with("/Fo"))
+		{
+			projConfig->clCompile.objectFileName = opt.substr(3);
+		}
+		else if (opt.starts_with("/Yc"))
+		{
+			projConfig->clCompile.precompiledHeader = "Create";
+			projConfig->clCompile.precompiledHeaderFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/Yu"))
+		{
+			projConfig->clCompile.precompiledHeader = "Use";
+			projConfig->clCompile.precompiledHeaderFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/Fp"))
+		{
+			projConfig->clCompile.precompiledHeaderOutputFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/Fi"))
+		{
+			projConfig->clCompile.preprocessOutputPath = opt.substr(3);
+		}
+		else if (opt.starts_with("/MP"))
+		{
+			projConfig->clCompile.multiProcessorCompilation = "true";
+			projConfig->clCompile.processorNumber = opt.substr(3);
+		}
+		else if (opt.starts_with("/Fd"))
+		{
+			projConfig->clCompile.programDataBaseFileName = opt.substr(3);
+		}
+		else if (opt.starts_with("/we"))
+		{
+			projConfig->clCompile.treatSpecificWarningsAsErrors.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/U "))
+		{
+			projConfig->clCompile.undefinePreprocessorDefinitions.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/U"))
+		{
+			projConfig->clCompile.undefinePreprocessorDefinitions.push_back(opt.substr(2));
+		}
+		else if (opt.starts_with("/doc"))
+		{
+			projConfig->clCompile.generateXMLDocumentationFiles = "true";
+			projConfig->clCompile.xmlDocumentationFileName = opt.substr(4);
+		}
+		else
+		{
+			if (!projConfig->clCompile.additionalOptions.empty())
+				projConfig->clCompile.additionalOptions += ' ';
+			projConfig->clCompile.additionalOptions += opt;
+		}
+	}
+}
+
+void VSWorkspace::applyLinkOptions(VSCppProjectConfiguration* projConfig, const std::vector<std::string>& options)
+{
 }

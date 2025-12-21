@@ -441,7 +441,10 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			// To do: deal with configCCompileOptions - apply it to every C file encountered?
 
 			applyCompileOptions(projConfig.get(), configCxxCompileOptions);
-			applyLinkOptions(projConfig.get(), configLinkOptions);
+			if (projectType == "lib")
+				applyLibOptions(projConfig.get(), configLinkOptions);
+			else
+				applyLinkOptions(projConfig.get(), configLinkOptions);
 
 			project->configurations.push_back(std::move(projConfig));
 		}
@@ -1006,9 +1009,9 @@ void VSWorkspace::applyLinkOptions(VSCppProjectConfiguration* projConfig, const 
 			}
 			else
 			{
-				if (!projConfig->clCompile.additionalOptions.empty())
-					projConfig->clCompile.additionalOptions += ' ';
-				projConfig->clCompile.additionalOptions += opt;
+				if (!projConfig->link.additionalOptions.empty())
+					projConfig->link.additionalOptions += ' ';
+				projConfig->link.additionalOptions += opt;
 			}
 		}
 		else if (upper.starts_with("/VERSION:"))
@@ -1017,9 +1020,109 @@ void VSWorkspace::applyLinkOptions(VSCppProjectConfiguration* projConfig, const 
 		}
 		else
 		{
-			if (!projConfig->clCompile.additionalOptions.empty())
-				projConfig->clCompile.additionalOptions += ' ';
-			projConfig->clCompile.additionalOptions += opt;
+			if (!projConfig->link.additionalOptions.empty())
+				projConfig->link.additionalOptions += ' ';
+			projConfig->link.additionalOptions += opt;
+		}
+	}
+}
+
+void VSWorkspace::applyLibOptions(VSCppProjectConfiguration* projConfig, const std::vector<std::string>& options)
+{
+	std::map<std::string, SimpleOption> simpleOptions =
+	{
+		{ "/NODEFAULTLIB", { "true", &projConfig->lib.ignoreAllDefaultLibraries }},
+		{ "/ERRORREPORT:NONE", { "NoErrorReport", &projConfig->lib.errorReporting }},
+		{ "/ERRORREPORT:PROMPT", { "PromptImmediately", &projConfig->lib.errorReporting }},
+		{ "/ERRORREPORT:QUEUE", { "QueueForNextLogin", &projConfig->lib.errorReporting }},
+		{ "/ERRORREPORT:SEND", { "SendErrorReport", &projConfig->lib.errorReporting }},
+		{ "/LTCG", { "true", &projConfig->lib.linkTimeCodeGeneration }},
+		{ "/SUBSYSTEM:CONSOLE", { "Console", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:WINDOWS", { "Windows", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:NATIVE", { "Native", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:EFI_APPLICATION", { "EFI Application", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER", { "EFI Boot Service Driver", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:EFI_ROM", { "EFI ROM", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:EFI_RUNTIME_DRIVER", { "EFI Runtime", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:WINDOWSCE", { "WindowsCE", &projConfig->lib.subSystem }},
+		{ "/SUBSYSTEM:POSIX", { "POSIX", &projConfig->lib.subSystem }},
+		{ "/NOLOGO", { "", &projConfig->lib.suppressStartupBanner }},
+		{ "/MACHINE:ARM", { "MachineARM", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:ARM64", { "MachineARM64", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:ARMEC", { "MachineARM64EC", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:EBC", { "MachineEBC", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:IA64", { "MachineIA64", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:MIPS", { "MachineMIPS", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:MIPS16", { "MachineMIPS16", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:MIPSFPU", { "MachineMIPSFPU", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:MIPSFPU16", { "MachineMIPSFPU16", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:SH4", { "MachineSH4", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:THUMB", { "MachineTHUMB", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:X64", { "MachineX64", &projConfig->lib.targetMachine }},
+		{ "/MACHINE:X86", { "MachineX86", &projConfig->lib.targetMachine }},
+		{ "/WX", { "true", &projConfig->lib.treatLibWarningAsErrors }},
+		{ "/VERBOSE", { "true", &projConfig->lib.verbose }},
+	};
+
+	for (const std::string& opt : options)
+	{
+		if (opt.empty())
+			continue;
+
+		std::string upper = opt;
+		for (char& c : upper)
+		{
+			if (c >= 'a' && c <= 'Z')
+				c += 'A' - 'a';
+		}
+
+		auto it = simpleOptions.find(upper);
+		if (it != simpleOptions.end())
+		{
+			const SimpleOption& simple = it->second;
+			*simple.prop = simple.value;
+		}
+		else if (upper.starts_with("/LIBPATH:"))
+		{
+			projConfig->lib.additionalLibraryDirectories.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/LIST:"))
+		{
+			projConfig->lib.displayLibrary = opt.substr(6);
+		}
+		else if (upper.starts_with("/INCLUDE:"))
+		{
+			projConfig->lib.forceSymbolReferences.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/NODEFAULTLIB:"))
+		{
+			projConfig->lib.ignoreSpecificDefaultLibraries.push_back(opt.substr(14));
+		}
+		else if (upper.starts_with("/DEF:"))
+		{
+			projConfig->lib.moduleDefinitionFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/NAME:"))
+		{
+			projConfig->lib.name = opt.substr(6);
+		}
+		else if (upper.starts_with("/OUT:"))
+		{
+			projConfig->lib.outputFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/REMOVE:"))
+		{
+			projConfig->lib.removeObjects.push_back(opt.substr(8));
+		}
+		else if (upper.starts_with("/EXPORT:"))
+		{
+			projConfig->lib.exportNamedFunctions.push_back(opt.substr(8));
+		}
+		else
+		{
+			if (!projConfig->lib.additionalOptions.empty())
+				projConfig->lib.additionalOptions += ' ';
+			projConfig->lib.additionalOptions += opt;
 		}
 	}
 }

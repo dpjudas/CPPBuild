@@ -251,6 +251,33 @@ public:
 
 	struct
 	{
+		std::vector<std::string> additionalDependencies;
+		std::vector<std::string> additionalLibraryDirectories;
+		std::string additionalOptions;
+		std::string displayLibrary;
+		std::string errorReporting;
+		std::vector<std::string> exportNamedFunctions;
+		std::vector<std::string> forceSymbolReferences;
+		std::string ignoreAllDefaultLibraries;
+		std::vector<std::string> ignoreSpecificDefaultLibraries;
+		std::string linkLibraryDependencies;
+		std::string linkTimeCodeGeneration;
+		std::string minimumRequiredVersion;
+		std::string moduleDefinitionFile;
+		std::string name;
+		std::string outputFile;
+		std::vector<std::string> removeObjects;
+		std::string subSystem;
+		std::string suppressStartupBanner;
+		std::string targetMachine;
+		std::string trackerLogDirectory;
+		std::string treatLibWarningAsErrors;
+		std::string useUnicodeResponseFiles;
+		std::string verbose;
+	} lib;
+
+	struct
+	{
 		std::string message = "Running CPPBuild generate";
 		std::string command;
 		std::vector<std::string> additionalInputs;

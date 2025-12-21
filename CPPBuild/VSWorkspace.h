@@ -24,6 +24,7 @@ private:
 
 	void applyCompileOptions(VSCppProjectConfiguration* projConfig, const std::vector<std::string>& options);
 	void applyLinkOptions(VSCppProjectConfiguration* projConfig, const std::vector<std::string>& options);
+	void applyLibOptions(VSCppProjectConfiguration* projConfig, const std::vector<std::string>& options);
 
 	struct SimpleOption
 	{

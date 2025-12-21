@@ -368,7 +368,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 
 				output.writeLine("    <ResourceCompile>");
 				output.writeProperty(indent, "AdditionalIncludeDirectories", configuration->rc.additionalIncludeDirectories);
-				output.writeProperty(indent, "additionalOptions", configuration->rc.additionalOptions);
+				output.writeProperty(indent, "AdditionalOptions", configuration->rc.additionalOptions);
 				output.writeProperty(indent, "Culture", configuration->rc.culture);
 				output.writeProperty(indent, "IgnoreStandardIncludePath", configuration->rc.ignoreStandardIncludePath);
 				output.writeProperty(indent, "NullTerminateStrings", configuration->rc.nullTerminateStrings);
@@ -379,6 +379,10 @@ void VSGenerator::writeProject(const VSCppProject* project)
 				output.writeProperty(indent, "TrackerLogDirectory", configuration->rc.trackerLogDirectory);
 				output.writeProperty(indent, "UndefinePreprocessorDefinitions", configuration->rc.undefinePreprocessorDefinitions);
 				output.writeLine("    </ResourceCompile>");
+
+				output.writeLine("    <Manifest>");
+				output.writeProperty(indent, "AdditionalOptions", configuration->manifest.additionalOptions);
+				output.writeLine("    </Manifest>");
 			}
 		}
 		output.writeLine("  </ItemDefinitionGroup>");
@@ -400,6 +404,26 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		for (const auto& file : project->headerFiles)
 		{
 			output.writeLine("    <ClInclude Include=\"" + file + "\" />");
+		}
+		output.writeLine("  </ItemGroup>");
+	}
+
+	if (!project->resourceFiles.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& file : project->resourceFiles)
+		{
+			output.writeLine("    <ResourceCompile Include=\"" + file + "\" />");
+		}
+		output.writeLine("  </ItemGroup>");
+	}
+
+	if (!project->manifestFiles.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& file : project->manifestFiles)
+		{
+			output.writeLine("    <Manifest Include=\"" + file + "\" />");
 		}
 		output.writeLine("  </ItemGroup>");
 	}
@@ -520,6 +544,50 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 					output.writeLine("    <ClInclude Include=\"" + file + "\">");
 					output.writeLine("      <Filter>" + filter->name + "</Filter>");
 					output.writeLine("    </ClInclude>");
+				}
+			}
+		}
+		output.writeLine("  </ItemGroup>");
+	}
+
+	if (!project->resourceFiles.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& filter : project->filters)
+		{
+			for (const auto& file : filter->resourceFiles)
+			{
+				if (filter->name == "")
+				{
+					output.writeLine("    <ResourceCompile Include=\"" + file + "\" />");
+				}
+				else
+				{
+					output.writeLine("    <ResourceCompile Include=\"" + file + "\">");
+					output.writeLine("      <Filter>" + filter->name + "</Filter>");
+					output.writeLine("    </ResourceCompile>");
+				}
+			}
+		}
+		output.writeLine("  </ItemGroup>");
+	}
+
+	if (!project->manifestFiles.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& filter : project->filters)
+		{
+			for (const auto& file : filter->manifestFiles)
+			{
+				if (filter->name == "")
+				{
+					output.writeLine("    <Manifest Include=\"" + file + "\" />");
+				}
+				else
+				{
+					output.writeLine("    <Manifest Include=\"" + file + "\">");
+					output.writeLine("      <Filter>" + filter->name + "</Filter>");
+					output.writeLine("    </Manifest>");
 				}
 			}
 		}

@@ -71,6 +71,8 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		bool isMakefileProject = projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary";
 		std::vector<std::string> sourceFiles;
 		std::vector<std::string> headerFiles;
+		std::vector<std::string> resourceFiles;
+		std::vector<std::string> manifestFiles;
 		std::vector<std::string> extraFiles;
 		std::vector<std::string> defines;
 		std::vector<std::string> cCompileOptions;
@@ -118,6 +120,18 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				headerFiles.push_back(name);
 				if (filter)
 					filter->headerFiles.push_back(name);
+			}
+			else if (FilePath::hasExtension(name, "rc"))
+			{
+				resourceFiles.push_back(name);
+				if (filter)
+					filter->resourceFiles.push_back(name);
+			}
+			else if (FilePath::hasExtension(name, "manifest"))
+			{
+				manifestFiles.push_back(name);
+				if (filter)
+					filter->manifestFiles.push_back(name);
 			}
 			else
 			{
@@ -201,6 +215,8 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		auto project = std::make_unique<VSCppProject>(projectName, cppbuildDir, guids.projectGuids[projectName]);
 		project->sourceFiles = sourceFiles;
 		project->headerFiles = headerFiles;
+		project->resourceFiles = resourceFiles;
+		project->manifestFiles = manifestFiles;
 		project->extraFiles = extraFiles;
 
 		for (auto& it : filters)
@@ -420,6 +436,10 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
 				projConfig->link.additionalDependencies = configDependencies;
 			}
+
+			// TBD: should we use different settings for resource files?
+			projConfig->rc.preprocessorDefinitions = configDefines;
+			projConfig->rc.additionalIncludeDirectories = configIncludes;
 
 			if (configName == "Debug")
 			{

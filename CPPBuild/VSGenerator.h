@@ -293,6 +293,11 @@ public:
 
 	struct
 	{
+		std::string additionalOptions;
+	} manifest;
+
+	struct
+	{
 		std::string message = "Running CPPBuild generate";
 		std::string command;
 		std::vector<std::string> additionalInputs;
@@ -310,6 +315,8 @@ public:
 	std::string guid;
 	std::vector<std::string> sourceFiles;
 	std::vector<std::string> headerFiles;
+	std::vector<std::string> resourceFiles;
+	std::vector<std::string> manifestFiles;
 	std::vector<std::string> extraFiles;
 	std::string customBuildFile;
 };
@@ -338,6 +345,8 @@ public:
 	std::vector<std::unique_ptr<VSCppProjectConfiguration>> configurations;
 	std::vector<std::string> sourceFiles;
 	std::vector<std::string> headerFiles;
+	std::vector<std::string> resourceFiles;
+	std::vector<std::string> manifestFiles;
 	std::vector<std::string> extraFiles;
 	std::vector<std::unique_ptr<VSCppProjectFilter>> filters;
 	std::vector<VSCppProjectReference> references;

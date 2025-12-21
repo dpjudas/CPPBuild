@@ -365,6 +365,20 @@ void VSGenerator::writeProject(const VSCppProject* project)
 				output.writeProperty(indent, "UseLibraryDependencyInputs", configuration->link.useLibraryDependencyInputs);
 				output.writeProperty(indent, "Version", configuration->link.version);
 				output.writeLine("    </Link>");
+
+				output.writeLine("    <ResourceCompile>");
+				output.writeProperty(indent, "AdditionalIncludeDirectories", configuration->rc.additionalIncludeDirectories);
+				output.writeProperty(indent, "additionalOptions", configuration->rc.additionalOptions);
+				output.writeProperty(indent, "Culture", configuration->rc.culture);
+				output.writeProperty(indent, "IgnoreStandardIncludePath", configuration->rc.ignoreStandardIncludePath);
+				output.writeProperty(indent, "NullTerminateStrings", configuration->rc.nullTerminateStrings);
+				output.writeProperty(indent, "PreprocessorDefinitions", configuration->rc.preprocessorDefinitions);
+				output.writeProperty(indent, "ResourceOutputFileName", configuration->rc.resourceOutputFileName);
+				output.writeProperty(indent, "ShowProgress", configuration->rc.showProgress);
+				output.writeProperty(indent, "SuppressStartupBanner", configuration->rc.suppressStartupBanner);
+				output.writeProperty(indent, "TrackerLogDirectory", configuration->rc.trackerLogDirectory);
+				output.writeProperty(indent, "UndefinePreprocessorDefinitions", configuration->rc.undefinePreprocessorDefinitions);
+				output.writeLine("    </ResourceCompile>");
 			}
 		}
 		output.writeLine("  </ItemDefinitionGroup>");

@@ -278,6 +278,21 @@ public:
 
 	struct
 	{
+		std::vector<std::string> additionalIncludeDirectories;
+		std::string additionalOptions;
+		std::string culture;
+		std::string ignoreStandardIncludePath;
+		std::string nullTerminateStrings;
+		std::vector<std::string> preprocessorDefinitions;
+		std::string resourceOutputFileName;
+		std::string showProgress;
+		std::string suppressStartupBanner;
+		std::string trackerLogDirectory;
+		std::vector<std::string> undefinePreprocessorDefinitions;
+	} rc;
+
+	struct
+	{
 		std::string message = "Running CPPBuild generate";
 		std::string command;
 		std::vector<std::string> additionalInputs;

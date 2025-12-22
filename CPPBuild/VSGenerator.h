@@ -10,8 +10,8 @@ class VSLineWriter
 {
 public:
 	void writeLine(const std::string& text);
-	void writeProperty(int indent, const std::string& propName, const std::string& propValue);
-	void writeProperty(int indent, const std::string& propName, const std::vector<std::string>& propValues);
+	void writeProperty(int indent, const std::string& propName, const std::string& condition, const std::string& propValue);
+	void writeProperty(int indent, const std::string& propName, const std::string& condition, const std::vector<std::string>& propValues);
 	void save(const std::string& filename);
 
 private:
@@ -48,7 +48,8 @@ public:
 class VSCompileTask
 {
 public:
-	void writeProperties(VSLineWriter& output, int indent);
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSCompileTask>>& conditions);
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSCompileTask*>>& conditions);
 
 	std::vector<std::string> additionalIncludeDirectories;
 	std::string additionalOptions;
@@ -129,11 +130,26 @@ public:
 	std::string trackFileAccess;
 };
 
+class VSIncludeTask
+{
+public:
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSIncludeTask>>& conditions) {}
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSIncludeTask*>>& conditions) {}
+};
+
+class VSNoneTask
+{
+public:
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSNoneTask>>& conditions) {}
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSNoneTask*>>& conditions) {}
+};
+
 // https://learn.microsoft.com/en-us/visualstudio/msbuild/link-task
 class VSLinkTask
 {
 public:
-	void writeProperties(VSLineWriter& output, int indent);
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLinkTask>>& conditions);
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSLinkTask*>>& conditions);
 
 	std::vector<std::string> additionalDependencies;
 	std::vector<std::string> additionalLibraryDirectories;
@@ -232,7 +248,8 @@ public:
 class VSLibTask
 {
 public:
-	void writeProperties(VSLineWriter& output, int indent);
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLibTask>>& conditions);
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSLibTask*>>& conditions);
 
 	std::vector<std::string> additionalDependencies;
 	std::vector<std::string> additionalLibraryDirectories;
@@ -262,7 +279,8 @@ public:
 class VSResourceTask
 {
 public:
-	void writeProperties(VSLineWriter& output, int indent);
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSResourceTask>>& conditions);
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSResourceTask*>>& conditions);
 
 	std::vector<std::string> additionalIncludeDirectories;
 	std::string additionalOptions;
@@ -280,7 +298,8 @@ public:
 class VSManifestTask
 {
 public:
-	void writeProperties(VSLineWriter& output, int indent);
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSManifestTask>>& conditions);
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSManifestTask*>>& conditions);
 
 	std::vector<std::string> additionalManifestFiles;
 	std::string additionalOptions;
@@ -374,6 +393,27 @@ public:
 	std::string guid;
 };
 
+template<typename T>
+class VSFile
+{
+public:
+	VSFile() = default;
+	VSFile(std::string file) : file(std::move(file)) {}
+
+	void addCondition(const std::string& configurationName, const std::string& platformName, std::shared_ptr<T> task)
+	{
+		// "$(Configuration)|$(Platform)'=='Debug|x64"
+		std::string condValue = "$(Configuration)|$(Platform)'=='";
+		condValue += configurationName;
+		condValue += '|';
+		condValue += platformName;
+		conditions[condValue] = std::move(task);
+	}
+
+	std::string file;
+	std::map<std::string, std::shared_ptr<T>> conditions;
+};
+
 class VSCppProject
 {
 public:
@@ -386,11 +426,11 @@ public:
 	std::string vcProjectVersion = "17.0";
 	std::string windowsTargetPlatformVersion = "10.0";
 	std::vector<std::unique_ptr<VSCppProjectConfiguration>> configurations;
-	std::vector<std::string> sourceFiles;
-	std::vector<std::string> headerFiles;
-	std::vector<std::string> resourceFiles;
-	std::vector<std::string> manifestFiles;
-	std::vector<std::string> extraFiles;
+	std::vector<VSFile<VSCompileTask>> sourceFiles;
+	std::vector<VSFile<VSIncludeTask>> headerFiles;
+	std::vector<VSFile<VSResourceTask>> resourceFiles;
+	std::vector<VSFile<VSManifestTask>> manifestFiles;
+	std::vector<VSFile<VSNoneTask>> extraFiles;
 	std::vector<std::unique_ptr<VSCppProjectFilter>> filters;
 	std::vector<VSCppProjectReference> references;
 
@@ -410,4 +450,7 @@ public:
 
 private:
 	static std::string toLowerCase(std::string text);
+
+	template<typename T>
+	static void writeItemGroup(VSLineWriter& output, const std::string& taskName, const std::vector<VSFile<T>>& files);
 };

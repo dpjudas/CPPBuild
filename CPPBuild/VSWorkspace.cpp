@@ -69,11 +69,11 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		std::string sourcePath = FilePath::combine(setup.sourcePath, targetDef.subdirectory);
 
 		bool isMakefileProject = projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary";
-		std::vector<std::string> sourceFiles;
-		std::vector<std::string> headerFiles;
-		std::vector<std::string> resourceFiles;
-		std::vector<std::string> manifestFiles;
-		std::vector<std::string> extraFiles;
+		std::vector<VSFile<VSCompileTask>> sourceFiles;
+		std::vector<VSFile<VSIncludeTask>> headerFiles;
+		std::vector<VSFile<VSResourceTask>> resourceFiles;
+		std::vector<VSFile<VSManifestTask>> manifestFiles;
+		std::vector<VSFile<VSNoneTask>> extraFiles;
 		std::vector<std::string> defines;
 		std::vector<std::string> cCompileOptions;
 		std::vector<std::string> cxxCompileOptions;

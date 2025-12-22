@@ -161,72 +161,37 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		if (configuration->general.configurationType != "Makefile" && configuration->general.configurationType != "Utility")
 		{
 			output.writeLine("    <ClCompile>");
-			configuration->clCompile.writeProperties(output, 6);
+			VSCompileTask::writeProperties(output, 6, { { "", &configuration->clCompile } });
 			output.writeLine("    </ClCompile>");
 
 			if (configuration->general.configurationType == "StaticLibrary")
 			{
 				output.writeLine("    <Lib>");
-				configuration->lib.writeProperties(output, 6);
+				VSLibTask::writeProperties(output, 6, { { "", &configuration->lib } });
 				output.writeLine("    </Lib>");
 			}
 			else
 			{
 				output.writeLine("    <Link>");
-				configuration->link.writeProperties(output, 6);
+				VSLinkTask::writeProperties(output, 6, { { "", &configuration->link } });
 				output.writeLine("    </Link>");
 
 				output.writeLine("    <ResourceCompile>");
-				configuration->rc.writeProperties(output, 6);
+				VSResourceTask::writeProperties(output, 6, { { "", &configuration->rc } });
 				output.writeLine("    </ResourceCompile>");
 
 				output.writeLine("    <Manifest>");
-				configuration->manifest.writeProperties(output, 6);
+				VSManifestTask::writeProperties(output, 6, { { "", &configuration->manifest } });
 				output.writeLine("    </Manifest>");
 			}
 		}
 		output.writeLine("  </ItemDefinitionGroup>");
 	}
 
-	if (!project->sourceFiles.empty())
-	{
-		output.writeLine("  <ItemGroup>");
-		for (const auto& file : project->sourceFiles)
-		{
-			output.writeLine("    <ClCompile Include=\"" + file + "\" />");
-		}
-		output.writeLine("  </ItemGroup>");
-	}
-
-	if (!project->headerFiles.empty())
-	{
-		output.writeLine("  <ItemGroup>");
-		for (const auto& file : project->headerFiles)
-		{
-			output.writeLine("    <ClInclude Include=\"" + file + "\" />");
-		}
-		output.writeLine("  </ItemGroup>");
-	}
-
-	if (!project->resourceFiles.empty())
-	{
-		output.writeLine("  <ItemGroup>");
-		for (const auto& file : project->resourceFiles)
-		{
-			output.writeLine("    <ResourceCompile Include=\"" + file + "\" />");
-		}
-		output.writeLine("  </ItemGroup>");
-	}
-
-	if (!project->manifestFiles.empty())
-	{
-		output.writeLine("  <ItemGroup>");
-		for (const auto& file : project->manifestFiles)
-		{
-			output.writeLine("    <Manifest Include=\"" + file + "\" />");
-		}
-		output.writeLine("  </ItemGroup>");
-	}
+	writeItemGroup(output, "ClCompile", project->sourceFiles);
+	writeItemGroup(output, "ClInclude", project->headerFiles);
+	writeItemGroup(output, "ResourceCompile", project->resourceFiles);
+	writeItemGroup(output, "Manifest", project->manifestFiles);
 
 	if (!project->customBuildFile.file.empty())
 	{
@@ -266,15 +231,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		output.writeLine("  </ItemGroup>");
 	}
 
-	if (!project->extraFiles.empty())
-	{
-		output.writeLine("  <ItemGroup>");
-		for (const auto& file : project->extraFiles)
-		{
-			output.writeLine("    <None Include=\"" + file + "\" />");
-		}
-		output.writeLine("  </ItemGroup>");
-	}
+	writeItemGroup(output, "None", project->extraFiles);
 
 	if (!project->references.empty())
 	{
@@ -297,6 +254,29 @@ void VSGenerator::writeProject(const VSCppProject* project)
 	if (!project->filters.empty())
 	{
 		writeProjectFilters(project);
+	}
+}
+
+template<typename T>
+void VSGenerator::writeItemGroup(VSLineWriter& output, const std::string& taskName, const std::vector<VSFile<T>>& files)
+{
+	if (!files.empty())
+	{
+		output.writeLine("  <ItemGroup>");
+		for (const auto& file : files)
+		{
+			if (!file.conditions.empty())
+			{
+				output.writeLine("    <" + taskName + " Include = \"" + file.file + "\">");
+				T::writeProperties(output, 6, file.conditions);
+				output.writeLine("    </" + taskName + ">");
+			}
+			else
+			{
+				output.writeLine("    <" + taskName + " Include=\"" + file.file + "\" />");
+			}
+		}
+		output.writeLine("  </ItemGroup>");
 	}
 }
 
@@ -466,258 +446,298 @@ std::string VSGenerator::toLowerCase(std::string text)
 
 /////////////////////////////////////////////////////////////////////////////
 
-void VSCompileTask::writeProperties(VSLineWriter& output, int indent)
+void VSCompileTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSCompileTask>>& conditions)
 {
-	output.writeProperty(indent, "AdditionalIncludeDirectories", additionalIncludeDirectories);
-	output.writeProperty(indent, "AdditionalOptions", additionalOptions);
-	output.writeProperty(indent, "AdditionalUsingDirectories", additionalUsingDirectories);
-	output.writeProperty(indent, "AlwaysAppend", alwaysAppend);
-	output.writeProperty(indent, "AssemblerListingLocation", assemblerListingLocation);
-	output.writeProperty(indent, "AssemblerOutput", assemblerOutput);
-	output.writeProperty(indent, "BasicRuntimeChecks", basicRuntimeChecks);
-	output.writeProperty(indent, "BrowseInformation", browseInformation);
-	output.writeProperty(indent, "BrowseInformationFile", browseInformationFile);
-	output.writeProperty(indent, "BufferSecurityCheck", bufferSecurityCheck);
-	output.writeProperty(indent, "BuildingInIDE", buildingInIDE);
-	output.writeProperty(indent, "CallingConvention", callingConvention);
-	output.writeProperty(indent, "CompileAs", compileAs);
-	output.writeProperty(indent, "CompileAsManaged", compileAsManaged);
-	output.writeProperty(indent, "CreateHotpatchableImage", createHotpatchableImage);
-	output.writeProperty(indent, "DebugInformationFormat", debugInformationFormat);
-	output.writeProperty(indent, "DisableLanguageExtensions", disableLanguageExtensions);
-	output.writeProperty(indent, "DisableSpecificWarnings", disableSpecificWarnings);
-	output.writeProperty(indent, "EnableEnhancedInstructionSet", enableEnhancedInstructionSet);
-	output.writeProperty(indent, "EnableFiberSafeOptimizations", enableFiberSafeOptimizations);
-	output.writeProperty(indent, "EnablePREfast", enablePREfast);
-	output.writeProperty(indent, "ErrorReporting", errorReporting);
-	output.writeProperty(indent, "ExceptionHandling", exceptionHandling);
-	output.writeProperty(indent, "ExpandAttributedSource", expandAttributedSource);
-	output.writeProperty(indent, "FavorSizeOrSpeed", favorSizeOrSpeed);
-	output.writeProperty(indent, "FloatingPointExceptions", floatingPointExceptions);
-	output.writeProperty(indent, "FloatingPointModel", floatingPointModel);
-	output.writeProperty(indent, "ForceConformanceInForLoopScope", forceConformanceInForLoopScope);
-	output.writeProperty(indent, "ForcedIncludeFiles", forcedIncludeFiles);
-	output.writeProperty(indent, "ForcedUsingFiles", forcedUsingFiles);
-	output.writeProperty(indent, "FunctionLevelLinking", functionLevelLinking);
-	output.writeProperty(indent, "GenerateXMLDocumentationFiles", generateXMLDocumentationFiles);
-	output.writeProperty(indent, "IgnoreStandardIncludePath", ignoreStandardIncludePath);
-	output.writeProperty(indent, "InlineFunctionExpansion", inlineFunctionExpansion);
-	output.writeProperty(indent, "IntrinsicFunctions", intrinsicFunctions);
-	output.writeProperty(indent, "SDLCheck", sdlCheck);
-	output.writeProperty(indent, "MinimalRebuild", minimalRebuild);
-	output.writeProperty(indent, "MultiProcessorCompilation", multiProcessorCompilation);
-	output.writeProperty(indent, "ObjectFileName", objectFileName);
-	output.writeProperty(indent, "ObjectFiles", objectFiles);
-	output.writeProperty(indent, "OmitDefaultLibName", omitDefaultLibName);
-	output.writeProperty(indent, "OmitFramePointers", omitFramePointers);
-	output.writeProperty(indent, "OpenMPSupport", openMPSupport);
-	output.writeProperty(indent, "Optimization", optimization);
-	output.writeProperty(indent, "PrecompiledHeader", precompiledHeader);
-	output.writeProperty(indent, "PrecompiledHeaderFile", precompiledHeaderFile);
-	output.writeProperty(indent, "PrecompiledHeaderOutputFile", precompiledHeaderOutputFile);
-	output.writeProperty(indent, "PreprocessKeepComments", preprocessKeepComments);
-	output.writeProperty(indent, "PreprocessorDefinitions", preprocessorDefinitions);
-	output.writeProperty(indent, "PreprocessOutput", preprocessOutput);
-	output.writeProperty(indent, "PreprocessOutputPath", preprocessOutputPath);
-	output.writeProperty(indent, "PreprocessSuppressLineNumbers", preprocessSuppressLineNumbers);
-	output.writeProperty(indent, "PreprocessToFile", preprocessToFile);
-	output.writeProperty(indent, "ProcessorNumber", processorNumber);
-	output.writeProperty(indent, "ProgramDataBaseFileName", programDataBaseFileName);
-	output.writeProperty(indent, "ConformanceMode", conformanceMode);
-	output.writeProperty(indent, "RuntimeLibrary", runtimeLibrary);
-	output.writeProperty(indent, "RuntimeTypeInfo", runtimeTypeInfo);
-	output.writeProperty(indent, "LanguageStandard", languageStandard);
-	output.writeProperty(indent, "ShowIncludes", showIncludes);
-	output.writeProperty(indent, "SmallerTypeCheck", smallerTypeCheck);
-	output.writeProperty(indent, "StringPooling", stringPooling);
-	output.writeProperty(indent, "StructMemberAlignment", structMemberAlignment);
-	output.writeProperty(indent, "SuppressStartupBanner", suppressStartupBanner);
-	output.writeProperty(indent, "TrackerLogDirectory", trackerLogDirectory);
-	output.writeProperty(indent, "TreatSpecificWarningsAsErrors", treatSpecificWarningsAsErrors);
-	output.writeProperty(indent, "TreatWarningAsError", treatWarningAsError);
-	output.writeProperty(indent, "TreatWChar_tAsBuiltInType", treatWChar_tAsBuiltInType);
-	output.writeProperty(indent, "UndefineAllPreprocessorDefinitions", undefineAllPreprocessorDefinitions);
-	output.writeProperty(indent, "UndefinePreprocessorDefinitions", undefinePreprocessorDefinitions);
-	output.writeProperty(indent, "UseFullPaths", useFullPaths);
-	output.writeProperty(indent, "UseUnicodeForAssemblerListing", useUnicodeForAssemblerListing);
-	output.writeProperty(indent, "WarningLevel", warningLevel);
-	output.writeProperty(indent, "WholeProgramOptimization", wholeProgramOptimization);
-	output.writeProperty(indent, "XMLDocumentationFileName", xmlDocumentationFileName);
-	output.writeProperty(indent, "MinimalRebuildFromTracking", minimalRebuildFromTracking);
-	output.writeProperty(indent, "TrackFileAccess", trackFileAccess);
+	std::vector<std::pair<std::string, VSCompileTask*>> c;
+	for (const auto& it : conditions)
+		c.push_back({ it.first, it.second.get() });
+	writeProperties(output, indent, c);
+}
+
+void VSCompileTask::writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSCompileTask*>>& conditions)
+{
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalIncludeDirectories", c.first, c.second->additionalIncludeDirectories);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalOptions", c.first, c.second->additionalOptions);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalUsingDirectories", c.first, c.second->additionalUsingDirectories);
+	for (const auto& c : conditions) output.writeProperty(indent, "AlwaysAppend", c.first, c.second->alwaysAppend);
+	for (const auto& c : conditions) output.writeProperty(indent, "AssemblerListingLocation", c.first, c.second->assemblerListingLocation);
+	for (const auto& c : conditions) output.writeProperty(indent, "AssemblerOutput", c.first, c.second->assemblerOutput);
+	for (const auto& c : conditions) output.writeProperty(indent, "BasicRuntimeChecks", c.first, c.second->basicRuntimeChecks);
+	for (const auto& c : conditions) output.writeProperty(indent, "BrowseInformation", c.first, c.second->browseInformation);
+	for (const auto& c : conditions) output.writeProperty(indent, "BrowseInformationFile", c.first, c.second->browseInformationFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "BufferSecurityCheck", c.first, c.second->bufferSecurityCheck);
+	for (const auto& c : conditions) output.writeProperty(indent, "BuildingInIDE", c.first, c.second->buildingInIDE);
+	for (const auto& c : conditions) output.writeProperty(indent, "CallingConvention", c.first, c.second->callingConvention);
+	for (const auto& c : conditions) output.writeProperty(indent, "CompileAs", c.first, c.second->compileAs);
+	for (const auto& c : conditions) output.writeProperty(indent, "CompileAsManaged", c.first, c.second->compileAsManaged);
+	for (const auto& c : conditions) output.writeProperty(indent, "CreateHotpatchableImage", c.first, c.second->createHotpatchableImage);
+	for (const auto& c : conditions) output.writeProperty(indent, "DebugInformationFormat", c.first, c.second->debugInformationFormat);
+	for (const auto& c : conditions) output.writeProperty(indent, "DisableLanguageExtensions", c.first, c.second->disableLanguageExtensions);
+	for (const auto& c : conditions) output.writeProperty(indent, "DisableSpecificWarnings", c.first, c.second->disableSpecificWarnings);
+	for (const auto& c : conditions) output.writeProperty(indent, "EnableEnhancedInstructionSet", c.first, c.second->enableEnhancedInstructionSet);
+	for (const auto& c : conditions) output.writeProperty(indent, "EnableFiberSafeOptimizations", c.first, c.second->enableFiberSafeOptimizations);
+	for (const auto& c : conditions) output.writeProperty(indent, "EnablePREfast", c.first, c.second->enablePREfast);
+	for (const auto& c : conditions) output.writeProperty(indent, "ErrorReporting", c.first, c.second->errorReporting);
+	for (const auto& c : conditions) output.writeProperty(indent, "ExceptionHandling", c.first, c.second->exceptionHandling);
+	for (const auto& c : conditions) output.writeProperty(indent, "ExpandAttributedSource", c.first, c.second->expandAttributedSource);
+	for (const auto& c : conditions) output.writeProperty(indent, "FavorSizeOrSpeed", c.first, c.second->favorSizeOrSpeed);
+	for (const auto& c : conditions) output.writeProperty(indent, "FloatingPointExceptions", c.first, c.second->floatingPointExceptions);
+	for (const auto& c : conditions) output.writeProperty(indent, "FloatingPointModel", c.first, c.second->floatingPointModel);
+	for (const auto& c : conditions) output.writeProperty(indent, "ForceConformanceInForLoopScope", c.first, c.second->forceConformanceInForLoopScope);
+	for (const auto& c : conditions) output.writeProperty(indent, "ForcedIncludeFiles", c.first, c.second->forcedIncludeFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "ForcedUsingFiles", c.first, c.second->forcedUsingFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "FunctionLevelLinking", c.first, c.second->functionLevelLinking);
+	for (const auto& c : conditions) output.writeProperty(indent, "GenerateXMLDocumentationFiles", c.first, c.second->generateXMLDocumentationFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreStandardIncludePath", c.first, c.second->ignoreStandardIncludePath);
+	for (const auto& c : conditions) output.writeProperty(indent, "InlineFunctionExpansion", c.first, c.second->inlineFunctionExpansion);
+	for (const auto& c : conditions) output.writeProperty(indent, "IntrinsicFunctions", c.first, c.second->intrinsicFunctions);
+	for (const auto& c : conditions) output.writeProperty(indent, "SDLCheck", c.first, c.second->sdlCheck);
+	for (const auto& c : conditions) output.writeProperty(indent, "MinimalRebuild", c.first, c.second->minimalRebuild);
+	for (const auto& c : conditions) output.writeProperty(indent, "MultiProcessorCompilation", c.first, c.second->multiProcessorCompilation);
+	for (const auto& c : conditions) output.writeProperty(indent, "ObjectFileName", c.first, c.second->objectFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "ObjectFiles", c.first, c.second->objectFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "OmitDefaultLibName", c.first, c.second->omitDefaultLibName);
+	for (const auto& c : conditions) output.writeProperty(indent, "OmitFramePointers", c.first, c.second->omitFramePointers);
+	for (const auto& c : conditions) output.writeProperty(indent, "OpenMPSupport", c.first, c.second->openMPSupport);
+	for (const auto& c : conditions) output.writeProperty(indent, "Optimization", c.first, c.second->optimization);
+	for (const auto& c : conditions) output.writeProperty(indent, "PrecompiledHeader", c.first, c.second->precompiledHeader);
+	for (const auto& c : conditions) output.writeProperty(indent, "PrecompiledHeaderFile", c.first, c.second->precompiledHeaderFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "PrecompiledHeaderOutputFile", c.first, c.second->precompiledHeaderOutputFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessKeepComments", c.first, c.second->preprocessKeepComments);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessorDefinitions", c.first, c.second->preprocessorDefinitions);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessOutput", c.first, c.second->preprocessOutput);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessOutputPath", c.first, c.second->preprocessOutputPath);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessSuppressLineNumbers", c.first, c.second->preprocessSuppressLineNumbers);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessToFile", c.first, c.second->preprocessToFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "ProcessorNumber", c.first, c.second->processorNumber);
+	for (const auto& c : conditions) output.writeProperty(indent, "ProgramDataBaseFileName", c.first, c.second->programDataBaseFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "ConformanceMode", c.first, c.second->conformanceMode);
+	for (const auto& c : conditions) output.writeProperty(indent, "RuntimeLibrary", c.first, c.second->runtimeLibrary);
+	for (const auto& c : conditions) output.writeProperty(indent, "RuntimeTypeInfo", c.first, c.second->runtimeTypeInfo);
+	for (const auto& c : conditions) output.writeProperty(indent, "LanguageStandard", c.first, c.second->languageStandard);
+	for (const auto& c : conditions) output.writeProperty(indent, "ShowIncludes", c.first, c.second->showIncludes);
+	for (const auto& c : conditions) output.writeProperty(indent, "SmallerTypeCheck", c.first, c.second->smallerTypeCheck);
+	for (const auto& c : conditions) output.writeProperty(indent, "StringPooling", c.first, c.second->stringPooling);
+	for (const auto& c : conditions) output.writeProperty(indent, "StructMemberAlignment", c.first, c.second->structMemberAlignment);
+	for (const auto& c : conditions) output.writeProperty(indent, "SuppressStartupBanner", c.first, c.second->suppressStartupBanner);
+	for (const auto& c : conditions) output.writeProperty(indent, "TrackerLogDirectory", c.first, c.second->trackerLogDirectory);
+	for (const auto& c : conditions) output.writeProperty(indent, "TreatSpecificWarningsAsErrors", c.first, c.second->treatSpecificWarningsAsErrors);
+	for (const auto& c : conditions) output.writeProperty(indent, "TreatWarningAsError", c.first, c.second->treatWarningAsError);
+	for (const auto& c : conditions) output.writeProperty(indent, "TreatWChar_tAsBuiltInType", c.first, c.second->treatWChar_tAsBuiltInType);
+	for (const auto& c : conditions) output.writeProperty(indent, "UndefineAllPreprocessorDefinitions", c.first, c.second->undefineAllPreprocessorDefinitions);
+	for (const auto& c : conditions) output.writeProperty(indent, "UndefinePreprocessorDefinitions", c.first, c.second->undefinePreprocessorDefinitions);
+	for (const auto& c : conditions) output.writeProperty(indent, "UseFullPaths", c.first, c.second->useFullPaths);
+	for (const auto& c : conditions) output.writeProperty(indent, "UseUnicodeForAssemblerListing", c.first, c.second->useUnicodeForAssemblerListing);
+	for (const auto& c : conditions) output.writeProperty(indent, "WarningLevel", c.first, c.second->warningLevel);
+	for (const auto& c : conditions) output.writeProperty(indent, "WholeProgramOptimization", c.first, c.second->wholeProgramOptimization);
+	for (const auto& c : conditions) output.writeProperty(indent, "XMLDocumentationFileName", c.first, c.second->xmlDocumentationFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "MinimalRebuildFromTracking", c.first, c.second->minimalRebuildFromTracking);
+	for (const auto& c : conditions) output.writeProperty(indent, "TrackFileAccess", c.first, c.second->trackFileAccess);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void VSLinkTask::writeProperties(VSLineWriter& output, int indent)
+void VSLinkTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLinkTask>>& conditions)
 {
-	output.writeProperty(indent, "AdditionalDependencies", additionalDependencies);
-	output.writeProperty(indent, "AdditionalLibraryDirectories", additionalLibraryDirectories);
-	output.writeProperty(indent, "AdditionalManifestDependencies", additionalManifestDependencies);
-	output.writeProperty(indent, "AdditionalOptions", additionalOptions);
-	output.writeProperty(indent, "AddModuleNamesToAssembly", addModuleNamesToAssembly);
-	output.writeProperty(indent, "AllowIsolation", allowIsolation);
-	output.writeProperty(indent, "AssemblyDebug", assemblyDebug);
-	output.writeProperty(indent, "AssemblyLinkResource", assemblyLinkResource);
-	output.writeProperty(indent, "AttributeFileTracking", attributeFileTracking);
-	output.writeProperty(indent, "BaseAddress", baseAddress);
-	output.writeProperty(indent, "BuildingInIDE", buildingInIDE);
-	output.writeProperty(indent, "CLRImageType", clrImageType);
-	output.writeProperty(indent, "CLRSupportLastError", clrSupportLastError);
-	output.writeProperty(indent, "CLRThreadAttribute", clrThreadAttribute);
-	output.writeProperty(indent, "CLRUnmanagedCodeCheck", clrUnmanagedCodeCheck);
-	output.writeProperty(indent, "CreateHotPatchableImage", createHotPatchableImage);
-	output.writeProperty(indent, "DataExecutionPrevention", dataExecutionPrevention);
-	output.writeProperty(indent, "DelayLoadDLLs", delayLoadDLLs);
-	output.writeProperty(indent, "DelaySign", delaySign);
-	output.writeProperty(indent, "Driver", driver);
-	output.writeProperty(indent, "EmbedManagedResourceFile", embedManagedResourceFile);
-	output.writeProperty(indent, "EnableCOMDATFolding", enableCOMDATFolding);
-	output.writeProperty(indent, "EnableUAC", enableUAC);
-	output.writeProperty(indent, "EntryPointSymbol", entryPointSymbol);
-	output.writeProperty(indent, "FixedBaseAddress", fixedBaseAddress);
-	output.writeProperty(indent, "ForceFileOutput", forceFileOutput);
-	output.writeProperty(indent, "ForceSymbolReferences", forceSymbolReferences);
-	output.writeProperty(indent, "FunctionOrder", functionOrder);
-	output.writeProperty(indent, "GenerateDebugInformation", generateDebugInformation);
-	output.writeProperty(indent, "GenerateManifest", generateManifest);
-	output.writeProperty(indent, "GenerateMapFile", generateMapFile);
-	output.writeProperty(indent, "HeapCommitSize", heapCommitSize);
-	output.writeProperty(indent, "HeapReserveSize", heapReserveSize);
-	output.writeProperty(indent, "IgnoreAllDefaultLibraries", ignoreAllDefaultLibraries);
-	output.writeProperty(indent, "IgnoreEmbeddedIDL", ignoreEmbeddedIDL);
-	output.writeProperty(indent, "IgnoreImportLibrary", ignoreImportLibrary);
-	output.writeProperty(indent, "IgnoreSpecificDefaultLibraries", ignoreSpecificDefaultLibraries);
-	output.writeProperty(indent, "ImageHasSafeExceptionHandlers", imageHasSafeExceptionHandlers);
-	output.writeProperty(indent, "ImportLibrary", importLibrary);
-	output.writeProperty(indent, "KeyContainer", keyContainer);
-	output.writeProperty(indent, "KeyFile", keyFile);
-	output.writeProperty(indent, "LargeAddressAware", largeAddressAware);
-	output.writeProperty(indent, "LinkDLL", linkDLL);
-	output.writeProperty(indent, "LinkErrorReporting", linkErrorReporting);
-	output.writeProperty(indent, "LinkIncremental", linkIncremental);
-	output.writeProperty(indent, "LinkLibraryDependencies", linkLibraryDependencies);
-	output.writeProperty(indent, "LinkStatus", linkStatus);
-	output.writeProperty(indent, "LinkTimeCodeGeneration", linkTimeCodeGeneration);
-	output.writeProperty(indent, "ManifestFile", manifestFile);
-	output.writeProperty(indent, "MapExports", mapExports);
-	output.writeProperty(indent, "MapFileName", mapFileName);
-	output.writeProperty(indent, "MergedIDLBaseFileName", mergedIDLBaseFileName);
-	output.writeProperty(indent, "MergeSections", mergeSections);
-	output.writeProperty(indent, "MidlCommandFile", midlCommandFile);
-	output.writeProperty(indent, "MinimumRequiredVersion", minimumRequiredVersion);
-	output.writeProperty(indent, "ModuleDefinitionFile", moduleDefinitionFile);
-	output.writeProperty(indent, "MSDOSStubFileName", msdosStubFileName);
-	output.writeProperty(indent, "NoEntryPoint", noEntryPoint);
-	output.writeProperty(indent, "ObjectFiles", objectFiles);
-	output.writeProperty(indent, "OptimizeReferences", optimizeReferences);
-	output.writeProperty(indent, "OutputFile", outputFile);
-	output.writeProperty(indent, "PerUserRedirection", perUserRedirection);
-	output.writeProperty(indent, "PreventDllBinding", preventDllBinding);
-	output.writeProperty(indent, "Profile", profile);
-	output.writeProperty(indent, "ProfileGuidedDatabase", profileGuidedDatabase);
-	output.writeProperty(indent, "ProgramDatabaseFile", programDatabaseFile);
-	output.writeProperty(indent, "RandomizedBaseAddress", randomizedBaseAddress);
-	output.writeProperty(indent, "RegisterOutput", registerOutput);
-	output.writeProperty(indent, "SectionAlignment", sectionAlignment);
-	output.writeProperty(indent, "SetChecksum", setChecksum);
-	output.writeProperty(indent, "ShowProgress", showProgress);
-	output.writeProperty(indent, "SpecifySectionAttributes", specifySectionAttributes);
-	output.writeProperty(indent, "StackCommitSize", stackCommitSize);
-	output.writeProperty(indent, "StackReserveSize", stackReserveSize);
-	output.writeProperty(indent, "StripPrivateSymbols", stripPrivateSymbols);
-	output.writeProperty(indent, "SubSystem", subSystem);
-	output.writeProperty(indent, "SupportNobindOfDelayLoadedDLL", supportNobindOfDelayLoadedDLL);
-	output.writeProperty(indent, "SupportUnloadOfDelayLoadedDLL", supportUnloadOfDelayLoadedDLL);
-	output.writeProperty(indent, "SuppressStartupBanner", suppressStartupBanner);
-	output.writeProperty(indent, "SwapRunFromCD", swapRunFromCD);
-	output.writeProperty(indent, "SwapRunFromNET", swapRunFromNET);
-	output.writeProperty(indent, "TargetMachine", targetMachine);
-	output.writeProperty(indent, "TerminalServerAware", terminalServerAware);
-	output.writeProperty(indent, "TrackerLogDirectory", trackerLogDirectory);
-	output.writeProperty(indent, "TreatLinkerWarningAsErrors", treatLinkerWarningAsErrors);
-	output.writeProperty(indent, "TurnOffAssemblyGeneration", turnOffAssemblyGeneration);
-	output.writeProperty(indent, "TypeLibraryFile", typeLibraryFile);
-	output.writeProperty(indent, "TypeLibraryResourceID", typeLibraryResourceID);
-	output.writeProperty(indent, "UACExecutionLevel", uacExecutionLevel);
-	output.writeProperty(indent, "UACUIAccess", uacUIAccess);
-	output.writeProperty(indent, "UseLibraryDependencyInputs", useLibraryDependencyInputs);
-	output.writeProperty(indent, "Version", version);
+	std::vector<std::pair<std::string, VSLinkTask*>> c;
+	for (const auto& it : conditions)
+		c.push_back({ it.first, it.second.get() });
+	writeProperties(output, indent, c);
+}
+
+void VSLinkTask::writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSLinkTask*>>& conditions)
+{
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalDependencies", c.first, c.second->additionalDependencies);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalLibraryDirectories", c.first, c.second->additionalLibraryDirectories);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalManifestDependencies", c.first, c.second->additionalManifestDependencies);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalOptions", c.first, c.second->additionalOptions);
+	for (const auto& c : conditions) output.writeProperty(indent, "AddModuleNamesToAssembly", c.first, c.second->addModuleNamesToAssembly);
+	for (const auto& c : conditions) output.writeProperty(indent, "AllowIsolation", c.first, c.second->allowIsolation);
+	for (const auto& c : conditions) output.writeProperty(indent, "AssemblyDebug", c.first, c.second->assemblyDebug);
+	for (const auto& c : conditions) output.writeProperty(indent, "AssemblyLinkResource", c.first, c.second->assemblyLinkResource);
+	for (const auto& c : conditions) output.writeProperty(indent, "AttributeFileTracking", c.first, c.second->attributeFileTracking);
+	for (const auto& c : conditions) output.writeProperty(indent, "BaseAddress", c.first, c.second->baseAddress);
+	for (const auto& c : conditions) output.writeProperty(indent, "BuildingInIDE", c.first, c.second->buildingInIDE);
+	for (const auto& c : conditions) output.writeProperty(indent, "CLRImageType", c.first, c.second->clrImageType);
+	for (const auto& c : conditions) output.writeProperty(indent, "CLRSupportLastError", c.first, c.second->clrSupportLastError);
+	for (const auto& c : conditions) output.writeProperty(indent, "CLRThreadAttribute", c.first, c.second->clrThreadAttribute);
+	for (const auto& c : conditions) output.writeProperty(indent, "CLRUnmanagedCodeCheck", c.first, c.second->clrUnmanagedCodeCheck);
+	for (const auto& c : conditions) output.writeProperty(indent, "CreateHotPatchableImage", c.first, c.second->createHotPatchableImage);
+	for (const auto& c : conditions) output.writeProperty(indent, "DataExecutionPrevention", c.first, c.second->dataExecutionPrevention);
+	for (const auto& c : conditions) output.writeProperty(indent, "DelayLoadDLLs", c.first, c.second->delayLoadDLLs);
+	for (const auto& c : conditions) output.writeProperty(indent, "DelaySign", c.first, c.second->delaySign);
+	for (const auto& c : conditions) output.writeProperty(indent, "Driver", c.first, c.second->driver);
+	for (const auto& c : conditions) output.writeProperty(indent, "EmbedManagedResourceFile", c.first, c.second->embedManagedResourceFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "EnableCOMDATFolding", c.first, c.second->enableCOMDATFolding);
+	for (const auto& c : conditions) output.writeProperty(indent, "EnableUAC", c.first, c.second->enableUAC);
+	for (const auto& c : conditions) output.writeProperty(indent, "EntryPointSymbol", c.first, c.second->entryPointSymbol);
+	for (const auto& c : conditions) output.writeProperty(indent, "FixedBaseAddress", c.first, c.second->fixedBaseAddress);
+	for (const auto& c : conditions) output.writeProperty(indent, "ForceFileOutput", c.first, c.second->forceFileOutput);
+	for (const auto& c : conditions) output.writeProperty(indent, "ForceSymbolReferences", c.first, c.second->forceSymbolReferences);
+	for (const auto& c : conditions) output.writeProperty(indent, "FunctionOrder", c.first, c.second->functionOrder);
+	for (const auto& c : conditions) output.writeProperty(indent, "GenerateDebugInformation", c.first, c.second->generateDebugInformation);
+	for (const auto& c : conditions) output.writeProperty(indent, "GenerateManifest", c.first, c.second->generateManifest);
+	for (const auto& c : conditions) output.writeProperty(indent, "GenerateMapFile", c.first, c.second->generateMapFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "HeapCommitSize", c.first, c.second->heapCommitSize);
+	for (const auto& c : conditions) output.writeProperty(indent, "HeapReserveSize", c.first, c.second->heapReserveSize);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreAllDefaultLibraries", c.first, c.second->ignoreAllDefaultLibraries);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreEmbeddedIDL", c.first, c.second->ignoreEmbeddedIDL);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreImportLibrary", c.first, c.second->ignoreImportLibrary);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreSpecificDefaultLibraries", c.first, c.second->ignoreSpecificDefaultLibraries);
+	for (const auto& c : conditions) output.writeProperty(indent, "ImageHasSafeExceptionHandlers", c.first, c.second->imageHasSafeExceptionHandlers);
+	for (const auto& c : conditions) output.writeProperty(indent, "ImportLibrary", c.first, c.second->importLibrary);
+	for (const auto& c : conditions) output.writeProperty(indent, "KeyContainer", c.first, c.second->keyContainer);
+	for (const auto& c : conditions) output.writeProperty(indent, "KeyFile", c.first, c.second->keyFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "LargeAddressAware", c.first, c.second->largeAddressAware);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkDLL", c.first, c.second->linkDLL);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkErrorReporting", c.first, c.second->linkErrorReporting);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkIncremental", c.first, c.second->linkIncremental);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkLibraryDependencies", c.first, c.second->linkLibraryDependencies);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkStatus", c.first, c.second->linkStatus);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkTimeCodeGeneration", c.first, c.second->linkTimeCodeGeneration);
+	for (const auto& c : conditions) output.writeProperty(indent, "ManifestFile", c.first, c.second->manifestFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "MapExports", c.first, c.second->mapExports);
+	for (const auto& c : conditions) output.writeProperty(indent, "MapFileName", c.first, c.second->mapFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "MergedIDLBaseFileName", c.first, c.second->mergedIDLBaseFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "MergeSections", c.first, c.second->mergeSections);
+	for (const auto& c : conditions) output.writeProperty(indent, "MidlCommandFile", c.first, c.second->midlCommandFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "MinimumRequiredVersion", c.first, c.second->minimumRequiredVersion);
+	for (const auto& c : conditions) output.writeProperty(indent, "ModuleDefinitionFile", c.first, c.second->moduleDefinitionFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "MSDOSStubFileName", c.first, c.second->msdosStubFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "NoEntryPoint", c.first, c.second->noEntryPoint);
+	for (const auto& c : conditions) output.writeProperty(indent, "ObjectFiles", c.first, c.second->objectFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "OptimizeReferences", c.first, c.second->optimizeReferences);
+	for (const auto& c : conditions) output.writeProperty(indent, "OutputFile", c.first, c.second->outputFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "PerUserRedirection", c.first, c.second->perUserRedirection);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreventDllBinding", c.first, c.second->preventDllBinding);
+	for (const auto& c : conditions) output.writeProperty(indent, "Profile", c.first, c.second->profile);
+	for (const auto& c : conditions) output.writeProperty(indent, "ProfileGuidedDatabase", c.first, c.second->profileGuidedDatabase);
+	for (const auto& c : conditions) output.writeProperty(indent, "ProgramDatabaseFile", c.first, c.second->programDatabaseFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "RandomizedBaseAddress", c.first, c.second->randomizedBaseAddress);
+	for (const auto& c : conditions) output.writeProperty(indent, "RegisterOutput", c.first, c.second->registerOutput);
+	for (const auto& c : conditions) output.writeProperty(indent, "SectionAlignment", c.first, c.second->sectionAlignment);
+	for (const auto& c : conditions) output.writeProperty(indent, "SetChecksum", c.first, c.second->setChecksum);
+	for (const auto& c : conditions) output.writeProperty(indent, "ShowProgress", c.first, c.second->showProgress);
+	for (const auto& c : conditions) output.writeProperty(indent, "SpecifySectionAttributes", c.first, c.second->specifySectionAttributes);
+	for (const auto& c : conditions) output.writeProperty(indent, "StackCommitSize", c.first, c.second->stackCommitSize);
+	for (const auto& c : conditions) output.writeProperty(indent, "StackReserveSize", c.first, c.second->stackReserveSize);
+	for (const auto& c : conditions) output.writeProperty(indent, "StripPrivateSymbols", c.first, c.second->stripPrivateSymbols);
+	for (const auto& c : conditions) output.writeProperty(indent, "SubSystem", c.first, c.second->subSystem);
+	for (const auto& c : conditions) output.writeProperty(indent, "SupportNobindOfDelayLoadedDLL", c.first, c.second->supportNobindOfDelayLoadedDLL);
+	for (const auto& c : conditions) output.writeProperty(indent, "SupportUnloadOfDelayLoadedDLL", c.first, c.second->supportUnloadOfDelayLoadedDLL);
+	for (const auto& c : conditions) output.writeProperty(indent, "SuppressStartupBanner", c.first, c.second->suppressStartupBanner);
+	for (const auto& c : conditions) output.writeProperty(indent, "SwapRunFromCD", c.first, c.second->swapRunFromCD);
+	for (const auto& c : conditions) output.writeProperty(indent, "SwapRunFromNET", c.first, c.second->swapRunFromNET);
+	for (const auto& c : conditions) output.writeProperty(indent, "TargetMachine", c.first, c.second->targetMachine);
+	for (const auto& c : conditions) output.writeProperty(indent, "TerminalServerAware", c.first, c.second->terminalServerAware);
+	for (const auto& c : conditions) output.writeProperty(indent, "TrackerLogDirectory", c.first, c.second->trackerLogDirectory);
+	for (const auto& c : conditions) output.writeProperty(indent, "TreatLinkerWarningAsErrors", c.first, c.second->treatLinkerWarningAsErrors);
+	for (const auto& c : conditions) output.writeProperty(indent, "TurnOffAssemblyGeneration", c.first, c.second->turnOffAssemblyGeneration);
+	for (const auto& c : conditions) output.writeProperty(indent, "TypeLibraryFile", c.first, c.second->typeLibraryFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "TypeLibraryResourceID", c.first, c.second->typeLibraryResourceID);
+	for (const auto& c : conditions) output.writeProperty(indent, "UACExecutionLevel", c.first, c.second->uacExecutionLevel);
+	for (const auto& c : conditions) output.writeProperty(indent, "UACUIAccess", c.first, c.second->uacUIAccess);
+	for (const auto& c : conditions) output.writeProperty(indent, "UseLibraryDependencyInputs", c.first, c.second->useLibraryDependencyInputs);
+	for (const auto& c : conditions) output.writeProperty(indent, "Version", c.first, c.second->version);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void VSLibTask::writeProperties(VSLineWriter& output, int indent)
+void VSLibTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLibTask>>& conditions)
 {
-	output.writeProperty(indent, "AdditionalDependencies", additionalDependencies);
-	output.writeProperty(indent, "AdditionalLibraryDirectories", additionalLibraryDirectories);
-	output.writeProperty(indent, "AdditionalOptions", additionalOptions);
-	output.writeProperty(indent, "DisplayLibrary", displayLibrary);
-	output.writeProperty(indent, "ErrorReporting", errorReporting);
-	output.writeProperty(indent, "ExportNamedFunctions", exportNamedFunctions);
-	output.writeProperty(indent, "ForceSymbolReferences", forceSymbolReferences);
-	output.writeProperty(indent, "IgnoreAllDefaultLibraries", ignoreAllDefaultLibraries);
-	output.writeProperty(indent, "IgnoreSpecificDefaultLibraries", ignoreSpecificDefaultLibraries);
-	output.writeProperty(indent, "LinkLibraryDependencies", linkLibraryDependencies);
-	output.writeProperty(indent, "LinkTimeCodeGeneration", linkTimeCodeGeneration);
-	output.writeProperty(indent, "MinimumRequiredVersion", minimumRequiredVersion);
-	output.writeProperty(indent, "ModuleDefinitionFile", moduleDefinitionFile);
-	output.writeProperty(indent, "Name", name);
-	output.writeProperty(indent, "OutputFile", outputFile);
-	output.writeProperty(indent, "RemoveObjects", removeObjects);
-	output.writeProperty(indent, "SubSystem", subSystem);
-	output.writeProperty(indent, "SuppressStartupBanner", suppressStartupBanner);
-	output.writeProperty(indent, "TargetMachine", targetMachine);
-	output.writeProperty(indent, "TrackerLogDirectory", trackerLogDirectory);
-	output.writeProperty(indent, "TreatLibWarningAsErrors", treatLibWarningAsErrors);
-	output.writeProperty(indent, "UseUnicodeResponseFiles", useUnicodeResponseFiles);
-	output.writeProperty(indent, "Verbose", verbose);
+	std::vector<std::pair<std::string, VSLibTask*>> c;
+	for (const auto& it : conditions)
+		c.push_back({ it.first, it.second.get() });
+	writeProperties(output, indent, c);
+}
+
+void VSLibTask::writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSLibTask*>>& conditions)
+{
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalDependencies", c.first, c.second->additionalDependencies);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalLibraryDirectories", c.first, c.second->additionalLibraryDirectories);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalOptions", c.first, c.second->additionalOptions);
+	for (const auto& c : conditions) output.writeProperty(indent, "DisplayLibrary", c.first, c.second->displayLibrary);
+	for (const auto& c : conditions) output.writeProperty(indent, "ErrorReporting", c.first, c.second->errorReporting);
+	for (const auto& c : conditions) output.writeProperty(indent, "ExportNamedFunctions", c.first, c.second->exportNamedFunctions);
+	for (const auto& c : conditions) output.writeProperty(indent, "ForceSymbolReferences", c.first, c.second->forceSymbolReferences);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreAllDefaultLibraries", c.first, c.second->ignoreAllDefaultLibraries);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreSpecificDefaultLibraries", c.first, c.second->ignoreSpecificDefaultLibraries);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkLibraryDependencies", c.first, c.second->linkLibraryDependencies);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkTimeCodeGeneration", c.first, c.second->linkTimeCodeGeneration);
+	for (const auto& c : conditions) output.writeProperty(indent, "MinimumRequiredVersion", c.first, c.second->minimumRequiredVersion);
+	for (const auto& c : conditions) output.writeProperty(indent, "ModuleDefinitionFile", c.first, c.second->moduleDefinitionFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "Name", c.first, c.second->name);
+	for (const auto& c : conditions) output.writeProperty(indent, "OutputFile", c.first, c.second->outputFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "RemoveObjects", c.first, c.second->removeObjects);
+	for (const auto& c : conditions) output.writeProperty(indent, "SubSystem", c.first, c.second->subSystem);
+	for (const auto& c : conditions) output.writeProperty(indent, "SuppressStartupBanner", c.first, c.second->suppressStartupBanner);
+	for (const auto& c : conditions) output.writeProperty(indent, "TargetMachine", c.first, c.second->targetMachine);
+	for (const auto& c : conditions) output.writeProperty(indent, "TrackerLogDirectory", c.first, c.second->trackerLogDirectory);
+	for (const auto& c : conditions) output.writeProperty(indent, "TreatLibWarningAsErrors", c.first, c.second->treatLibWarningAsErrors);
+	for (const auto& c : conditions) output.writeProperty(indent, "UseUnicodeResponseFiles", c.first, c.second->useUnicodeResponseFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "Verbose", c.first, c.second->verbose);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void VSResourceTask::writeProperties(VSLineWriter& output, int indent)
+void VSResourceTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSResourceTask>>& conditions)
 {
-	output.writeProperty(indent, "AdditionalIncludeDirectories", additionalIncludeDirectories);
-	output.writeProperty(indent, "AdditionalOptions", additionalOptions);
-	output.writeProperty(indent, "Culture", culture);
-	output.writeProperty(indent, "IgnoreStandardIncludePath", ignoreStandardIncludePath);
-	output.writeProperty(indent, "NullTerminateStrings", nullTerminateStrings);
-	output.writeProperty(indent, "PreprocessorDefinitions", preprocessorDefinitions);
-	output.writeProperty(indent, "ResourceOutputFileName", resourceOutputFileName);
-	output.writeProperty(indent, "ShowProgress", showProgress);
-	output.writeProperty(indent, "SuppressStartupBanner", suppressStartupBanner);
-	output.writeProperty(indent, "TrackerLogDirectory", trackerLogDirectory);
-	output.writeProperty(indent, "UndefinePreprocessorDefinitions", undefinePreprocessorDefinitions);
+	std::vector<std::pair<std::string, VSResourceTask*>> c;
+	for (const auto& it : conditions)
+		c.push_back({ it.first, it.second.get() });
+	writeProperties(output, indent, c);
+}
+
+void VSResourceTask::writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSResourceTask*>>& conditions)
+{
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalIncludeDirectories", c.first, c.second->additionalIncludeDirectories);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalOptions", c.first, c.second->additionalOptions);
+	for (const auto& c : conditions) output.writeProperty(indent, "Culture", c.first, c.second->culture);
+	for (const auto& c : conditions) output.writeProperty(indent, "IgnoreStandardIncludePath", c.first, c.second->ignoreStandardIncludePath);
+	for (const auto& c : conditions) output.writeProperty(indent, "NullTerminateStrings", c.first, c.second->nullTerminateStrings);
+	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessorDefinitions", c.first, c.second->preprocessorDefinitions);
+	for (const auto& c : conditions) output.writeProperty(indent, "ResourceOutputFileName", c.first, c.second->resourceOutputFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "ShowProgress", c.first, c.second->showProgress);
+	for (const auto& c : conditions) output.writeProperty(indent, "SuppressStartupBanner", c.first, c.second->suppressStartupBanner);
+	for (const auto& c : conditions) output.writeProperty(indent, "TrackerLogDirectory", c.first, c.second->trackerLogDirectory);
+	for (const auto& c : conditions) output.writeProperty(indent, "UndefinePreprocessorDefinitions", c.first, c.second->undefinePreprocessorDefinitions);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void VSManifestTask::writeProperties(VSLineWriter& output, int indent)
+void VSManifestTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSManifestTask>>& conditions)
 {
-	output.writeProperty(indent, "AdditionalManifestFiles", additionalManifestFiles);
-	output.writeProperty(indent, "AdditionalOptions", additionalOptions);
-	output.writeProperty(indent, "AssemblyIdentity", assemblyIdentity);
-	output.writeProperty(indent, "ComponentFileName", componentFileName);
-	output.writeProperty(indent, "DependencyInformationFile", dependencyInformationFile);
-	output.writeProperty(indent, "EmbedManifest", embedManifest);
-	output.writeProperty(indent, "EnableDPIAwareness", enableDPIAwareness);
-	output.writeProperty(indent, "GenerateCatalogFiles", generateCatalogFiles);
-	output.writeProperty(indent, "GenerateCategoryTags", generateCategoryTags);
-	output.writeProperty(indent, "InputResourceManifests", inputResourceManifests);
-	output.writeProperty(indent, "ManifestFromManagedAssembly", manifestFromManagedAssembly);
-	output.writeProperty(indent, "OutputManifestFile", outputManifestFile);
-	output.writeProperty(indent, "OutputResourceManifests", outputResourceManifests);
-	output.writeProperty(indent, "RegistrarScriptFile", registrarScriptFile);
-	output.writeProperty(indent, "ReplacementsFile", replacementsFile);
-	output.writeProperty(indent, "ResourceOutputFileName", resourceOutputFileName);
-	output.writeProperty(indent, "SuppressDependencyElement", suppressDependencyElement);
-	output.writeProperty(indent, "SuppressStartupBanner", suppressStartupBanner);
-	output.writeProperty(indent, "TrackerLogDirectory", trackerLogDirectory);
-	output.writeProperty(indent, "TypeLibraryFile", typeLibraryFile);
-	output.writeProperty(indent, "UpdateFileHashes", updateFileHashes);
-	output.writeProperty(indent, "UpdateFileHashesSearchPath", updateFileHashesSearchPath);
-	output.writeProperty(indent, "VerboseOutput", verboseOutput);
+	std::vector<std::pair<std::string, VSManifestTask*>> c;
+	for (const auto& it : conditions)
+		c.push_back({ it.first, it.second.get() });
+	writeProperties(output, indent, c);
+}
+
+void VSManifestTask::writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSManifestTask*>>& conditions)
+{
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalManifestFiles", c.first, c.second->additionalManifestFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalOptions", c.first, c.second->additionalOptions);
+	for (const auto& c : conditions) output.writeProperty(indent, "AssemblyIdentity", c.first, c.second->assemblyIdentity);
+	for (const auto& c : conditions) output.writeProperty(indent, "ComponentFileName", c.first, c.second->componentFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "DependencyInformationFile", c.first, c.second->dependencyInformationFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "EmbedManifest", c.first, c.second->embedManifest);
+	for (const auto& c : conditions) output.writeProperty(indent, "EnableDPIAwareness", c.first, c.second->enableDPIAwareness);
+	for (const auto& c : conditions) output.writeProperty(indent, "GenerateCatalogFiles", c.first, c.second->generateCatalogFiles);
+	for (const auto& c : conditions) output.writeProperty(indent, "GenerateCategoryTags", c.first, c.second->generateCategoryTags);
+	for (const auto& c : conditions) output.writeProperty(indent, "InputResourceManifests", c.first, c.second->inputResourceManifests);
+	for (const auto& c : conditions) output.writeProperty(indent, "ManifestFromManagedAssembly", c.first, c.second->manifestFromManagedAssembly);
+	for (const auto& c : conditions) output.writeProperty(indent, "OutputManifestFile", c.first, c.second->outputManifestFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "OutputResourceManifests", c.first, c.second->outputResourceManifests);
+	for (const auto& c : conditions) output.writeProperty(indent, "RegistrarScriptFile", c.first, c.second->registrarScriptFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "ReplacementsFile", c.first, c.second->replacementsFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "ResourceOutputFileName", c.first, c.second->resourceOutputFileName);
+	for (const auto& c : conditions) output.writeProperty(indent, "SuppressDependencyElement", c.first, c.second->suppressDependencyElement);
+	for (const auto& c : conditions) output.writeProperty(indent, "SuppressStartupBanner", c.first, c.second->suppressStartupBanner);
+	for (const auto& c : conditions) output.writeProperty(indent, "TrackerLogDirectory", c.first, c.second->trackerLogDirectory);
+	for (const auto& c : conditions) output.writeProperty(indent, "TypeLibraryFile", c.first, c.second->typeLibraryFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "UpdateFileHashes", c.first, c.second->updateFileHashes);
+	for (const auto& c : conditions) output.writeProperty(indent, "UpdateFileHashesSearchPath", c.first, c.second->updateFileHashesSearchPath);
+	for (const auto& c : conditions) output.writeProperty(indent, "VerboseOutput", c.first, c.second->verboseOutput);
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -728,7 +748,7 @@ void VSLineWriter::writeLine(const std::string& text)
 	lines += "\r\n";
 }
 
-void VSLineWriter::writeProperty(int indent, const std::string& propName, const std::string& propValue)
+void VSLineWriter::writeProperty(int indent, const std::string& propName, const std::string& condition, const std::string& propValue)
 {
 	if (!propValue.empty())
 	{
@@ -736,6 +756,12 @@ void VSLineWriter::writeProperty(int indent, const std::string& propName, const 
 		line.resize(indent, ' ');
 		line += '<';
 		line += propName;
+		if (!condition.empty())
+		{
+			line += " Condition=\"";
+			line += condition;
+			line += '"';
+		}
 		line += '>';
 		line += propValue;
 		line += '<';
@@ -746,7 +772,7 @@ void VSLineWriter::writeProperty(int indent, const std::string& propName, const 
 	}
 }
 
-void VSLineWriter::writeProperty(int indent, const std::string& propName, const std::vector<std::string>& propValues)
+void VSLineWriter::writeProperty(int indent, const std::string& propName, const std::string& condition, const std::vector<std::string>& propValues)
 {
 	if (!propValues.empty())
 	{
@@ -754,6 +780,12 @@ void VSLineWriter::writeProperty(int indent, const std::string& propName, const 
 		line.resize(indent, ' ');
 		line += '<';
 		line += propName;
+		if (!condition.empty())
+		{
+			line += " Condition=\"";
+			line += condition;
+			line += '"';
+		}
 		line += '>';
 		for (const std::string& propValue : propValues)
 		{

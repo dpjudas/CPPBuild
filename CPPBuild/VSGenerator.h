@@ -44,6 +44,269 @@ public:
 	std::string platform;
 };
 
+// https://learn.microsoft.com/en-us/visualstudio/msbuild/cl-task
+class VSCompileTask
+{
+public:
+	void writeProperties(VSLineWriter& output, int indent);
+
+	std::vector<std::string> additionalIncludeDirectories;
+	std::string additionalOptions;
+	std::vector<std::string> additionalUsingDirectories;
+	std::string alwaysAppend;
+	std::string assemblerListingLocation;
+	std::string assemblerOutput;
+	std::string basicRuntimeChecks;
+	std::string browseInformation;
+	std::string browseInformationFile;
+	std::string bufferSecurityCheck;
+	std::string buildingInIDE;
+	std::string callingConvention;
+	std::string compileAs;
+	std::string compileAsManaged;
+	std::string createHotpatchableImage;
+	std::string debugInformationFormat;
+	std::string disableLanguageExtensions;
+	std::vector<std::string> disableSpecificWarnings;
+	std::string enableEnhancedInstructionSet;
+	std::string enableFiberSafeOptimizations;
+	std::string enablePREfast;
+	std::string errorReporting;
+	std::string exceptionHandling;
+	std::string expandAttributedSource;
+	std::string favorSizeOrSpeed;
+	std::string floatingPointExceptions;
+	std::string floatingPointModel;
+	std::string forceConformanceInForLoopScope;
+	std::vector<std::string> forcedIncludeFiles;
+	std::vector<std::string> forcedUsingFiles;
+	std::string functionLevelLinking;
+	std::string generateXMLDocumentationFiles;
+	std::string ignoreStandardIncludePath;
+	std::string inlineFunctionExpansion;
+	std::string intrinsicFunctions;
+	std::string sdlCheck;
+	std::string minimalRebuild;
+	std::string multiProcessorCompilation;
+	std::string objectFileName;
+	std::vector<std::string> objectFiles;
+	std::string omitDefaultLibName;
+	std::string omitFramePointers;
+	std::string openMPSupport;
+	std::string optimization;
+	std::string precompiledHeader;
+	std::string precompiledHeaderFile;
+	std::string precompiledHeaderOutputFile;
+	std::string preprocessKeepComments;
+	std::vector<std::string> preprocessorDefinitions;
+	std::string preprocessOutput;
+	std::string preprocessOutputPath;
+	std::string preprocessSuppressLineNumbers;
+	std::string preprocessToFile;
+	std::string processorNumber;
+	std::string programDataBaseFileName;
+	std::string conformanceMode;
+	std::string runtimeLibrary;
+	std::string runtimeTypeInfo;
+	std::string languageStandard;
+	std::string showIncludes;
+	std::string smallerTypeCheck;
+	std::string stringPooling;
+	std::string structMemberAlignment;
+	std::string suppressStartupBanner;
+	std::string trackerLogDirectory;
+	std::vector<std::string> treatSpecificWarningsAsErrors;
+	std::string treatWarningAsError;
+	std::string treatWChar_tAsBuiltInType;
+	std::string undefineAllPreprocessorDefinitions;
+	std::vector<std::string> undefinePreprocessorDefinitions;
+	std::string useFullPaths;
+	std::string useUnicodeForAssemblerListing;
+	std::string warningLevel;
+	std::string wholeProgramOptimization;
+	std::string xmlDocumentationFileName;
+	std::string minimalRebuildFromTracking;
+	std::string trackFileAccess;
+};
+
+// https://learn.microsoft.com/en-us/visualstudio/msbuild/link-task
+class VSLinkTask
+{
+public:
+	void writeProperties(VSLineWriter& output, int indent);
+
+	std::vector<std::string> additionalDependencies;
+	std::vector<std::string> additionalLibraryDirectories;
+	std::vector<std::string> additionalManifestDependencies;
+	std::string additionalOptions;
+	std::vector<std::string> addModuleNamesToAssembly;
+	std::string allowIsolation;
+	std::string assemblyDebug;
+	std::vector<std::string> assemblyLinkResource;
+	std::string attributeFileTracking;
+	std::string baseAddress;
+	std::string buildingInIDE;
+	std::string clrImageType;
+	std::string clrSupportLastError;
+	std::string clrThreadAttribute;
+	std::string clrUnmanagedCodeCheck;
+	std::string createHotPatchableImage;
+	std::string dataExecutionPrevention;
+	std::vector<std::string> delayLoadDLLs;
+	std::string delaySign;
+	std::string driver;
+	std::vector<std::string> embedManagedResourceFile;
+	std::string enableCOMDATFolding;
+	std::string enableUAC;
+	std::string entryPointSymbol;
+	std::string fixedBaseAddress;
+	std::string forceFileOutput;
+	std::vector<std::string> forceSymbolReferences;
+	std::string functionOrder;
+	std::string generateDebugInformation;
+	std::string generateManifest;
+	std::string generateMapFile;
+	std::string heapCommitSize;
+	std::string heapReserveSize;
+	std::string ignoreAllDefaultLibraries;
+	std::string ignoreEmbeddedIDL;
+	std::string ignoreImportLibrary;
+	std::vector<std::string> ignoreSpecificDefaultLibraries;
+	std::string imageHasSafeExceptionHandlers;
+	std::string importLibrary;
+	std::string keyContainer;
+	std::string keyFile;
+	std::string largeAddressAware;
+	std::string linkDLL;
+	std::string linkErrorReporting;
+	std::string linkIncremental;
+	std::string linkLibraryDependencies;
+	std::string linkStatus;
+	std::string linkTimeCodeGeneration;
+	std::string manifestFile;
+	std::string mapExports;
+	std::string mapFileName;
+	std::string mergedIDLBaseFileName;
+	std::string mergeSections;
+	std::string midlCommandFile;
+	std::string minimumRequiredVersion;
+	std::string moduleDefinitionFile;
+	std::string msdosStubFileName;
+	std::string noEntryPoint;
+	std::vector<std::string> objectFiles;
+	std::string optimizeReferences;
+	std::string outputFile;
+	std::string perUserRedirection;
+	std::string preventDllBinding;
+	std::string profile;
+	std::string profileGuidedDatabase;
+	std::string programDatabaseFile;
+	std::string randomizedBaseAddress;
+	std::string registerOutput;
+	std::string sectionAlignment;
+	std::string setChecksum;
+	std::string showProgress;
+	std::vector<std::string> specifySectionAttributes;
+	std::string stackCommitSize;
+	std::string stackReserveSize;
+	std::string stripPrivateSymbols;
+	std::string subSystem;
+	std::string supportNobindOfDelayLoadedDLL;
+	std::string supportUnloadOfDelayLoadedDLL;
+	std::string suppressStartupBanner;
+	std::string swapRunFromCD;
+	std::string swapRunFromNET;
+	std::string targetMachine;
+	std::string terminalServerAware;
+	std::string trackerLogDirectory;
+	std::string treatLinkerWarningAsErrors;
+	std::string turnOffAssemblyGeneration;
+	std::string typeLibraryFile;
+	std::string typeLibraryResourceID;
+	std::string uacExecutionLevel;
+	std::string uacUIAccess;
+	std::string useLibraryDependencyInputs;
+	std::string version;
+};
+
+class VSLibTask
+{
+public:
+	void writeProperties(VSLineWriter& output, int indent);
+
+	std::vector<std::string> additionalDependencies;
+	std::vector<std::string> additionalLibraryDirectories;
+	std::string additionalOptions;
+	std::string displayLibrary;
+	std::string errorReporting;
+	std::vector<std::string> exportNamedFunctions;
+	std::vector<std::string> forceSymbolReferences;
+	std::string ignoreAllDefaultLibraries;
+	std::vector<std::string> ignoreSpecificDefaultLibraries;
+	std::string linkLibraryDependencies;
+	std::string linkTimeCodeGeneration;
+	std::string minimumRequiredVersion;
+	std::string moduleDefinitionFile;
+	std::string name;
+	std::string outputFile;
+	std::vector<std::string> removeObjects;
+	std::string subSystem;
+	std::string suppressStartupBanner;
+	std::string targetMachine;
+	std::string trackerLogDirectory;
+	std::string treatLibWarningAsErrors;
+	std::string useUnicodeResponseFiles;
+	std::string verbose;
+};
+
+class VSResourceTask
+{
+public:
+	void writeProperties(VSLineWriter& output, int indent);
+
+	std::vector<std::string> additionalIncludeDirectories;
+	std::string additionalOptions;
+	std::string culture;
+	std::string ignoreStandardIncludePath;
+	std::string nullTerminateStrings;
+	std::vector<std::string> preprocessorDefinitions;
+	std::string resourceOutputFileName;
+	std::string showProgress;
+	std::string suppressStartupBanner;
+	std::string trackerLogDirectory;
+	std::vector<std::string> undefinePreprocessorDefinitions;
+};
+
+class VSManifestTask
+{
+public:
+	void writeProperties(VSLineWriter& output, int indent);
+
+	std::vector<std::string> additionalManifestFiles;
+	std::string additionalOptions;
+	std::string assemblyIdentity;
+	std::string componentFileName;
+	std::string dependencyInformationFile;
+	std::string embedManifest;
+	std::string enableDPIAwareness;
+	std::string generateCatalogFiles;
+	std::string generateCategoryTags;
+	std::string inputResourceManifests;
+	std::string manifestFromManagedAssembly;
+	std::string outputManifestFile;
+	std::string outputResourceManifests;
+	std::string registrarScriptFile;
+	std::string replacementsFile;
+	std::string resourceOutputFileName;
+	std::string suppressDependencyElement;
+	std::string suppressStartupBanner;
+	std::string trackerLogDirectory;
+	std::string typeLibraryFile;
+	std::string updateFileHashes;
+	std::string updateFileHashesSearchPath;
+	std::string verboseOutput;
+};
+
 class VSCppProjectConfiguration
 {
 public:
@@ -69,254 +332,12 @@ public:
 		std::vector<std::string> nmakePreprocessorDefinitions;
 		std::vector<std::string> nmakeIncludeSearchPath;
 	} general;
-
-	// https://learn.microsoft.com/en-us/visualstudio/msbuild/cl-task
-	struct
-	{
-		std::vector<std::string> additionalIncludeDirectories;
-		std::string additionalOptions;
-		std::vector<std::string> additionalUsingDirectories;
-		std::string alwaysAppend;
-		std::string assemblerListingLocation;
-		std::string assemblerOutput;
-		std::string basicRuntimeChecks;
-		std::string browseInformation;
-		std::string browseInformationFile;
-		std::string bufferSecurityCheck;
-		std::string buildingInIDE;
-		std::string callingConvention;
-		std::string compileAs;
-		std::string compileAsManaged;
-		std::string createHotpatchableImage;
-		std::string debugInformationFormat;
-		std::string disableLanguageExtensions;
-		std::vector<std::string> disableSpecificWarnings;
-		std::string enableEnhancedInstructionSet;
-		std::string enableFiberSafeOptimizations;
-		std::string enablePREfast;
-		std::string errorReporting;
-		std::string exceptionHandling;
-		std::string expandAttributedSource;
-		std::string favorSizeOrSpeed;
-		std::string floatingPointExceptions;
-		std::string floatingPointModel;
-		std::string forceConformanceInForLoopScope;
-		std::vector<std::string> forcedIncludeFiles;
-		std::vector<std::string> forcedUsingFiles;
-		std::string functionLevelLinking;
-		std::string generateXMLDocumentationFiles;
-		std::string ignoreStandardIncludePath;
-		std::string inlineFunctionExpansion;
-		std::string intrinsicFunctions;
-		std::string sdlCheck;
-		std::string minimalRebuild;
-		std::string multiProcessorCompilation;
-		std::string objectFileName;
-		std::vector<std::string> objectFiles;
-		std::string omitDefaultLibName;
-		std::string omitFramePointers;
-		std::string openMPSupport;
-		std::string optimization;
-		std::string precompiledHeader;
-		std::string precompiledHeaderFile;
-		std::string precompiledHeaderOutputFile;
-		std::string preprocessKeepComments;
-		std::vector<std::string> preprocessorDefinitions;
-		std::string preprocessOutput;
-		std::string preprocessOutputPath;
-		std::string preprocessSuppressLineNumbers;
-		std::string preprocessToFile;
-		std::string processorNumber;
-		std::string programDataBaseFileName;
-		std::string conformanceMode;
-		std::string runtimeLibrary;
-		std::string runtimeTypeInfo;
-		std::string languageStandard;
-		std::string showIncludes;
-		std::string smallerTypeCheck;
-		std::string stringPooling;
-		std::string structMemberAlignment;
-		std::string suppressStartupBanner;
-		std::string trackerLogDirectory;
-		std::vector<std::string> treatSpecificWarningsAsErrors;
-		std::string treatWarningAsError;
-		std::string treatWChar_tAsBuiltInType;
-		std::string undefineAllPreprocessorDefinitions;
-		std::vector<std::string> undefinePreprocessorDefinitions;
-		std::string useFullPaths;
-		std::string useUnicodeForAssemblerListing;
-		std::string warningLevel;
-		std::string wholeProgramOptimization;
-		std::string xmlDocumentationFileName;
-		std::string minimalRebuildFromTracking;
-		std::string trackFileAccess;
-	} clCompile;
-
-	// https://learn.microsoft.com/en-us/visualstudio/msbuild/link-task
-	struct
-	{
-		std::vector<std::string> additionalDependencies;
-		std::vector<std::string> additionalLibraryDirectories;
-		std::vector<std::string> additionalManifestDependencies;
-		std::string additionalOptions;
-		std::vector<std::string> addModuleNamesToAssembly;
-		std::string allowIsolation;
-		std::string assemblyDebug;
-		std::vector<std::string> assemblyLinkResource;
-		std::string attributeFileTracking;
-		std::string baseAddress;
-		std::string buildingInIDE;
-		std::string clrImageType;
-		std::string clrSupportLastError;
-		std::string clrThreadAttribute;
-		std::string clrUnmanagedCodeCheck;
-		std::string createHotPatchableImage;
-		std::string dataExecutionPrevention;
-		std::vector<std::string> delayLoadDLLs;
-		std::string delaySign;
-		std::string driver;
-		std::vector<std::string> embedManagedResourceFile;
-		std::string enableCOMDATFolding;
-		std::string enableUAC;
-		std::string entryPointSymbol;
-		std::string fixedBaseAddress;
-		std::string forceFileOutput;
-		std::vector<std::string> forceSymbolReferences;
-		std::string functionOrder;
-		std::string generateDebugInformation;
-		std::string generateManifest;
-		std::string generateMapFile;
-		std::string heapCommitSize;
-		std::string heapReserveSize;
-		std::string ignoreAllDefaultLibraries;
-		std::string ignoreEmbeddedIDL;
-		std::string ignoreImportLibrary;
-		std::vector<std::string> ignoreSpecificDefaultLibraries;
-		std::string imageHasSafeExceptionHandlers;
-		std::string importLibrary;
-		std::string keyContainer;
-		std::string keyFile;
-		std::string largeAddressAware;
-		std::string linkDLL;
-		std::string linkErrorReporting;
-		std::string linkIncremental;
-		std::string linkLibraryDependencies;
-		std::string linkStatus;
-		std::string linkTimeCodeGeneration;
-		std::string manifestFile;
-		std::string mapExports;
-		std::string mapFileName;
-		std::string mergedIDLBaseFileName;
-		std::string mergeSections;
-		std::string midlCommandFile;
-		std::string minimumRequiredVersion;
-		std::string moduleDefinitionFile;
-		std::string msdosStubFileName;
-		std::string noEntryPoint;
-		std::vector<std::string> objectFiles;
-		std::string optimizeReferences;
-		std::string outputFile;
-		std::string perUserRedirection;
-		std::string preventDllBinding;
-		std::string profile;
-		std::string profileGuidedDatabase;
-		std::string programDatabaseFile;
-		std::string randomizedBaseAddress;
-		std::string registerOutput;
-		std::string sectionAlignment;
-		std::string setChecksum;
-		std::string showProgress;
-		std::vector<std::string> specifySectionAttributes;
-		std::string stackCommitSize;
-		std::string stackReserveSize;
-		std::string stripPrivateSymbols;
-		std::string subSystem;
-		std::string supportNobindOfDelayLoadedDLL;
-		std::string supportUnloadOfDelayLoadedDLL;
-		std::string suppressStartupBanner;
-		std::string swapRunFromCD;
-		std::string swapRunFromNET;
-		std::string targetMachine;
-		std::string terminalServerAware;
-		std::string trackerLogDirectory;
-		std::string treatLinkerWarningAsErrors;
-		std::string turnOffAssemblyGeneration;
-		std::string typeLibraryFile;
-		std::string typeLibraryResourceID;
-		std::string uacExecutionLevel;
-		std::string uacUIAccess;
-		std::string useLibraryDependencyInputs;
-		std::string version;
-	} link;
-
-	struct
-	{
-		std::vector<std::string> additionalDependencies;
-		std::vector<std::string> additionalLibraryDirectories;
-		std::string additionalOptions;
-		std::string displayLibrary;
-		std::string errorReporting;
-		std::vector<std::string> exportNamedFunctions;
-		std::vector<std::string> forceSymbolReferences;
-		std::string ignoreAllDefaultLibraries;
-		std::vector<std::string> ignoreSpecificDefaultLibraries;
-		std::string linkLibraryDependencies;
-		std::string linkTimeCodeGeneration;
-		std::string minimumRequiredVersion;
-		std::string moduleDefinitionFile;
-		std::string name;
-		std::string outputFile;
-		std::vector<std::string> removeObjects;
-		std::string subSystem;
-		std::string suppressStartupBanner;
-		std::string targetMachine;
-		std::string trackerLogDirectory;
-		std::string treatLibWarningAsErrors;
-		std::string useUnicodeResponseFiles;
-		std::string verbose;
-	} lib;
-
-	struct
-	{
-		std::vector<std::string> additionalIncludeDirectories;
-		std::string additionalOptions;
-		std::string culture;
-		std::string ignoreStandardIncludePath;
-		std::string nullTerminateStrings;
-		std::vector<std::string> preprocessorDefinitions;
-		std::string resourceOutputFileName;
-		std::string showProgress;
-		std::string suppressStartupBanner;
-		std::string trackerLogDirectory;
-		std::vector<std::string> undefinePreprocessorDefinitions;
-	} rc;
-
-	struct
-	{
-		std::vector<std::string> additionalManifestFiles;
-		std::string additionalOptions;
-		std::string assemblyIdentity;
-		std::string componentFileName;
-		std::string dependencyInformationFile;
-		std::string embedManifest;
-		std::string enableDPIAwareness;
-		std::string generateCatalogFiles;
-		std::string generateCategoryTags;
-		std::string inputResourceManifests;
-		std::string manifestFromManagedAssembly;
-		std::string outputManifestFile;
-		std::string outputResourceManifests;
-		std::string registrarScriptFile;
-		std::string replacementsFile;
-		std::string resourceOutputFileName;
-		std::string suppressDependencyElement;
-		std::string suppressStartupBanner;
-		std::string trackerLogDirectory;
-		std::string typeLibraryFile;
-		std::string updateFileHashes;
-		std::string updateFileHashesSearchPath;
-		std::string verboseOutput;
-	} manifest;
+	
+	VSCompileTask clCompile;
+	VSLinkTask link;
+	VSLibTask lib;
+	VSResourceTask rc;
+	VSManifestTask manifest;
 
 	struct
 	{

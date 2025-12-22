@@ -381,7 +381,29 @@ void VSGenerator::writeProject(const VSCppProject* project)
 				output.writeLine("    </ResourceCompile>");
 
 				output.writeLine("    <Manifest>");
+				output.writeProperty(indent, "AdditionalManifestFiles", configuration->manifest.additionalManifestFiles);
 				output.writeProperty(indent, "AdditionalOptions", configuration->manifest.additionalOptions);
+				output.writeProperty(indent, "AssemblyIdentity", configuration->manifest.assemblyIdentity);
+				output.writeProperty(indent, "ComponentFileName", configuration->manifest.componentFileName);
+				output.writeProperty(indent, "DependencyInformationFile", configuration->manifest.dependencyInformationFile);
+				output.writeProperty(indent, "EmbedManifest", configuration->manifest.embedManifest);
+				output.writeProperty(indent, "EnableDPIAwareness", configuration->manifest.enableDPIAwareness);
+				output.writeProperty(indent, "GenerateCatalogFiles", configuration->manifest.generateCatalogFiles);
+				output.writeProperty(indent, "GenerateCategoryTags", configuration->manifest.generateCategoryTags);
+				output.writeProperty(indent, "InputResourceManifests", configuration->manifest.inputResourceManifests);
+				output.writeProperty(indent, "ManifestFromManagedAssembly", configuration->manifest.manifestFromManagedAssembly);
+				output.writeProperty(indent, "OutputManifestFile", configuration->manifest.outputManifestFile);
+				output.writeProperty(indent, "OutputResourceManifests", configuration->manifest.outputResourceManifests);
+				output.writeProperty(indent, "RegistrarScriptFile", configuration->manifest.registrarScriptFile);
+				output.writeProperty(indent, "ReplacementsFile", configuration->manifest.replacementsFile);
+				output.writeProperty(indent, "ResourceOutputFileName", configuration->manifest.resourceOutputFileName);
+				output.writeProperty(indent, "SuppressDependencyElement", configuration->manifest.suppressDependencyElement);
+				output.writeProperty(indent, "SuppressStartupBanner", configuration->manifest.suppressStartupBanner);
+				output.writeProperty(indent, "TrackerLogDirectory", configuration->manifest.trackerLogDirectory);
+				output.writeProperty(indent, "TypeLibraryFile", configuration->manifest.typeLibraryFile);
+				output.writeProperty(indent, "UpdateFileHashes", configuration->manifest.updateFileHashes);
+				output.writeProperty(indent, "UpdateFileHashesSearchPath", configuration->manifest.updateFileHashesSearchPath);
+				output.writeProperty(indent, "VerboseOutput", configuration->manifest.verboseOutput);
 				output.writeLine("    </Manifest>");
 			}
 		}

@@ -293,7 +293,29 @@ public:
 
 	struct
 	{
+		std::vector<std::string> additionalManifestFiles;
 		std::string additionalOptions;
+		std::string assemblyIdentity;
+		std::string componentFileName;
+		std::string dependencyInformationFile;
+		std::string embedManifest;
+		std::string enableDPIAwareness;
+		std::string generateCatalogFiles;
+		std::string generateCategoryTags;
+		std::string inputResourceManifests;
+		std::string manifestFromManagedAssembly;
+		std::string outputManifestFile;
+		std::string outputResourceManifests;
+		std::string registrarScriptFile;
+		std::string replacementsFile;
+		std::string resourceOutputFileName;
+		std::string suppressDependencyElement;
+		std::string suppressStartupBanner;
+		std::string trackerLogDirectory;
+		std::string typeLibraryFile;
+		std::string updateFileHashes;
+		std::string updateFileHashesSearchPath;
+		std::string verboseOutput;
 	} manifest;
 
 	struct

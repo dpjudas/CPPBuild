@@ -32,17 +32,21 @@ Project.addConfiguration("Debug", "x64");
 Project.addConfiguration("Release", "x64");
 
 var files = [
+	"Precomp.cpp",
+	"Precomp.h",
 	"Basic.cpp",
-	"Basic.h"
+	"Basic.h",
 ];
 
 var basic = Targets.addConsole("Basic");
+basic.addFiles(files);
 
 if (Environment.isWindows()) {
 	basic.addDefines(["WIN32", "_WIN32", "UNICODE", "_UNICODE"]);
+	basic.addCompileOptions(["/YuPrecomp.h"]);
+	basic.addCompileOptions(["/YcPrecomp.h"], { files: ["Precomp.cpp"], configuration: "Debug", platform: "x64" });
+	basic.addCompileOptions(["/YcPrecomp.h"], { files: ["Precomp.cpp"], configuration: "Release", platform: "x64" });
 }
-
-basic.addFiles(files);
 ```
 
 The script is using standard javascript, which means it can import other javascripts via the import clause. It can also run additional
@@ -93,14 +97,47 @@ class Target
 	addFiles(files);
 	addFilters(filters);
 	addDefines(defines, options);
+	addCompileOptions(opts, options);
 	addIncludePaths(paths, options);
+	addLinkOptions(opts, options);
 	addLinkLibraries(libs, options);
 	addLibraryPaths(paths, options);
+	addPackages(names, options);
 	setWebRootPath(path);
 	setCSSRootFile(file);
 	setHtmlShellFile(file);
 }
 ```
+
+## Package class
+
+The Packages class holds packages that can be used by targets.
+
+```js
+class Packages
+{
+	static add(name);
+}
+```
+
+The add function adds a package to the list of packages. It returns an instance of the Package class:
+
+```js
+class Package
+{
+	getConfiguration(name);
+	addSource(source, options);
+	addDefines(defines, options);
+	addCompileOptions(opts, options);
+	addLinkOptions(opts, options);
+	addIncludePaths(paths, options);
+	addLinkLibraries(libs, options);
+	addLibraryPaths(paths, options);
+}
+```
+
+When a package is referenced by a target it adds the compiler and linker options from the package.
+The `addSource` function specifies where the package is located.
 
 ## File class
 

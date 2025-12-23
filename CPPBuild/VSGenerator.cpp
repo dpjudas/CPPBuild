@@ -192,45 +192,7 @@ void VSGenerator::writeProject(const VSCppProject* project)
 	writeItemGroup(output, "ClInclude", project->headerFiles);
 	writeItemGroup(output, "ResourceCompile", project->resourceFiles);
 	writeItemGroup(output, "Manifest", project->manifestFiles);
-
-	if (!project->customBuildFile.file.empty())
-	{
-		output.writeLine("  <ItemGroup>");
-		output.writeLine("    <CustomBuild Include=\"" + project->customBuildFile.file + "\">");
-		output.writeLine("      <UseUtf8Encoding>" + project->customBuildFile.useUtf8Encoding + "</UseUtf8Encoding>");
-		for (const auto& configuration : project->configurations)
-		{
-			std::string additionalInputs, outputs;
-
-			for (const auto& value : configuration->customBuildFile.additionalInputs)
-			{
-				if (!additionalInputs.empty())
-					additionalInputs += ";";
-				additionalInputs += value;
-			}
-			if (!additionalInputs.empty())
-			{
-				additionalInputs += ";";
-				additionalInputs += "%(AdditionalInputs)";
-			}
-
-			for (const auto& value : configuration->customBuildFile.outputs)
-			{
-				if (!outputs.empty())
-					outputs += ";";
-				outputs += value;
-			}
-
-			output.writeLine("      <Message Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + configuration->customBuildFile.message + "</Message>");
-			output.writeLine("      <Command Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + configuration->customBuildFile.command + "</Command>");
-			output.writeLine("      <AdditionalInputs Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + additionalInputs + "</AdditionalInputs>");
-			output.writeLine("      <Outputs Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + outputs + "</Outputs>");
-			output.writeLine("      <LinkObjects Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\">" + configuration->customBuildFile.linkObjects + "</LinkObjects>");
-		}
-		output.writeLine("    </CustomBuild>");
-		output.writeLine("  </ItemGroup>");
-	}
-
+	writeItemGroup(output, "CustomBuild", project->customFiles);
 	writeItemGroup(output, "None", project->extraFiles);
 
 	if (!project->references.empty())
@@ -374,20 +336,20 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 		output.writeLine("  </ItemGroup>");
 	}
 
-	if (!project->customBuildFile.file.empty())
+	if (!project->customFiles.empty())
 	{
 		output.writeLine("  <ItemGroup>");
 		for (const auto& filter : project->filters)
 		{
-			if (!filter->customBuildFile.empty())
+			for (const auto& file : filter->customFiles)
 			{
 				if (filter->name == "")
 				{
-					output.writeLine("    <CustomBuild Include=\"" + filter->customBuildFile + "\" />");
+					output.writeLine("    <CustomBuild Include=\"" + file + "\" />");
 				}
 				else
 				{
-					output.writeLine("    <CustomBuild Include=\"" + filter->customBuildFile + "\">");
+					output.writeLine("    <CustomBuild Include=\"" + file + "\">");
 					output.writeLine("      <Filter>" + filter->name + "</Filter>");
 					output.writeLine("    </CustomBuild>");
 				}
@@ -742,6 +704,26 @@ void VSManifestTask::writeProperties(VSLineWriter& output, int indent, const std
 
 /////////////////////////////////////////////////////////////////////////////
 
+void VSCustomBuildTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSCustomBuildTask>>& conditions)
+{
+	std::vector<std::pair<std::string, VSCustomBuildTask*>> c;
+	for (const auto& it : conditions)
+		c.push_back({ it.first, it.second.get() });
+	writeProperties(output, indent, c);
+}
+
+void VSCustomBuildTask::writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSCustomBuildTask*>>& conditions)
+{
+	for (const auto& c : conditions) output.writeProperty(indent, "UseUtf8Encoding", c.first, c.second->useUtf8Encoding);
+	for (const auto& c : conditions) output.writeProperty(indent, "Message", c.first, c.second->message);
+	for (const auto& c : conditions) output.writeProperty(indent, "Command", c.first, c.second->command);
+	for (const auto& c : conditions) output.writeProperty(indent, "AdditionalInputs", c.first, c.second->additionalInputs);
+	for (const auto& c : conditions) output.writeProperty(indent, "Outputs", c.first, c.second->outputs);
+	for (const auto& c : conditions) output.writeProperty(indent, "LinkObjects", c.first, c.second->linkObjects);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 void VSLineWriter::writeLine(const std::string& text)
 {
 	lines += text;
@@ -772,7 +754,7 @@ void VSLineWriter::writeProperty(int indent, const std::string& propName, const 
 	}
 }
 
-void VSLineWriter::writeProperty(int indent, const std::string& propName, const std::string& condition, const std::vector<std::string>& propValues)
+void VSLineWriter::writeProperty(int indent, const std::string& propName, const std::string& condition, const std::vector<std::string>& propValues, char splitter)
 {
 	if (!propValues.empty())
 	{
@@ -790,12 +772,8 @@ void VSLineWriter::writeProperty(int indent, const std::string& propName, const 
 		for (const std::string& propValue : propValues)
 		{
 			line += propValue;
-			line += ';';
+			line += splitter;
 		}
-		line += '%';
-		line += '(';
-		line += propName;
-		line += ')';
 		line += '<';
 		line += '/';
 		line += propName;

@@ -28,29 +28,41 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		if (guid.empty())
 			guid = Guid::makeGuid().toString();
 
-		std::string customBuildFile = FilePath::combine(setup.sourcePath, "Configure.js");
-		//if (filter)
-		//	filter->customBuildFile = customBuildFile;
-
 		auto project = std::make_unique<VSCppProject>(projectName, cppbuildDir, guids.projectGuids[projectName]);
-		project->customBuildFile.file = customBuildFile;
 
 		for (const BuildConfiguration& configDef : setup.project.configurations)
 		{
 			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configDef.name, configDef.platform);
 			projConfig->general.configurationType = "Utility";
+			project->configurations.push_back(std::move(projConfig));
+		}
+
+		VSFile<VSCustomBuildTask> customBuildFile;
+		customBuildFile.file = FilePath::combine(setup.sourcePath, "Configure.js");
+		for (const BuildConfiguration& configDef : setup.project.configurations)
+		{
+			auto props = std::make_shared<VSCustomBuildTask>();
+			props->message = "Running CPPBuild generate";
+			props->useUtf8Encoding = "Always";
+			props->linkObjects = "false";
+			props->command = cppbuildexe + " -workdir $(SolutionDir) check-makefile";
+			props->outputs.push_back(FilePath::combine(cppbuildDir, "Makefile.timestamp"));
 
 			for (const BuildTarget& target : setup.project.targets)
 			{
 				std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
-				projConfig->customBuildFile.additionalInputs.push_back(FilePath::combine(sourcePath, target.subdirectory + ".js"));
+				std::string scriptFile = FilePath::lastComponent(target.subdirectory) + ".js";
+				props->additionalInputs.push_back(FilePath::combine(sourcePath, scriptFile));
 			}
+			
+			if (!props->additionalInputs.empty())
+				props->additionalInputs.push_back("%(AdditionalInputs)");
 
-			projConfig->customBuildFile.command = cppbuildexe + " -workdir $(SolutionDir) check-makefile";
-			projConfig->customBuildFile.outputs.push_back(FilePath::combine(cppbuildDir, "Makefile.timestamp"));
-
-			project->configurations.push_back(std::move(projConfig));
+			customBuildFile.addCondition(configDef.name, configDef.platform, std::move(props));
 		}
+		project->customFiles.push_back(customBuildFile);
+		//if (filter)
+		//	filter->customFiles.push_back(customBuildFile.file);
 
 		solution->projects.push_back(std::move(project));
 	}
@@ -359,8 +371,6 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			else if (projectType == "application")
 			{
 				projConfig->general.configurationType = "Application";
-				projConfig->clCompile.preprocessorDefinitions = configDefines;
-				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->clCompile.warningLevel = "Level3";
 				projConfig->clCompile.functionLevelLinking = "true";
 				projConfig->clCompile.intrinsicFunctions = "true";
@@ -373,14 +383,10 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->link.enableCOMDATFolding = "true";
 				projConfig->link.optimizeReferences = "true";
 				projConfig->link.generateDebugInformation = "true";
-				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
-				projConfig->link.additionalDependencies = configDependencies;
 			}
 			else if (projectType == "console")
 			{
 				projConfig->general.configurationType = "Application";
-				projConfig->clCompile.preprocessorDefinitions = configDefines;
-				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->clCompile.warningLevel = "Level3";
 				projConfig->clCompile.functionLevelLinking = "true";
 				projConfig->clCompile.intrinsicFunctions = "true";
@@ -393,14 +399,10 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->link.enableCOMDATFolding = "true";
 				projConfig->link.optimizeReferences = "true";
 				projConfig->link.generateDebugInformation = "true";
-				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
-				projConfig->link.additionalDependencies = configDependencies;
 			}
 			else if (projectType == "lib")
 			{
 				projConfig->general.configurationType = "StaticLibrary";
-				projConfig->clCompile.preprocessorDefinitions = configDefines;
-				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->clCompile.warningLevel = "Level3";
 				projConfig->clCompile.functionLevelLinking = "true";
 				projConfig->clCompile.intrinsicFunctions = "true";
@@ -413,14 +415,10 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->link.enableCOMDATFolding = "true";
 				projConfig->link.optimizeReferences = "true";
 				projConfig->link.generateDebugInformation = "true";
-				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
-				projConfig->link.additionalDependencies = configDependencies;
 			}
 			else if (projectType == "dll")
 			{
 				projConfig->general.configurationType = "DynamicLibrary";
-				projConfig->clCompile.preprocessorDefinitions = configDefines;
-				projConfig->clCompile.additionalIncludeDirectories = configIncludes;
 				projConfig->clCompile.warningLevel = "Level3";
 				projConfig->clCompile.functionLevelLinking = "true";
 				projConfig->clCompile.intrinsicFunctions = "true";
@@ -433,13 +431,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->link.enableCOMDATFolding = "true";
 				projConfig->link.optimizeReferences = "true";
 				projConfig->link.generateDebugInformation = "true";
-				projConfig->link.additionalLibraryDirectories = configLibraryPaths;
-				projConfig->link.additionalDependencies = configDependencies;
 			}
-
-			// TBD: should we use different settings for resource files?
-			projConfig->rc.preprocessorDefinitions = configDefines;
-			projConfig->rc.additionalIncludeDirectories = configIncludes;
 
 			if (configName == "Debug")
 			{
@@ -456,6 +448,22 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
 				projConfig->clCompile.intrinsicFunctions = "true";
 			}
+
+			if (!configDefines.empty())
+				configDefines.push_back("%(PreprocessorDefinitions)");
+			if (!configIncludes.empty())
+				configIncludes.push_back("%(AdditionalIncludeDirectories)");
+			if (!configLibraryPaths.empty())
+				configLibraryPaths.push_back("%(AdditionalLibraryDirectories)");
+			if (!configDependencies.empty())
+				configDependencies.push_back("%(AdditionalDependencies)");
+
+			projConfig->clCompile.preprocessorDefinitions = configDefines;
+			projConfig->clCompile.additionalIncludeDirectories = configIncludes;
+			projConfig->link.additionalLibraryDirectories = configLibraryPaths;
+			projConfig->link.additionalDependencies = configDependencies;
+			projConfig->rc.preprocessorDefinitions = configDefines;
+			projConfig->rc.additionalIncludeDirectories = configIncludes;
 
 			// TBD: what should the defaults be? MSBuild defaults will bomb us decades back in time and build insecure executables
 			// To do: deal with configCCompileOptions - apply it to every C file encountered?

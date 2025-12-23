@@ -11,7 +11,7 @@ class VSLineWriter
 public:
 	void writeLine(const std::string& text);
 	void writeProperty(int indent, const std::string& propName, const std::string& condition, const std::string& propValue);
-	void writeProperty(int indent, const std::string& propName, const std::string& condition, const std::vector<std::string>& propValues);
+	void writeProperty(int indent, const std::string& propName, const std::string& condition, const std::vector<std::string>& propValues, char splitter = ';');
 	void save(const std::string& filename);
 
 private:
@@ -326,6 +326,20 @@ public:
 	std::string verboseOutput;
 };
 
+class VSCustomBuildTask
+{
+public:
+	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSCustomBuildTask>>& conditions);
+	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSCustomBuildTask*>>& conditions);
+
+	std::string useUtf8Encoding;
+	std::string message;
+	std::string command;
+	std::vector<std::string> additionalInputs;
+	std::vector<std::string> outputs;
+	std::string linkObjects;
+};
+
 class VSCppProjectConfiguration
 {
 public:
@@ -357,15 +371,6 @@ public:
 	VSLibTask lib;
 	VSResourceTask rc;
 	VSManifestTask manifest;
-
-	struct
-	{
-		std::string message = "Running CPPBuild generate";
-		std::string command;
-		std::vector<std::string> additionalInputs;
-		std::vector<std::string> outputs;
-		std::string linkObjects = "false";
-	} customBuildFile;
 };
 
 class VSCppProjectFilter
@@ -379,8 +384,8 @@ public:
 	std::vector<std::string> headerFiles;
 	std::vector<std::string> resourceFiles;
 	std::vector<std::string> manifestFiles;
+	std::vector<std::string> customFiles;
 	std::vector<std::string> extraFiles;
-	std::string customBuildFile;
 };
 
 class VSCppProjectReference
@@ -430,15 +435,10 @@ public:
 	std::vector<VSFile<VSIncludeTask>> headerFiles;
 	std::vector<VSFile<VSResourceTask>> resourceFiles;
 	std::vector<VSFile<VSManifestTask>> manifestFiles;
+	std::vector<VSFile<VSCustomBuildTask>> customFiles;
 	std::vector<VSFile<VSNoneTask>> extraFiles;
 	std::vector<std::unique_ptr<VSCppProjectFilter>> filters;
 	std::vector<VSCppProjectReference> references;
-
-	struct
-	{
-		std::string file;
-		std::string useUtf8Encoding = "Always";
-	} customBuildFile;
 };
 
 class VSGenerator

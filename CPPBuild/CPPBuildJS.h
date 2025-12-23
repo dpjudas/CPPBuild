@@ -21,6 +21,7 @@ class Target
 		this.linkOptions = [];
 		this.includePaths = [];
 		this.files = [];
+		this.filePropertySets = [];
 		this.filters = [];
 		this.linkLibraries = [];
 		this.libraryPaths = [];
@@ -49,119 +50,123 @@ class Target
 
 	addFiles(files) {
 		var self = this;
-		files.forEach(function(file) { self.addFile(file); });
-	}
-
-	addFile(file) {
-		this.files.push(file);
+		files.forEach(function(file) { self.files.push(file); });
 	}
 
 	addFilters(filters) {
 		var self = this;
-		filters.forEach(function(filter) { self.addFilter(filter); });
-	}
-
-	addFilter(filter) {
-		this.filters.push(filter);
+		filters.forEach(function(filter) { self.filters.push(filter); });
 	}
 
 	addDefines(defines, options) {
-		var self = this;
-		defines.forEach(function(define) { self.addDefine(define, options); });
-	}
-
-	addDefine(define, options) {
-		if (isObject(options) && options.configuration !== undefined) {
+		if (isObject(options) && options.files !== undefined) {
+			var propSet = {
+				configName: options.configuration,
+				configPlatform: options.platform,
+				defines: [],
+				compileOptions: [],
+				includePaths: []
+			};
+			defines.forEach(function(define) { propSet.defines.push(define); });
+			this.filePropertySets.push(propSet);
+		}
+		else if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
-			config.defines.push(define);
+			defines.forEach(function(define) { config.defines.push(define); });
 		}
 		else {
-			this.defines.push(define);
+			var self = this;
+			defines.forEach(function(define) { self.defines.push(define); });
 		}
 	}
 
 	addCompileOptions(opts, options) {
-		var self = this;
-		opts.forEach(function(opt) { self.addCompileOption(opt, options); });
-	}
-
-	addCompileOption(opt, options) {
-		if (isObject(options)) {
+		if (isObject(options) && options.files !== undefined) {
+			var propSet = {
+				configName: options.configuration,
+				configPlatform: options.platform,
+				defines: [],
+				compileOptions: [],
+				includePaths: []
+			};
+			opts.forEach(function(opt) { propSet.compileOptions.push(opt); });
+			this.filePropertySets.push(propSet);
+		}
+		else if (isObject(options)) {
 			var obj = this;
 			if (options.configuration !== undefined) {
 				obj = this.getConfiguration(options.configuration);
 			}
 			if (options.lang === undefined || options.lang == "c") {
-				obj.cCompileOptions.push(opt);
+				opts.forEach(function(opt) { obj.cCompileOptions.push(opt); });
 			}
 			if (options.lang === undefined || options.lang == "c++") {
-				obj.cxxCompileOptions.push(opt);
+				opts.forEach(function(opt) { obj.cxxCompileOptions.push(opt); });
 			}
 		}
 		else {
-			this.cCompileOptions.push(opt);
-			this.cxxCompileOptions.push(opt);
-		}
-	}
-
-	addLinkOptions(opts, options) {
-		var self = this;
-		opts.forEach(function(opt) { self.addLinkOption(opt, options); });
-	}
-
-	addLinkOption(opt, options) {
-		if (isObject(options) && options.configuration !== undefined) {
-			var config = this.getConfiguration(options.configuration);
-			config.linkOptions.push(opt);
-		}
-		else {
-			this.linkOptions.push(opt);
+			var self = this;
+			opts.forEach(function(opt) {
+				self.cCompileOptions.push(opt);
+				self.cxxCompileOptions.push(opt);
+			});
 		}
 	}
 
 	addIncludePaths(paths, options) {
-		var self = this;
-		paths.forEach(function(path) { self.addIncludePath(path, options); });
-	}
-
-	addIncludePath(path, options) {
-		if (isObject(options) && options.configuration !== undefined) {
+		if (isObject(options) && options.files !== undefined) {
+			var propSet = {
+				configName: options.configuration,
+				configPlatform: options.platform,
+				defines: [],
+				compileOptions: [],
+				includePaths: []
+			};
+			paths.forEach(function(path) { propSet.includePaths.push(path); });
+			this.filePropertySets.push(propSet);
+		}
+		else if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
-			config.includePaths.push(path);
+			paths.forEach(function(path) { config.includePaths.push(path); });
 		}
 		else {
-			this.includePaths.push(path);
+			var self = this;
+			paths.forEach(function(path) { self.includePaths.push(path); });
+		}
+	}
+
+	addLinkOptions(opts, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			opts.forEach(function(opt) { config.linkOptions.push(opt); });
+		}
+		else {
+			var self = this;
+			opts.forEach(function(opt) { self.linkOptions.push(opt); });
 		}
 	}
 
 	addLinkLibraries(libs, options) {
-		var self = this;
-		libs.forEach(function(lib) { self.addLinkLibrary(lib, options); });
-	}
-
-	addLinkLibrary(lib, options) {
 		if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
 			config.linkLibraries.push(lib);
 		}
 		else {
-			this.linkLibraries.push(lib);
+			var self = this;
+			libs.forEach(function(lib) { self.linkLibraries.push(lib); });
 		}
 	}
 
 	addLibraryPaths(paths, options) {
-		var self = this;
-		paths.forEach(function(path) { self.addLibraryPath(path, options); });
-	}
-
-	addLibraryPath(path, options) {
 		if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
 			config.libraryPaths.push(path);
 		}
 		else {
-			this.libraryPaths.push(path);
+			var self = this;
+			paths.forEach(function(path) { self.libraryPaths.push(path); });
 		}
+
 	}
 
 	addPackage(name, options) {
@@ -202,6 +207,7 @@ class Target
 			linkOptions: this.linkOptions,
 			includePaths: this.includePaths,
 			files: this.files,
+			filePropertySets: this.filePropertySets,
 			filters: this.filters,
 			linkLibraries: this.linkLibraries,
 			libraryPaths: this.libraryPaths,

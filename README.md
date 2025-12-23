@@ -91,17 +91,11 @@ class Target
 {
 	getConfiguration(name);
 	addFiles(files);
-	addFile(file);
 	addFilters(filters);
-	addFilter(filter);
 	addDefines(defines, options);
-	addDefine(define, options);
 	addIncludePaths(paths, options);
-	addIncludePath(path, options);
 	addLinkLibraries(libs, options);
-	addLinkLibrary(lib, options);
 	addLibraryPaths(paths, options);
-	addLibraryPath(path, options);
 	setWebRootPath(path);
 	setCSSRootFile(file);
 	setHtmlShellFile(file);

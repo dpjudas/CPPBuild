@@ -36,6 +36,24 @@ BuildTargetConfiguration BuildTargetConfiguration::fromJson(const JsonValue& jso
 
 /////////////////////////////////////////////////////////////////////////////
 
+BuildFilePropertySet BuildFilePropertySet::fromJson(const JsonValue& json)
+{
+	BuildFilePropertySet set;
+	for (const JsonValue& item : json["files"].items())
+		set.files.push_back(item.to_string());
+	set.configName = json["configName"].to_string();
+	set.configPlatform = json["configPlatform"].to_string();
+	for (const JsonValue& item : json["defines"].items())
+		set.defines.push_back(item.to_string());
+	for (const JsonValue& item : json["compileOptions"].items())
+		set.compileOptions.push_back(item.to_string());
+	for (const JsonValue& item : json["includePaths"].items())
+		set.includePaths.push_back(item.to_string());
+	return set;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 BuildTarget BuildTarget::fromJson(const JsonValue& json)
 {
 	BuildTarget target;
@@ -57,6 +75,8 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 		target.includePaths.push_back(item.to_string());
 	for (const JsonValue& item : json["files"].items())
 		target.files.push_back(item.to_string());
+	for (const JsonValue& item : json["filePropertySets"].items())
+		target.filePropertySets.push_back(BuildFilePropertySet::fromJson(item));
 	for (const JsonValue& item : json["filters"].items())
 		target.filters.push_back(item.to_string());
 	for (const JsonValue& item : json["linkLibraries"].items())

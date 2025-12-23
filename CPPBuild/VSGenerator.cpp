@@ -497,6 +497,228 @@ void VSCompileTask::writeProperties(VSLineWriter& output, int indent, const std:
 	for (const auto& c : conditions) output.writeProperty(indent, "TrackFileAccess", c.first, c.second->trackFileAccess);
 }
 
+void VSCompileTask::applyCompileOptions(const std::vector<std::string>& options)
+{
+	std::map<std::string, VSSimpleTaskOption> simpleOptions =
+	{
+		{ "/FA", { "AssemblyCode", &assemblerOutput }},
+		{ "/FAc", { "AssemblyAndMachineCode", &assemblerOutput }},
+		{ "/FAs", { "AssemblyAndSourceCode", &assemblerOutput }},
+		{ "/FAcs", { "All", &assemblerOutput }},
+		{ "/RTC-", { "Default", &assemblerOutput }},
+		{ "/RTCs", { "StackFrameRuntimeCheck", &assemblerOutput }},
+		{ "/RTCu", { "UninitializedLocalUsageCheck", &assemblerOutput }},
+		{ "/RTC1", { "EnableFastChecks", &assemblerOutput }},
+		{ "/FR", { "true", &browseInformation }},
+		{ "/Fr", { "true", &browseInformation }},
+		{ "/GS", { "true", &bufferSecurityCheck }},
+		{ "/GS-", { "false", &bufferSecurityCheck }},
+		{ "/Gd", { "Cdecl", &callingConvention }},
+		{ "/Gr", { "FastCall", &callingConvention }},
+		{ "/Gz", { "StdCall", &callingConvention }},
+		{ "/TC", { "CompileAsC", &compileAs }},
+		{ "/TP", { "CompileAsCpp", &compileAs }},
+		{ "/interface", { "CompileAsCppModule", &compileAs }},
+		{ "/internalPartition", { "CompileAsCppModuleInternalPartition", &compileAs }},
+		{ "/exportHeader", { "CompileAsHeaderUnit", &compileAs }},
+		{ "/clr", { "true", &compileAsManaged }},
+		{ "/clr:pure", { "Pure", &compileAsManaged }},
+		{ "/clr:safe", { "Safe", &compileAsManaged }},
+		{ "/clr:oldSyntax", { "OldSyntax", &compileAsManaged }},
+		{ "/hotpatch", { "true", &createHotpatchableImage }},
+		{ "/Z7", { "OldStyle", &debugInformationFormat }},
+		{ "/Zi", { "ProgramDatabase", &debugInformationFormat }},
+		{ "/ZI", { "EditAndContinue", &debugInformationFormat }},
+		{ "/arch:IA32", { "NoExtensions", &enableEnhancedInstructionSet }},
+		{ "/arch:SSE", { "StreamingSIMDExtensions", &enableEnhancedInstructionSet }},
+		{ "/arch:SSE2", { "StreamingSIMDExtensions2", &enableEnhancedInstructionSet }},
+		{ "/arch:AVX", { "AdvancedVectorExtensions", &enableEnhancedInstructionSet }},
+		{ "/arch:AVX2", { "AdvancedVectorExtensions2", &enableEnhancedInstructionSet }},
+		{ "/arch:AVX512", { "AdvancedVectorExtensions512", &enableEnhancedInstructionSet }},
+		{ "/GT", { "true", &enableFiberSafeOptimizations }},
+		{ "/GT-", { "false", &enableFiberSafeOptimizations }},
+		{ "/analyze", { "true", &enablePREfast }},
+		{ "/analyze-", { "false", &enablePREfast }},
+		{ "/errorReport:none", { "None", &errorReporting }},
+		{ "/errorReport:prompt", { "Prompt", &errorReporting }},
+		{ "/errorReport:queue", { "Queue", &errorReporting }},
+		{ "/errorReport:send", { "Send", &errorReporting }},
+		{ "/EH-", { "false", &exceptionHandling }},
+		{ "/EHa", { "Async", &exceptionHandling }},
+		{ "/EHsc", { "Sync", &exceptionHandling }},
+		{ "/EHs", { "SyncCThrow", &exceptionHandling }},
+		{ "/Fx", { "true", &expandAttributedSource }},
+		{ "/O-", { "Neither", &favorSizeOrSpeed }},
+		{ "/Os", { "Size", &favorSizeOrSpeed }},
+		{ "/Ot", { "Speed", &favorSizeOrSpeed }},
+		{ "/fp:except", { "true", &floatingPointExceptions }},
+		{ "/fp:except-", { "false", &floatingPointExceptions }},
+		{ "/fp:precise", { "Precise", &floatingPointModel }},
+		{ "/fp:strict", { "Strict", &floatingPointModel }},
+		{ "/fp:fast", { "Fast", &floatingPointModel }},
+		{ "/Zc:forScope", { "true", &forceConformanceInForLoopScope }},
+		{ "/Zc:forScope-", { "false", &forceConformanceInForLoopScope }},
+		{ "/Gy", { "true", &functionLevelLinking }},
+		{ "/Gy-", { "false", &functionLevelLinking }},
+		{ "/doc", { "true", &generateXMLDocumentationFiles }},
+		{ "/X", { "true", &ignoreStandardIncludePath }},
+		{ "/Ob-", { "Default", &inlineFunctionExpansion }},
+		{ "/Ob0", { "Disabled", &inlineFunctionExpansion }},
+		{ "/Ob1", { "OnlyExplicitInline", &inlineFunctionExpansion }},
+		{ "/Ob2", { "AnySuitable", &inlineFunctionExpansion }},
+		{ "/Oi", { "true", &intrinsicFunctions }},
+		{ "/Oi-", { "false", &intrinsicFunctions }},
+		{ "/Gm", { "true", &minimalRebuild }},
+		{ "/Zl", { "true", &omitDefaultLibName }},
+		{ "/Oy", { "true", &omitFramePointers }},
+		{ "/openmp", { "true", &openMPSupport }},
+		{ "/Od", { "Disabled", &optimization }},
+		{ "/O1", { "MinSpace", &optimization }},
+		{ "/O2", { "MaxSpeed", &optimization }},
+		{ "/Ox", { "Full", &optimization }},
+		{ "/Y-", { "NotUsing", &precompiledHeader }},
+		{ "/Yc", { "Create", &precompiledHeader }},
+		{ "/Yu", { "Use", &precompiledHeader }},
+		{ "/C", { "true", &preprocessKeepComments }},
+		{ "/EP", { "true", &preprocessSuppressLineNumbers }},
+		{ "/P", { "true", &preprocessToFile }},
+		{ "/MT", { "MultiThreaded", &runtimeLibrary }},
+		{ "/MTd", { "MultiThreadedDebug", &runtimeLibrary }},
+		{ "/MD", { "MultiThreadedDLL", &runtimeLibrary }},
+		{ "/MDd", { "MultiThreadedDebugDLL", &runtimeLibrary }},
+		{ "/GR", { "true", &runtimeTypeInfo }},
+		{ "/GR-", { "false", &runtimeTypeInfo }},
+		{ "/showIncludes", { "true", &showIncludes }},
+		{ "/RTCc", { "true", &smallerTypeCheck }},
+		{ "/GF", { "true", &stringPooling }},
+		{ "/Zp1", { "1Byte", &structMemberAlignment }},
+		{ "/Zp2", { "2Bytes", &structMemberAlignment }},
+		{ "/Zp4", { "4Bytes", &structMemberAlignment }},
+		{ "/Zp8", { "8Bytes", &structMemberAlignment }},
+		{ "/Zp16", { "16Bytes", &structMemberAlignment }},
+		{ "/nologo", { "true", &suppressStartupBanner }},
+		{ "/WX", { "true", &treatWarningAsError }},
+		{ "/Zc:wchar_t", { "true", &treatWChar_tAsBuiltInType }},
+		{ "/Zc:wchar_t-", { "false", &treatWChar_tAsBuiltInType }},
+		{ "/u", { "true", &undefineAllPreprocessorDefinitions }},
+		{ "/FC", { "true", &useFullPaths }},
+		{ "/FAu", { "true", &useUnicodeForAssemblerListing }},
+		{ "/W0", { "TurnOffAllWarnings", &warningLevel }},
+		{ "/W1", { "Level1", &warningLevel }},
+		{ "/W2", { "Level2", &warningLevel }},
+		{ "/W3", { "Level3", &warningLevel }},
+		{ "/W4", { "Level4", &warningLevel }},
+		{ "/Wall", { "EnableAllWarnings", &warningLevel }},
+		{ "/GL", { "true", &wholeProgramOptimization }},
+	};
+
+	// To do: handle the undocumented sdlCheck, conformanceMode and languageStandard properties
+
+	for (const std::string& opt : options)
+	{
+		if (opt.empty())
+			continue;
+
+		auto it = simpleOptions.find(opt);
+		if (it != simpleOptions.end())
+		{
+			const VSSimpleTaskOption& simple = it->second;
+			*simple.prop = simple.value;
+		}
+		else if (opt.starts_with("/I "))
+		{
+			additionalIncludeDirectories.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/I"))
+		{
+			additionalIncludeDirectories.push_back(opt.substr(2));
+		}
+		else if (opt.starts_with("/AI"))
+		{
+			additionalUsingDirectories.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/Fa"))
+		{
+			assemblerListingLocation = opt.substr(3);
+		}
+		else if (opt.starts_with("/FR") || opt.starts_with("/Fr"))
+		{
+			browseInformation = "true";
+			browseInformationFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/wd"))
+		{
+			disableSpecificWarnings.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/FI "))
+		{
+			forcedIncludeFiles.push_back(opt.substr(4));
+		}
+		else if (opt.starts_with("/FI"))
+		{
+			forcedIncludeFiles.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/Fo "))
+		{
+			objectFileName = opt.substr(4);
+		}
+		else if (opt.starts_with("/Fo"))
+		{
+			objectFileName = opt.substr(3);
+		}
+		else if (opt.starts_with("/Yc"))
+		{
+			precompiledHeader = "Create";
+			precompiledHeaderFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/Yu"))
+		{
+			precompiledHeader = "Use";
+			precompiledHeaderFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/Fp"))
+		{
+			precompiledHeaderOutputFile = opt.substr(3);
+		}
+		else if (opt.starts_with("/Fi"))
+		{
+			preprocessOutputPath = opt.substr(3);
+		}
+		else if (opt.starts_with("/MP"))
+		{
+			multiProcessorCompilation = "true";
+			processorNumber = opt.substr(3);
+		}
+		else if (opt.starts_with("/Fd"))
+		{
+			programDataBaseFileName = opt.substr(3);
+		}
+		else if (opt.starts_with("/we"))
+		{
+			treatSpecificWarningsAsErrors.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/U "))
+		{
+			undefinePreprocessorDefinitions.push_back(opt.substr(3));
+		}
+		else if (opt.starts_with("/U"))
+		{
+			undefinePreprocessorDefinitions.push_back(opt.substr(2));
+		}
+		else if (opt.starts_with("/doc"))
+		{
+			generateXMLDocumentationFiles = "true";
+			xmlDocumentationFileName = opt.substr(4);
+		}
+		else
+		{
+			if (!additionalOptions.empty())
+				additionalOptions += ' ';
+			additionalOptions += opt;
+		}
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void VSLinkTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLinkTask>>& conditions)
@@ -603,6 +825,318 @@ void VSLinkTask::writeProperties(VSLineWriter& output, int indent, const std::ve
 	for (const auto& c : conditions) output.writeProperty(indent, "Version", c.first, c.second->version);
 }
 
+void VSLinkTask::applyLinkOptions(const std::vector<std::string>& options)
+{
+	std::map<std::string, VSSimpleTaskOption> simpleOptions =
+	{
+		{ "/ALLOWISOLATION", { "true", &allowIsolation }},
+		{ "/ALLOWISOLATION:NO", { "false", &allowIsolation }},
+		{ "/ASSEMBLYDEBUG", { "true", &assemblyDebug }},
+		{ "/ASSEMBLYDEBUG:DISABLE", { "false", &assemblyDebug }},
+		{ "/CLRIMAGETYPE:IJW", { "ForceIJWImage", &clrImageType }},
+		{ "/CLRIMAGETYPE:PURE", { "ForcePureILImage", &clrImageType }},
+		{ "/CLRIMAGETYPE:SAFE", { "ForceSafeILImage", &clrImageType }},
+		{ "/CLRSUPPORTLASTERROR", { "Enabled", &clrSupportLastError }},
+		{ "/CLRSUPPORTLASTERROR:NO", { "Disabled", &clrSupportLastError }},
+		{ "/CLRSUPPORTLASTERROR:SYSTEMDLL", { "SystemDlls", &clrSupportLastError }},
+		{ "/CLRTHREADATTRIBUTE:NONE", { "DefaultThreadingAttribute", &clrThreadAttribute }},
+		{ "/CLRTHREADATTRIBUTE:MTA", { "MTAThreadingAttribute", &clrThreadAttribute }},
+		{ "/CLRTHREADATTRIBUTE:STA", { "STAThreadingAttribute", &clrThreadAttribute }},
+		{ "/CLRUNMANAGEDCODECHECK", { "true", &clrUnmanagedCodeCheck }},
+		{ "/CLRUNMANAGEDCODECHECK:NO", { "false", &clrUnmanagedCodeCheck }},
+		{ "/FUNCTIONPADMIN", { "Enabled", &createHotPatchableImage }},
+		{ "/FUNCTIONPADMIN:5", { "X86Image", &createHotPatchableImage }},
+		{ "/FUNCTIONPADMIN:6", { "X64Image", &createHotPatchableImage }},
+		{ "/FUNCTIONPADMIN:16", { "ItaniumImage", &createHotPatchableImage }},
+		{ "/NXCOMPAT", { "true", &dataExecutionPrevention }},
+		{ "/NXCOMPAT:NO", { "false", &dataExecutionPrevention }},
+		{ "/DELAYSIGN", { "true", &delaySign }},
+		{ "/DELAYSIGN:NO", { "false", &delaySign }},
+		{ "/DRIVER", { "Driver", &driver }},
+		{ "/DRIVER:UPONLY", { "UpOnly", &driver }},
+		{ "/DRIVER:WDM", { "WDM", &driver }},
+		{ "/OPT:ICF", { "true", &enableCOMDATFolding }},
+		{ "/OPT:NOICF", { "false", &enableCOMDATFolding }},
+		{ "/MANIFESTUAC", { "true", &enableUAC }},
+		{ "/MANIFESTUAC:NO", { "false", &enableUAC }},
+		{ "/FIXED", { "true", &fixedBaseAddress }},
+		{ "/FIXED:NO", { "false", &fixedBaseAddress }},
+		{ "/FORCE", { "Enabled", &forceFileOutput }},
+		{ "/FORCE:MULTIPLE", { "MultiplyDefinedSymbolOnly", &forceFileOutput }},
+		{ "/FORCE:UNRESOLVED", { "UndefinedSymbolOnly", &forceFileOutput }},
+		{ "/DEBUG", { "true", &generateDebugInformation }},
+		{ "/DEBUG:NONE", { "false", &generateDebugInformation }},
+		{ "/MAP", { "true", &generateMapFile }},
+		{ "/NODEFAULTLIB", { "true", &ignoreAllDefaultLibraries }},
+		{ "/IGNOREIDL", { "true", &ignoreEmbeddedIDL }},
+		{ "/SAFESEH", { "true", &imageHasSafeExceptionHandlers }},
+		{ "/SAFESEH:NO", { "false", &imageHasSafeExceptionHandlers }},
+		{ "/LARGEADDRESSAWARE", { "true", &largeAddressAware }},
+		{ "/LARGEADDRESSAWARE:NO", { "false", &largeAddressAware }},
+		{ "/DLL", { "true", &linkDLL }},
+		{ "/ERRORREPORT:NONE", { "NoErrorReport", &linkErrorReporting }},
+		{ "/ERRORREPORT:PROMPT", { "PromptImmediately", &linkErrorReporting }},
+		{ "/ERRORREPORT:QUEUE", { "QueueForNextLogin", &linkErrorReporting }},
+		{ "/ERRORREPORT:SEND", { "SendErrorReport", &linkErrorReporting }},
+		{ "/INCREMENTAL", { "true", &linkIncremental }},
+		{ "/INCREMENTAL:NO", { "false", &linkIncremental }},
+		{ "/LTCG:STATUS", { "true", &linkStatus }},
+		{ "/LTCG:OFF", { "Default", &linkTimeCodeGeneration }},
+		{ "/LTCG", { "UseLinkTimeCodeGeneration", &linkTimeCodeGeneration }},
+		{ "/LTCG:PGInstrument", { "PGInstrument", &linkTimeCodeGeneration }},
+		{ "/LTCG:PGOptimize", { "PGOptimization", &linkTimeCodeGeneration }},
+		{ "/LTCG:PGUpdate", { "PGUpdate", &linkTimeCodeGeneration }},
+		{ "/MAPINFO:EXPORTS", { "true", &mapExports }},
+		{ "/NOENTRY", { "true", &noEntryPoint }},
+		{ "/OPT:REF", { "true", &optimizeReferences }},
+		{ "/OPT:NOREF", { "false", &optimizeReferences }},
+		{ "/ALLOWBIND", { "true", &preventDllBinding }},
+		{ "/ALLOWBIND:NO", { "false", &preventDllBinding }},
+		{ "/PROFILE", { "true", &profile }},
+		{ "/DYNAMICBASE", { "true", &randomizedBaseAddress }},
+		{ "/DYNAMICBASE:NO", { "false", &randomizedBaseAddress }},
+		{ "/RELEASE", { "true", &setChecksum }},
+		{ "/VERBOSE", { "LinkVerbose", &showProgress }},
+		{ "/VERBOSE:LIB", { "LinkVerboseLib", &showProgress }},
+		{ "/VERBOSE:ICF", { "LinkVerboseICF", &showProgress }},
+		{ "/VERBOSE:REF", { "LinkVerboseREF", &showProgress }},
+		{ "/VERBOSE:SAFESEH", { "LinkVerboseSAFESEH", &showProgress }},
+		{ "/VERBOSE:CLR", { "LinkVerboseCLR", &showProgress }},
+		{ "/VERBOSE:NO", { "NotSet", &showProgress }},
+		{ "/SUBSYSTEM:CONSOLE", { "Console", &subSystem }},
+		{ "/SUBSYSTEM:WINDOWS", { "Windows", &subSystem }},
+		{ "/SUBSYSTEM:NATIVE", { "Native", &subSystem }},
+		{ "/SUBSYSTEM:EFI_APPLICATION", { "EFI Application", &subSystem }},
+		{ "/SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER", { "EFI Boot Service Driver", &subSystem }},
+		{ "/SUBSYSTEM:EFI_ROM", { "EFI ROM", &subSystem }},
+		{ "/SUBSYSTEM:EFI_RUNTIME_DRIVER", { "EFI Runtime", &subSystem }},
+		{ "/SUBSYSTEM:WINDOWSCE", { "WindowsCE", &subSystem }},
+		{ "/SUBSYSTEM:POSIX", { "POSIX", &subSystem }},
+		{ "/DELAY:NOBIND", { "true", &supportNobindOfDelayLoadedDLL }},
+		{ "/DELAY:UNLOAD", { "true", &supportUnloadOfDelayLoadedDLL }},
+		{ "/NOLOGO", { "", &suppressStartupBanner }},
+		{ "/SWAPRUN:CD", { "true", &swapRunFromCD }},
+		{ "/SWAPRUN:NET", { "true", &swapRunFromNET }},
+		{ "/MACHINE:ARM", { "MachineARM", &targetMachine }},
+		{ "/MACHINE:ARM64", { "MachineARM64", &targetMachine }},
+		{ "/MACHINE:ARMEC", { "MachineARM64EC", &targetMachine }},
+		{ "/MACHINE:EBC", { "MachineEBC", &targetMachine }},
+		{ "/MACHINE:IA64", { "MachineIA64", &targetMachine }},
+		{ "/MACHINE:MIPS", { "MachineMIPS", &targetMachine }},
+		{ "/MACHINE:MIPS16", { "MachineMIPS16", &targetMachine }},
+		{ "/MACHINE:MIPSFPU", { "MachineMIPSFPU", &targetMachine }},
+		{ "/MACHINE:MIPSFPU16", { "MachineMIPSFPU16", &targetMachine }},
+		{ "/MACHINE:SH4", { "MachineSH4", &targetMachine }},
+		{ "/MACHINE:THUMB", { "MachineTHUMB", &targetMachine }},
+		{ "/MACHINE:X64", { "MachineX64", &targetMachine }},
+		{ "/MACHINE:X86", { "MachineX86", &targetMachine }},
+		{ "/TSAWARE", { "true", &terminalServerAware }},
+		{ "/TSAWARE:NO", { "false", &terminalServerAware } },
+		{ "/WX", { "true", &treatLinkerWarningAsErrors } },
+		{ "/WX:NO", { "false", &treatLinkerWarningAsErrors } },
+		{ "/NOASSEMBLY", { "true", &turnOffAssemblyGeneration } },
+	};
+
+	for (const std::string& opt : options)
+	{
+		if (opt.empty())
+			continue;
+
+		std::string upper = opt;
+		for (char& c : upper)
+		{
+			if (c >= 'a' && c <= 'Z')
+				c += 'A' - 'a';
+		}
+
+		auto it = simpleOptions.find(upper);
+		if (it != simpleOptions.end())
+		{
+			const VSSimpleTaskOption& simple = it->second;
+			*simple.prop = simple.value;
+		}
+		else if (upper.starts_with("/LIBPATH:"))
+		{
+			additionalLibraryDirectories.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/MANIFESTDEPENDENCY:"))
+		{
+			additionalManifestDependencies.push_back(opt.substr(20));
+		}
+		else if (upper.starts_with("/ASSEMBLYMODULE:"))
+		{
+			addModuleNamesToAssembly.push_back(opt.substr(16));
+		}
+		else if (upper.starts_with("/ASSEMBLYLINKRESOURCE:"))
+		{
+			assemblyLinkResource.push_back(opt.substr(22));
+		}
+		else if (upper.starts_with("/BASE:"))
+		{
+			baseAddress = opt.substr(6);
+		}
+		else if (upper.starts_with("/DELAYLOAD:"))
+		{
+			delayLoadDLLs.push_back(opt.substr(11));
+		}
+		else if (upper.starts_with("/ASSEMBLYRESOURCE:"))
+		{
+			embedManagedResourceFile.push_back(opt.substr(18));
+		}
+		else if (upper.starts_with("/ENTRY:"))
+		{
+			entryPointSymbol = opt.substr(7);
+		}
+		else if (upper.starts_with("/INCLUDE:"))
+		{
+			forceSymbolReferences.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/ORDER:"))
+		{
+			functionOrder = opt.substr(7);
+		}
+		else if (upper.starts_with("/MAP:"))
+		{
+			generateMapFile = "true";
+			mapFileName = opt.substr(5);
+		}
+		else if (upper.starts_with("/HEAP:"))
+		{
+			size_t split = opt.find(',', 6);
+			if (split != std::string::npos)
+			{
+				heapReserveSize = opt.substr(6);
+			}
+			else
+			{
+				heapReserveSize = opt.substr(6, split - 6);
+				heapCommitSize = opt.substr(split + 1);
+			}
+		}
+		else if (upper.starts_with("/NODEFAULTLIB:"))
+		{
+			ignoreSpecificDefaultLibraries.push_back(opt.substr(14));
+		}
+		else if (upper.starts_with("/IMPLIB:"))
+		{
+			importLibrary = opt.substr(8);
+		}
+		else if (upper.starts_with("/KEYCONTAINER:"))
+		{
+			keyContainer = opt.substr(14);
+		}
+		else if (upper.starts_with("/KEYFILE:"))
+		{
+			keyFile = opt.substr(9);
+		}
+		else if (upper.starts_with("/MANIFESTFILE:"))
+		{
+			manifestFile = opt.substr(14);
+		}
+		else if (upper.starts_with("/IDLOUT:"))
+		{
+			mergedIDLBaseFileName = opt.substr(8);
+		}
+		else if (upper.starts_with("/MIDL:"))
+		{
+			midlCommandFile = opt.substr(6);
+		}
+		else if (upper.starts_with("/DEF:"))
+		{
+			moduleDefinitionFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/STUB:"))
+		{
+			msdosStubFileName = opt.substr(6);
+		}
+		else if (upper.starts_with("/OUT:"))
+		{
+			outputFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/PGD:"))
+		{
+			profileGuidedDatabase = opt.substr(5);
+		}
+		else if (upper.starts_with("/PDB:"))
+		{
+			programDatabaseFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/ALIGN:"))
+		{
+			sectionAlignment = opt.substr(7);
+		}
+		else if (upper.starts_with("/SECTION:"))
+		{
+			specifySectionAttributes.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/STACK:"))
+		{
+			size_t split = opt.find(',', 7);
+			if (split != std::string::npos)
+			{
+				stackReserveSize = opt.substr(7);
+			}
+			else
+			{
+				stackReserveSize = opt.substr(7, split - 7);
+				stackCommitSize = opt.substr(split + 1);
+			}
+		}
+		else if (upper.starts_with("/PDBSTRIPPED:"))
+		{
+			stripPrivateSymbols = opt.substr(13);
+		}
+		else if (upper.starts_with("/TLBOUT:"))
+		{
+			typeLibraryFile = opt.substr(8);
+		}
+		else if (upper.starts_with("/TLBID:"))
+		{
+			typeLibraryResourceID = opt.substr(7);
+		}
+		else if (upper.starts_with("/MANIFESTUAC:"))
+		{
+			std::string arg = opt.substr(13);
+			if (arg == "level='asInvoker'")
+			{
+				uacExecutionLevel = "AsInvoker";
+			}
+			else if (arg == "level='highestAvailable'")
+			{
+				uacExecutionLevel = "HighestAvailable";
+			}
+			else if (arg == "level='requireAdministrator'")
+			{
+				uacExecutionLevel = "RequireAdministrator";
+			}
+			else if (arg == "uiAccess='false'")
+			{
+				uacUIAccess = "false";
+			}
+			else if (arg == "uiAccess='true'")
+			{
+				uacUIAccess = "true";
+			}
+			else
+			{
+				if (!additionalOptions.empty())
+					additionalOptions += ' ';
+				additionalOptions += opt;
+			}
+		}
+		else if (upper.starts_with("/VERSION:"))
+		{
+			version = opt.substr(9);
+		}
+		else
+		{
+			if (!additionalOptions.empty())
+				additionalOptions += ' ';
+			additionalOptions += opt;
+		}
+	}
+}
+
 /////////////////////////////////////////////////////////////////////////////
 
 void VSLibTask::writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLibTask>>& conditions)
@@ -638,6 +1172,106 @@ void VSLibTask::writeProperties(VSLineWriter& output, int indent, const std::vec
 	for (const auto& c : conditions) output.writeProperty(indent, "TreatLibWarningAsErrors", c.first, c.second->treatLibWarningAsErrors);
 	for (const auto& c : conditions) output.writeProperty(indent, "UseUnicodeResponseFiles", c.first, c.second->useUnicodeResponseFiles);
 	for (const auto& c : conditions) output.writeProperty(indent, "Verbose", c.first, c.second->verbose);
+}
+
+void VSLibTask::applyLibOptions(const std::vector<std::string>& options)
+{
+	std::map<std::string, VSSimpleTaskOption> simpleOptions =
+	{
+		{ "/NODEFAULTLIB", { "true", &ignoreAllDefaultLibraries }},
+		{ "/ERRORREPORT:NONE", { "NoErrorReport", &errorReporting }},
+		{ "/ERRORREPORT:PROMPT", { "PromptImmediately", &errorReporting }},
+		{ "/ERRORREPORT:QUEUE", { "QueueForNextLogin", &errorReporting }},
+		{ "/ERRORREPORT:SEND", { "SendErrorReport", &errorReporting }},
+		{ "/LTCG", { "true", &linkTimeCodeGeneration }},
+		{ "/SUBSYSTEM:CONSOLE", { "Console", &subSystem }},
+		{ "/SUBSYSTEM:WINDOWS", { "Windows", &subSystem }},
+		{ "/SUBSYSTEM:NATIVE", { "Native", &subSystem }},
+		{ "/SUBSYSTEM:EFI_APPLICATION", { "EFI Application", &subSystem }},
+		{ "/SUBSYSTEM:EFI_BOOT_SERVICE_DRIVER", { "EFI Boot Service Driver", &subSystem }},
+		{ "/SUBSYSTEM:EFI_ROM", { "EFI ROM", &subSystem }},
+		{ "/SUBSYSTEM:EFI_RUNTIME_DRIVER", { "EFI Runtime", &subSystem }},
+		{ "/SUBSYSTEM:WINDOWSCE", { "WindowsCE", &subSystem }},
+		{ "/SUBSYSTEM:POSIX", { "POSIX", &subSystem }},
+		{ "/NOLOGO", { "", &suppressStartupBanner }},
+		{ "/MACHINE:ARM", { "MachineARM", &targetMachine }},
+		{ "/MACHINE:ARM64", { "MachineARM64", &targetMachine }},
+		{ "/MACHINE:ARMEC", { "MachineARM64EC", &targetMachine }},
+		{ "/MACHINE:EBC", { "MachineEBC", &targetMachine }},
+		{ "/MACHINE:IA64", { "MachineIA64", &targetMachine }},
+		{ "/MACHINE:MIPS", { "MachineMIPS", &targetMachine }},
+		{ "/MACHINE:MIPS16", { "MachineMIPS16", &targetMachine }},
+		{ "/MACHINE:MIPSFPU", { "MachineMIPSFPU", &targetMachine }},
+		{ "/MACHINE:MIPSFPU16", { "MachineMIPSFPU16", &targetMachine }},
+		{ "/MACHINE:SH4", { "MachineSH4", &targetMachine }},
+		{ "/MACHINE:THUMB", { "MachineTHUMB", &targetMachine }},
+		{ "/MACHINE:X64", { "MachineX64", &targetMachine }},
+		{ "/MACHINE:X86", { "MachineX86", &targetMachine }},
+		{ "/WX", { "true", &treatLibWarningAsErrors }},
+		{ "/VERBOSE", { "true", &verbose }},
+	};
+
+	for (const std::string& opt : options)
+	{
+		if (opt.empty())
+			continue;
+
+		std::string upper = opt;
+		for (char& c : upper)
+		{
+			if (c >= 'a' && c <= 'Z')
+				c += 'A' - 'a';
+		}
+
+		auto it = simpleOptions.find(upper);
+		if (it != simpleOptions.end())
+		{
+			const VSSimpleTaskOption& simple = it->second;
+			*simple.prop = simple.value;
+		}
+		else if (upper.starts_with("/LIBPATH:"))
+		{
+			additionalLibraryDirectories.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/LIST:"))
+		{
+			displayLibrary = opt.substr(6);
+		}
+		else if (upper.starts_with("/INCLUDE:"))
+		{
+			forceSymbolReferences.push_back(opt.substr(9));
+		}
+		else if (upper.starts_with("/NODEFAULTLIB:"))
+		{
+			ignoreSpecificDefaultLibraries.push_back(opt.substr(14));
+		}
+		else if (upper.starts_with("/DEF:"))
+		{
+			moduleDefinitionFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/NAME:"))
+		{
+			name = opt.substr(6);
+		}
+		else if (upper.starts_with("/OUT:"))
+		{
+			outputFile = opt.substr(5);
+		}
+		else if (upper.starts_with("/REMOVE:"))
+		{
+			removeObjects.push_back(opt.substr(8));
+		}
+		else if (upper.starts_with("/EXPORT:"))
+		{
+			exportNamedFunctions.push_back(opt.substr(8));
+		}
+		else
+		{
+			if (!additionalOptions.empty())
+				additionalOptions += ' ';
+			additionalOptions += opt;
+		}
+	}
 }
 
 /////////////////////////////////////////////////////////////////////////////

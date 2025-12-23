@@ -44,12 +44,20 @@ public:
 	std::string platform;
 };
 
+struct VSSimpleTaskOption
+{
+	const char* value;
+	std::string* prop;
+};
+
 // https://learn.microsoft.com/en-us/visualstudio/msbuild/cl-task
 class VSCompileTask
 {
 public:
 	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSCompileTask>>& conditions);
 	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSCompileTask*>>& conditions);
+
+	void applyCompileOptions(const std::vector<std::string>& options);
 
 	std::vector<std::string> additionalIncludeDirectories;
 	std::string additionalOptions;
@@ -151,6 +159,8 @@ public:
 	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLinkTask>>& conditions);
 	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSLinkTask*>>& conditions);
 
+	void applyLinkOptions(const std::vector<std::string>& options);
+
 	std::vector<std::string> additionalDependencies;
 	std::vector<std::string> additionalLibraryDirectories;
 	std::vector<std::string> additionalManifestDependencies;
@@ -250,6 +260,8 @@ class VSLibTask
 public:
 	static void writeProperties(VSLineWriter& output, int indent, const std::map<std::string, std::shared_ptr<VSLibTask>>& conditions);
 	static void writeProperties(VSLineWriter& output, int indent, const std::vector<std::pair<std::string, VSLibTask*>>& conditions);
+
+	void applyLibOptions(const std::vector<std::string>& options);
 
 	std::vector<std::string> additionalDependencies;
 	std::vector<std::string> additionalLibraryDirectories;
@@ -405,14 +417,17 @@ public:
 	VSFile() = default;
 	VSFile(std::string file) : file(std::move(file)) {}
 
-	void addCondition(const std::string& configurationName, const std::string& platformName, std::shared_ptr<T> task)
+	T* getTask(const std::string& configurationName, const std::string& platformName)
 	{
 		// "$(Configuration)|$(Platform)'=='Debug|x64"
 		std::string condValue = "$(Configuration)|$(Platform)'=='";
 		condValue += configurationName;
 		condValue += '|';
 		condValue += platformName;
-		conditions[condValue] = std::move(task);
+		auto& cond = conditions[condValue];
+		if (!cond)
+			cond = std::make_shared<T>();
+		return cond.get();
 	}
 
 	std::string file;

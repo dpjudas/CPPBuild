@@ -61,13 +61,13 @@ class Target
 	addDefines(defines, options) {
 		if (isObject(options) && options.files !== undefined) {
 			var propSet = {
+				files: [].concat(options.files),
 				configName: options.configuration,
 				configPlatform: options.platform,
-				defines: [],
+				defines: [].concat(defines),
 				compileOptions: [],
 				includePaths: []
 			};
-			defines.forEach(function(define) { propSet.defines.push(define); });
 			this.filePropertySets.push(propSet);
 		}
 		else if (isObject(options) && options.configuration !== undefined) {
@@ -83,13 +83,13 @@ class Target
 	addCompileOptions(opts, options) {
 		if (isObject(options) && options.files !== undefined) {
 			var propSet = {
+				files: [].concat(options.files),
 				configName: options.configuration,
 				configPlatform: options.platform,
 				defines: [],
-				compileOptions: [],
+				compileOptions: [].concat(opts),
 				includePaths: []
 			};
-			opts.forEach(function(opt) { propSet.compileOptions.push(opt); });
 			this.filePropertySets.push(propSet);
 		}
 		else if (isObject(options)) {
@@ -116,13 +116,13 @@ class Target
 	addIncludePaths(paths, options) {
 		if (isObject(options) && options.files !== undefined) {
 			var propSet = {
+				files: [].concat(options.files),
 				configName: options.configuration,
 				configPlatform: options.platform,
 				defines: [],
 				compileOptions: [],
-				includePaths: []
+				includePaths: [].concat(paths)
 			};
-			paths.forEach(function(path) { propSet.includePaths.push(path); });
 			this.filePropertySets.push(propSet);
 		}
 		else if (isObject(options) && options.configuration !== undefined) {

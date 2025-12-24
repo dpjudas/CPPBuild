@@ -420,10 +420,11 @@ public:
 	T* getTask(const std::string& configurationName, const std::string& platformName)
 	{
 		// "$(Configuration)|$(Platform)'=='Debug|x64"
-		std::string condValue = "$(Configuration)|$(Platform)'=='";
+		std::string condValue = "'$(Configuration)|$(Platform)'=='";
 		condValue += configurationName;
 		condValue += '|';
 		condValue += platformName;
+		condValue += '\'';
 		auto& cond = conditions[condValue];
 		if (!cond)
 			cond = std::make_shared<T>();

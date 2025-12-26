@@ -36,6 +36,21 @@ BuildTargetConfiguration BuildTargetConfiguration::fromJson(const JsonValue& jso
 
 /////////////////////////////////////////////////////////////////////////////
 
+BuildCustomCommand BuildCustomCommand::fromJson(const JsonValue& json)
+{
+	BuildCustomCommand cmd;
+	cmd.inputFile = json["inputFile"].to_string();
+	for (const JsonValue& item : json["commands"].items())
+		cmd.commands.push_back(item.to_string());
+	for (const JsonValue& item : json["outputFiles"].items())
+		cmd.outputFiles.push_back(item.to_string());
+	cmd.configName = json["configName"].to_string();
+	cmd.configPlatform = json["configPlatform"].to_string();
+	return cmd;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 BuildFilePropertySet BuildFilePropertySet::fromJson(const JsonValue& json)
 {
 	BuildFilePropertySet set;
@@ -63,6 +78,8 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 	target.wwwRootDir = json["wwwRootDir"].to_string();
 	target.cssRootFile = json["cssRootFile"].to_string();
 	target.htmlShellFile = json["htmlShellFile"].to_string();
+	for (const JsonValue& item : json["customCommands"].items())
+		target.customCommands.push_back(BuildCustomCommand::fromJson(item));
 	for (const JsonValue& item : json["defines"].items())
 		target.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())

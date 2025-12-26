@@ -83,6 +83,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		std::vector<VSFile<VSIncludeTask>> headerFiles;
 		std::vector<VSFile<VSResourceTask>> resourceFiles;
 		std::vector<VSFile<VSManifestTask>> manifestFiles;
+		std::vector<VSFile<VSCustomBuildTask>> customFiles;
 		std::vector<VSFile<VSNoneTask>> extraFiles;
 		std::vector<std::string> defines;
 		std::vector<std::string> cCompileOptions;
@@ -100,6 +101,12 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		{
 			for (const std::string& filename : set.files)
 				fileToSets[filename].push_back(&set);
+		}
+
+		std::unordered_map<std::string, std::vector<const BuildCustomCommand*>> fileToCustomCmd;
+		for (const BuildCustomCommand& cmd : targetDef.customCommands)
+		{
+			fileToCustomCmd[cmd.inputFile].push_back(&cmd);
 		}
 
 		for (const std::string& item : targetDef.files)
@@ -126,7 +133,56 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			}
 
 			std::string name = FilePath::combine(sourcePath, item);
-			if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
+
+			auto itCustomCmd = fileToCustomCmd.find(item);
+			if (itCustomCmd != fileToCustomCmd.end())
+			{
+				VSFile<VSCustomBuildTask> file = name;
+
+				// Add commands targeting all configs
+				for (const BuildCustomCommand* cmd : itCustomCmd->second)
+				{
+					if (cmd->configName.empty() && cmd->configPlatform.empty())
+					{
+						for (const BuildConfiguration& configDef : setup.project.configurations)
+						{
+							VSCustomBuildTask* task = file.getTask(configDef.name, configDef.platform);
+							task->useUtf8Encoding = "true";
+							task->linkObjects = "false";
+							for (const std::string& cmdline : cmd->commands)
+							{
+								if (!task->command.empty())
+									task->command += "\r\n";
+								task->command += cmdline;
+							}
+							task->outputs = cmd->outputFiles;
+						}
+					}
+				}
+
+				// Add commands for specific configs
+				for (const BuildCustomCommand* cmd : itCustomCmd->second)
+				{
+					if (!cmd->configName.empty() && !cmd->configPlatform.empty())
+					{
+						VSCustomBuildTask* task = file.getTask(cmd->configName, cmd->configPlatform);
+						task->useUtf8Encoding = "true";
+						task->linkObjects = "false";
+						for (const std::string& cmdline : cmd->commands)
+						{
+							if (!task->command.empty())
+								task->command += "\r\n";
+							task->command += cmdline;
+						}
+						task->outputs = cmd->outputFiles;
+					}
+				}
+
+				customFiles.push_back(std::move(file));
+				if (filter)
+					filter->customFiles.push_back(name);
+			}
+			else if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
 			{
 				VSFile<VSCompileTask> file = name;
 				for (const BuildFilePropertySet* set : fileToSets[item])
@@ -253,6 +309,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		project->resourceFiles = resourceFiles;
 		project->manifestFiles = manifestFiles;
 		project->extraFiles = extraFiles;
+		project->customFiles = customFiles;
 
 		for (auto& it : filters)
 			project->filters.push_back(std::move(it.second));

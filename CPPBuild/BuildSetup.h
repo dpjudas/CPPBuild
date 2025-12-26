@@ -26,6 +26,18 @@ public:
 	static BuildTargetConfiguration fromJson(const JsonValue& json);
 };
 
+class BuildCustomCommand
+{
+public:
+	std::string inputFile;
+	std::vector<std::string> commands;
+	std::vector<std::string> outputFiles;
+	std::string configName;
+	std::string configPlatform;
+
+	static BuildCustomCommand fromJson(const JsonValue& json);
+};
+
 class BuildFilePropertySet
 {
 public:
@@ -52,6 +64,7 @@ public:
 	std::vector<std::string> linkOptions;
 	std::vector<std::string> includePaths;
 	std::vector<std::string> files;
+	std::vector<BuildCustomCommand> customCommands;
 	std::vector<BuildFilePropertySet> filePropertySets;
 	std::vector<std::string> filters;
 	std::vector<std::string> linkLibraries;

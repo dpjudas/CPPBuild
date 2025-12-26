@@ -22,6 +22,7 @@ class Target
 		this.includePaths = [];
 		this.files = [];
 		this.filePropertySets = [];
+		this.customCommands = [];
 		this.filters = [];
 		this.linkLibraries = [];
 		this.libraryPaths = [];
@@ -56,6 +57,21 @@ class Target
 	addFilters(filters) {
 		var self = this;
 		filters.forEach(function(filter) { self.filters.push(filter); });
+	}
+
+	addCustomCommand(inputFile, commands, outputFiles, options) {
+		var cmd = {
+			inputFile: inputFile,
+			commands: commands,
+			outputFiles: outputFiles,
+			configName: "",
+			configPlatform: ""
+		};
+		if (isObject(options) && options.configuration !== undefined && options.platform !== undefined) {
+			cmd.configName = options.configuration;
+			cmd.configPlatform = options.platform;
+		}
+		this.customCommands.push(cmd);
 	}
 
 	addDefines(defines, options) {

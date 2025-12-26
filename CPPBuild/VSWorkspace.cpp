@@ -153,7 +153,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 							{
 								if (!task->command.empty())
 									task->command += "\r\n";
-								task->command += cmdline;
+								task->command += addPathToCommand(cmdline, configDef.name, configDef.platform, setup, workDir);
 							}
 							task->outputs = cmd->outputFiles;
 						}
@@ -172,7 +172,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 						{
 							if (!task->command.empty())
 								task->command += "\r\n";
-							task->command += cmdline;
+							task->command += addPathToCommand(cmdline, cmd->configName, cmd->configPlatform, setup, workDir);
 						}
 						task->outputs = cmd->outputFiles;
 					}
@@ -562,6 +562,33 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 	solution->generate();
 	saveSolutionGuids(guids, cppbuildDir);
+}
+
+std::string VSWorkspace::addPathToCommand(std::string cmdline, const std::string& configName, const std::string& configPlatform, const BuildSetup& setup, const std::string& workDir)
+{
+	std::string tool;
+	size_t pos = cmdline.find(' ');
+	if (pos == std::string::npos)
+	{
+		tool = cmdline;
+		pos = cmdline.size();
+	}
+	else
+	{
+		tool = cmdline.substr(0, pos);
+	}
+
+	for (const BuildTarget& target : setup.project.targets)
+	{
+		if (target.name == tool)
+		{
+			// std::string binPath = "$(SolutionDir)Build\\$(Configuration)\\$(Platform)\\bin\\";
+			std::string binPath = FilePath::combine(workDir, { "Build", configName, configPlatform, "bin" });
+			return FilePath::combine(binPath, tool) + cmdline.substr(pos);
+		}
+	}
+
+	return cmdline;
 }
 
 VSGuids VSWorkspace::loadSolutionGuids(const std::string& cppbuildDir)

@@ -20,4 +20,5 @@ public:
 private:
 	VSGuids loadSolutionGuids(const std::string& cppbuildDir);
 	void saveSolutionGuids(const VSGuids& guids, const std::string& cppbuildDir);
+	std::string addPathToCommand(std::string cmdline, const std::string& configName, const std::string& configPlatform, const BuildSetup& setup, const std::string& workDir);
 };

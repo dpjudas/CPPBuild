@@ -5,7 +5,7 @@
 class ScriptContext
 {
 public:
-	ScriptContext(const std::string& sourcePath);
+	ScriptContext(const std::string& sourcePath, const std::string& buildPath);
 	~ScriptContext();
 
 	ScriptValue eval(const std::string& code, const std::string& filename, int flags);

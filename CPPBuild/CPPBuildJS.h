@@ -59,17 +59,17 @@ class Target
 		filters.forEach(function(filter) { self.filters.push(filter); });
 	}
 
-	addCustomCommand(inputFile, commands, outputFiles, options) {
+	addCustomCommand(desc) {
 		var cmd = {
-			inputFile: inputFile,
-			commands: commands,
-			outputFiles: outputFiles,
+			inputFile: desc.inputFile,
+			commands: [].concat(desc.commands),
+			outputFiles: [].concat(desc.outputFiles),
 			configName: "",
 			configPlatform: ""
 		};
-		if (isObject(options) && options.configuration !== undefined && options.platform !== undefined) {
-			cmd.configName = options.configuration;
-			cmd.configPlatform = options.platform;
+		if (desc.configuration !== undefined && desc.platform !== undefined) {
+			cmd.configName = desc.configuration;
+			cmd.configPlatform = desc.platform;
 		}
 		this.customCommands.push(cmd);
 	}
@@ -224,6 +224,7 @@ class Target
 			includePaths: this.includePaths,
 			files: this.files,
 			filePropertySets: this.filePropertySets,
+			customCommands: this.customCommands,
 			filters: this.filters,
 			linkLibraries: this.linkLibraries,
 			libraryPaths: this.libraryPaths,
@@ -478,16 +479,30 @@ class FilePath
 
 class Directory
 {
-	static files(filename) {
-		return native.getFiles(filename);
+	static files(searchpattern) {
+		return native.getFiles(searchpattern);
 	}
 
-	static folders(filename) {
-		return native.getFolders(filename);
+	static folders(searchpattern) {
+		return native.getFolders(searchpattern);
 	}
 
-	static projectPath() {
-		return native.subdirectory;
+	static currentPath(relpath) {
+		if (relpath === undefined) {
+			return FilePath.combine(native.sourcePath, native.subdirectory);
+		}
+		else {
+			return FilePath.combine(FilePath.combine(native.sourcePath, native.subdirectory), relpath);
+		}
+	}
+
+	static buildPath(relpath) {
+		if (relpath === undefined) {
+			return native.buildPath;
+		}
+		else {
+			return FilePath.combine(native.buildPath, relpath);
+		}
 	}
 
 	static create(path) {

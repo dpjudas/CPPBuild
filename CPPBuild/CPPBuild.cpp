@@ -113,8 +113,9 @@ JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
 {
 	std::string scriptFilename = FilePath::combine(sourcePath, "Configure.js");
 	std::string configureScript = File::readAllText(scriptFilename);
+	std::string buildDir = FilePath::combine(workDir, "Build");
 
-	ScriptContext context(sourcePath);
+	ScriptContext context(sourcePath, buildDir);
 	ScriptValue result = context.eval(configureScript, scriptFilename, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_STRICT);
 
 	if (result.isException())

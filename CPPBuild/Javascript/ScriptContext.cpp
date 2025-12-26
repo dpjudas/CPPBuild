@@ -6,7 +6,7 @@
 #include "IOData/Directory.h"
 #include "CPPBuildJS.h"
 
-ScriptContext::ScriptContext(const std::string& sourcePath) : sourcePath(sourcePath)
+ScriptContext::ScriptContext(const std::string& sourcePath, const std::string& buildPath) : sourcePath(sourcePath)
 {
 	runtime = JS_NewRuntime();
 	if (!runtime)
@@ -27,6 +27,8 @@ ScriptContext::ScriptContext(const std::string& sourcePath) : sourcePath(sourceP
 	native.setPropertyStr("addSubdirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::addSubdirectory, "addSubdirectory", 1)));
 	native.setPropertyStr("subdirectory", ScriptValue(context, JS_NewString(context, "")));
 	native.setPropertyStr("getEnvironmentVar", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getEnvironmentVar, "getEnvironmentVar", 1)));
+	native.setPropertyStr("sourcePath", ScriptValue(context, JS_NewString(context, sourcePath.c_str())));
+	native.setPropertyStr("buildPath", ScriptValue(context, JS_NewString(context, buildPath.c_str())));
 
 	// To do: we should detect/ask this at runtime, since the compiler building CPPBuild may not be what is to be used.
 

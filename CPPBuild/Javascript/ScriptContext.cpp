@@ -204,9 +204,10 @@ JSValue ScriptContext::getFiles(JSContext* ctx, JSValueConst this_val, int argc,
 
 	try
 	{
-		auto files = Directory::files(arg0.toString());
-		// To do: add files to js array
-		return JS_NewArray(ctx);
+		std::vector<JSValue> files;
+		for (const std::string& filename : Directory::files(arg0.toString()))
+			files.push_back(JS_NewString(ctx, filename.c_str()));
+		return JS_NewArrayFrom(ctx, (int)files.size(), files.data());
 	}
 	catch (const std::exception& e)
 	{
@@ -224,9 +225,10 @@ JSValue ScriptContext::getFolders(JSContext* ctx, JSValueConst this_val, int arg
 
 	try
 	{
-		auto folders = Directory::folders(arg0.toString());
-		// To do: add folders to js array
-		return JS_NewArray(ctx);
+		std::vector<JSValue> folders;
+		for (const std::string& filename : Directory::folders(arg0.toString()))
+			folders.push_back(JS_NewString(ctx, filename.c_str()));
+		return JS_NewArrayFrom(ctx, (int)folders.size(), folders.data());
 	}
 	catch (const std::exception& e)
 	{

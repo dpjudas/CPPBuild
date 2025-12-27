@@ -8,6 +8,7 @@ class BuildSetup;
 
 enum class TargetType
 {
+	custom,
 	application,
 	console,
 	lib,
@@ -50,6 +51,8 @@ public:
 	std::string cflags, cxxflags;
 	std::string linkFlags;
 
+	std::string buildCommand, cleanCommand;
+
 	void build();
 	void clean();
 	void rebuild();
@@ -62,6 +65,8 @@ private:
 	void link();
 	void linkCSS();
 	void package();
+
+	std::string addPathToCommand(std::string cmdline, const BuildSetup& setup);
 
 	static void addArg(std::string& args, const std::string& arg);
 	static bool isOptionSpecified(const std::string& opt, std::vector<std::string> options);

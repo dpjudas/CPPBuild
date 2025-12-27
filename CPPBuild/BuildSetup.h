@@ -22,6 +22,8 @@ public:
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;
 	std::vector<std::string> packages;
+	std::string buildCommand;
+	std::string cleanCommand;
 
 	static BuildTargetConfiguration fromJson(const JsonValue& json);
 };
@@ -73,6 +75,8 @@ public:
 	std::string wwwRootDir;
 	std::string cssRootFile;
 	std::string htmlShellFile;
+	std::string buildCommand;
+	std::string cleanCommand;
 	std::map<std::string, BuildTargetConfiguration> configurations;
 
 	static BuildTarget fromJson(const JsonValue& json);

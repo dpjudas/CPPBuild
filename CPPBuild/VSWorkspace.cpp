@@ -78,7 +78,6 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		std::string projectName = targetDef.name;
 		std::string sourcePath = FilePath::combine(setup.sourcePath, targetDef.subdirectory);
 
-		bool isMakefileProject = projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary";
 		std::vector<VSFile<VSCompileTask>> sourceFiles;
 		std::vector<VSFile<VSIncludeTask>> headerFiles;
 		std::vector<VSFile<VSResourceTask>> resourceFiles;
@@ -286,7 +285,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			libraryPaths.push_back(FilePath::combine(sourcePath, item));
 
 		std::string outputFile;
-		if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
+		if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary" || projectType == "custom" || projectType == "utility")
 		{
 			// These project types can't be launched by visual studio.
 		}
@@ -430,15 +429,12 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, configDef.platform);
 
-			if (isMakefileProject)
+			if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
 			{
 				// Emscripten based projects always wants the emscripten headers for intellisense
-				if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
-				{
-					configIncludes.push_back("$(EMSDK)\\upstream\\emscripten\\system\\include");
-					configDefines.push_back("__EMSCRIPTEN__");
-					configDefines.push_back("INTELLISENSE");
-				}
+				configIncludes.push_back("$(EMSDK)\\upstream\\emscripten\\system\\include");
+				configDefines.push_back("__EMSCRIPTEN__");
+				configDefines.push_back("INTELLISENSE");
 
 				projConfig->general.configurationType = "Makefile";
 				projConfig->general.nmakePreprocessorDefinitions = configDefines;
@@ -447,6 +443,20 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
 				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
 				projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+			}
+			else if (projectType == "custom")
+			{
+				projConfig->general.configurationType = "Makefile";
+				projConfig->general.nmakePreprocessorDefinitions = configDefines;
+				projConfig->general.nmakeIncludeSearchPath = configIncludes;
+				projConfig->general.nmakeOutput = outputFile;
+				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
+				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
+				projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+			}
+			else if (projectType == "utility")
+			{
+				projConfig->general.configurationType = "Utility";
 			}
 			else if (projectType == "application")
 			{

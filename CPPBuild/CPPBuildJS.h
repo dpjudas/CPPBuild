@@ -30,6 +30,8 @@ class Target
 		this.wwwRootDir = "wwwroot";
 		this.cssRootFile = name + ".css";
 		this.htmlShellFile = "shell.html";
+		this.buildCommand = "";
+		this.cleanCommand = "";
 		this.configurations = {};
 	}
 
@@ -43,7 +45,9 @@ class Target
 				includePaths: [],
 				linkLibraries: [],
 				libraryPaths: [],
-				packages: []
+				packages: [],
+				buildCommand: "",
+				cleanCommand: ""
 			};
 		}
 		return this.configurations[name];
@@ -212,6 +216,26 @@ class Target
 		this.htmlShellFile = file;
 	}
 
+	setBuildCommand(command, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.buildCommand = command;
+		}
+		else {
+			this.buildCommand = command;
+		}
+	}
+
+	setCleanCommand(command, options) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			config.cleanCommand = command;
+		}
+		else {
+			this.cleanCommand = command;
+		}
+	}
+
 	toTargetDefinition() {
 		return {
 			subdirectory: this.subdirectory,
@@ -293,6 +317,12 @@ class Targets
 
 	static addDynamicLibrary(name) {
 		var target = new Target(native.subdirectory, "dll", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addCustom(name) {
+		var target = new Target(native.subdirectory, "custom", name);
 		targetList.push(target);
 		return target;
 	}
@@ -480,11 +510,11 @@ class FilePath
 class Directory
 {
 	static files(searchpattern) {
-		return native.getFiles(searchpattern);
+		return native.getFiles(Directory.currentPath(searchpattern));
 	}
 
 	static folders(searchpattern) {
-		return native.getFolders(searchpattern);
+		return native.getFolders(Directory.currentPath(searchpattern));
 	}
 
 	static currentPath(relpath) {

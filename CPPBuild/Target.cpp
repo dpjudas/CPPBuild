@@ -20,6 +20,12 @@ Target::Target(BuildSetup& setup, const std::string& workDir, const std::string&
 
 void Target::build()
 {
+	if (targetType == TargetType::custom)
+	{
+		runCommand(buildCommand, "Could not run build command");
+		return;
+	}
+
 	compile();
 	link();
 	linkCSS();
@@ -28,6 +34,12 @@ void Target::build()
 
 void Target::clean()
 {
+	if (targetType == TargetType::custom)
+	{
+		runCommand(cleanCommand, "Could not run clean command");
+		return;
+	}
+
 	for (const std::string& inputFile : sourceFiles)
 	{
 		if (isCppFile(inputFile))
@@ -547,7 +559,9 @@ void Target::loadTarget(BuildSetup& setup)
 	Directory::create(objDir);
 
 	std::string type = targetDef.type;
-	if (type == "application")
+	if (type == "custom")
+		targetType = TargetType::custom;
+	else if (type == "application")
 		targetType = TargetType::application;
 	else if (type == "console")
 		targetType = TargetType::console;
@@ -565,6 +579,29 @@ void Target::loadTarget(BuildSetup& setup)
 		throw std::runtime_error("No project type specified");
 	else
 		throw std::runtime_error("Invalid project type '" + type + "'");
+
+	if (targetType == TargetType::custom)
+	{
+		buildCommand = targetDef.buildCommand;
+		cleanCommand = targetDef.cleanCommand;
+
+		auto itTargetConfig = targetDef.configurations.find(configuration);
+		if (itTargetConfig != targetDef.configurations.end())
+		{
+			const BuildTargetConfiguration& targetConfigDef = itTargetConfig->second;
+			if (!targetConfigDef.buildCommand.empty())
+				buildCommand = targetConfigDef.buildCommand;
+			if (!targetConfigDef.cleanCommand.empty())
+				cleanCommand = targetConfigDef.cleanCommand;
+		}
+
+		if (!buildCommand.empty())
+			buildCommand = addPathToCommand(buildCommand, setup);
+		if (!cleanCommand.empty())
+			cleanCommand = addPathToCommand(cleanCommand, setup);
+
+		return;
+	}
 
 	if (targetType == TargetType::webComponent ||
 		targetType == TargetType::webLibrary ||
@@ -824,6 +861,31 @@ void Target::loadTarget(BuildSetup& setup)
 		addArg(cflags, " -D \"" + define + "\"");
 		addArg(cxxflags, " -D \"" + define + "\"");
 	}
+}
+
+std::string Target::addPathToCommand(std::string cmdline, const BuildSetup& setup)
+{
+	std::string tool;
+	size_t pos = cmdline.find(' ');
+	if (pos == std::string::npos)
+	{
+		tool = cmdline;
+		pos = cmdline.size();
+	}
+	else
+	{
+		tool = cmdline.substr(0, pos);
+	}
+
+	for (const BuildTarget& target : setup.project.targets)
+	{
+		if (target.name == tool)
+		{
+			return FilePath::combine(binDir, tool) + cmdline.substr(pos);
+		}
+	}
+
+	return cmdline;
 }
 
 void Target::addArg(std::string& args, const std::string& arg)

@@ -31,6 +31,8 @@ BuildTargetConfiguration BuildTargetConfiguration::fromJson(const JsonValue& jso
 		config.libraryPaths.push_back(item.to_string());
 	for (const JsonValue& item : json["packages"].items())
 		config.packages.push_back(item.to_string());
+	config.buildCommand = json["buildCommand"].to_string();
+	config.cleanCommand = json["cleanCommand"].to_string();
 	return config;
 }
 
@@ -78,6 +80,8 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 	target.wwwRootDir = json["wwwRootDir"].to_string();
 	target.cssRootFile = json["cssRootFile"].to_string();
 	target.htmlShellFile = json["htmlShellFile"].to_string();
+	target.buildCommand = json["buildCommand"].to_string();
+	target.cleanCommand = json["cleanCommand"].to_string();
 	for (const JsonValue& item : json["customCommands"].items())
 		target.customCommands.push_back(BuildCustomCommand::fromJson(item));
 	for (const JsonValue& item : json["defines"].items())

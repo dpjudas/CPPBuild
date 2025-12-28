@@ -465,6 +465,7 @@ void VSCompileTask::writeProperties(VSLineWriter& output, int indent, const std:
 	for (const auto& c : conditions) output.writeProperty(indent, "PrecompiledHeader", c.first, c.second->precompiledHeader);
 	for (const auto& c : conditions) output.writeProperty(indent, "PrecompiledHeaderFile", c.first, c.second->precompiledHeaderFile);
 	for (const auto& c : conditions) output.writeProperty(indent, "PrecompiledHeaderOutputFile", c.first, c.second->precompiledHeaderOutputFile);
+	for (const auto& c : conditions) output.writeProperty(indent, "UseStandardPreprocessor", c.first, c.second->useStandardPreprocessor);
 	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessKeepComments", c.first, c.second->preprocessKeepComments);
 	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessorDefinitions", c.first, c.second->preprocessorDefinitions);
 	for (const auto& c : conditions) output.writeProperty(indent, "PreprocessOutput", c.first, c.second->preprocessOutput);
@@ -477,6 +478,7 @@ void VSCompileTask::writeProperties(VSLineWriter& output, int indent, const std:
 	for (const auto& c : conditions) output.writeProperty(indent, "RuntimeLibrary", c.first, c.second->runtimeLibrary);
 	for (const auto& c : conditions) output.writeProperty(indent, "RuntimeTypeInfo", c.first, c.second->runtimeTypeInfo);
 	for (const auto& c : conditions) output.writeProperty(indent, "LanguageStandard", c.first, c.second->languageStandard);
+	for (const auto& c : conditions) output.writeProperty(indent, "LanguageStandard_C", c.first, c.second->languageStandard_C);
 	for (const auto& c : conditions) output.writeProperty(indent, "ShowIncludes", c.first, c.second->showIncludes);
 	for (const auto& c : conditions) output.writeProperty(indent, "SmallerTypeCheck", c.first, c.second->smallerTypeCheck);
 	for (const auto& c : conditions) output.writeProperty(indent, "StringPooling", c.first, c.second->stringPooling);

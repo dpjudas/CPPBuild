@@ -106,6 +106,7 @@ public:
 	std::string precompiledHeader;
 	std::string precompiledHeaderFile;
 	std::string precompiledHeaderOutputFile;
+	std::string useStandardPreprocessor;
 	std::string preprocessKeepComments;
 	std::vector<std::string> preprocessorDefinitions;
 	std::string preprocessOutput;
@@ -118,6 +119,7 @@ public:
 	std::string runtimeLibrary;
 	std::string runtimeTypeInfo;
 	std::string languageStandard;
+	std::string languageStandard_C;
 	std::string showIncludes;
 	std::string smallerTypeCheck;
 	std::string stringPooling;

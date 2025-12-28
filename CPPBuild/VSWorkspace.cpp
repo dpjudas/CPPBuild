@@ -471,82 +471,22 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			else if (projectType == "application")
 			{
 				projConfig->general.configurationType = "Application";
-				projConfig->clCompile.warningLevel = "Level3";
-				projConfig->clCompile.functionLevelLinking = "true";
-				projConfig->clCompile.intrinsicFunctions = "true";
-				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
-				projConfig->clCompile.multiProcessorCompilation = "true";
-				projConfig->clCompile.sdlCheck = "true";
-				projConfig->clCompile.conformanceMode = "true";
-				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Windows";
-				projConfig->link.enableCOMDATFolding = "true";
-				projConfig->link.optimizeReferences = "true";
-				projConfig->link.generateDebugInformation = "true";
 			}
 			else if (projectType == "console")
 			{
 				projConfig->general.configurationType = "Application";
-				projConfig->clCompile.warningLevel = "Level3";
-				projConfig->clCompile.functionLevelLinking = "true";
-				projConfig->clCompile.intrinsicFunctions = "true";
-				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
-				projConfig->clCompile.multiProcessorCompilation = "true";
-				projConfig->clCompile.sdlCheck = "true";
-				projConfig->clCompile.conformanceMode = "true";
-				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Console";
-				projConfig->link.enableCOMDATFolding = "true";
-				projConfig->link.optimizeReferences = "true";
-				projConfig->link.generateDebugInformation = "true";
 			}
 			else if (projectType == "lib")
 			{
 				projConfig->general.configurationType = "StaticLibrary";
-				projConfig->clCompile.warningLevel = "Level3";
-				projConfig->clCompile.functionLevelLinking = "true";
-				projConfig->clCompile.intrinsicFunctions = "true";
-				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
-				projConfig->clCompile.multiProcessorCompilation = "true";
-				projConfig->clCompile.sdlCheck = "true";
-				projConfig->clCompile.conformanceMode = "true";
-				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Windows";
-				projConfig->link.enableCOMDATFolding = "true";
-				projConfig->link.optimizeReferences = "true";
-				projConfig->link.generateDebugInformation = "true";
 			}
 			else if (projectType == "dll")
 			{
 				projConfig->general.configurationType = "DynamicLibrary";
-				projConfig->clCompile.warningLevel = "Level3";
-				projConfig->clCompile.functionLevelLinking = "true";
-				projConfig->clCompile.intrinsicFunctions = "true";
-				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
-				projConfig->clCompile.multiProcessorCompilation = "true";
-				projConfig->clCompile.sdlCheck = "true";
-				projConfig->clCompile.conformanceMode = "true";
-				projConfig->clCompile.languageStandard = "stdcpp20";
 				projConfig->link.subSystem = "Windows";
-				projConfig->link.enableCOMDATFolding = "true";
-				projConfig->link.optimizeReferences = "true";
-				projConfig->link.generateDebugInformation = "true";
-			}
-
-			if (configName == "Debug")
-			{
-				projConfig->general.useDebugLibraries = "true";
-				projConfig->general.linkIncremental = "true";
-				projConfig->general.wholeProgramOptimization = "false";
-				projConfig->clCompile.runtimeLibrary = "MultiThreadedDebug";
-				projConfig->clCompile.intrinsicFunctions = "false";
-			}
-			else
-			{
-				projConfig->general.useDebugLibraries = "false";
-				projConfig->general.wholeProgramOptimization = "true";
-				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
-				projConfig->clCompile.intrinsicFunctions = "true";
 			}
 
 			if (!configDefines.empty())
@@ -565,7 +505,38 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			projConfig->rc.preprocessorDefinitions = configDefines;
 			projConfig->rc.additionalIncludeDirectories = configIncludes;
 
-			// TBD: what should the defaults be? MSBuild defaults will bomb us decades back in time and build insecure executables
+			// Apply defaults that do not produce compiler warnings, modern c++, uses multiple cores and enables safety features:
+
+			projConfig->clCompile.warningLevel = "Level3";
+			projConfig->clCompile.multiProcessorCompilation = "true";
+			projConfig->clCompile.sdlCheck = "true";
+			projConfig->clCompile.conformanceMode = "true";
+			projConfig->clCompile.useStandardPreprocessor = "true";
+			projConfig->clCompile.languageStandard = "stdcpp20";
+			projConfig->clCompile.languageStandard_C = "stdc17";
+			projConfig->clCompile.debugInformationFormat = "ProgramDatabase";
+			projConfig->link.generateDebugInformation = "true";
+
+			if (configName == "Debug" || configName == "debug")
+			{
+				projConfig->general.useDebugLibraries = "true";
+				projConfig->general.wholeProgramOptimization = "false";
+				projConfig->general.linkIncremental = "true";
+				projConfig->clCompile.runtimeLibrary = "MultiThreadedDebug";
+				projConfig->link.enableCOMDATFolding = "false";
+				projConfig->link.optimizeReferences = "false";
+			}
+			else
+			{
+				projConfig->general.useDebugLibraries = "false";
+				projConfig->general.wholeProgramOptimization = "true";
+				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
+				projConfig->clCompile.intrinsicFunctions = "true";
+				projConfig->clCompile.functionLevelLinking = "true";
+				projConfig->link.enableCOMDATFolding = "true";
+				projConfig->link.optimizeReferences = "true";
+			}
+
 			// To do: deal with configCCompileOptions - apply it to every C file encountered?
 
 			projConfig->clCompile.applyCompileOptions(configCxxCompileOptions);

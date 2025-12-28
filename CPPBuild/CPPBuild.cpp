@@ -140,8 +140,6 @@ void CPPBuild::generateWorkspace()
 
 void CPPBuild::build(std::string targetName, std::string configuration)
 {
-	checkMakefile();
-
 	BuildSetup setup = loadBuildSetup();
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
@@ -152,8 +150,6 @@ void CPPBuild::build(std::string targetName, std::string configuration)
 
 void CPPBuild::clean(std::string targetName, std::string configuration)
 {
-	checkMakefile();
-
 	BuildSetup setup = loadBuildSetup();
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
@@ -164,8 +160,6 @@ void CPPBuild::clean(std::string targetName, std::string configuration)
 
 void CPPBuild::rebuild(std::string targetName, std::string configuration)
 {
-	checkMakefile();
-
 	BuildSetup setup = loadBuildSetup();
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{

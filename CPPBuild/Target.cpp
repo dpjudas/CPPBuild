@@ -552,8 +552,8 @@ void Target::loadTarget(BuildSetup& setup)
 
 	std::string sourcePath = FilePath::combine(setup.sourcePath, targetDef.subdirectory);
 
-	binDir = FilePath::combine(workDir, { "Build", configuration, configDef.platform, "bin" });
-	objDir = FilePath::combine(workDir, { "Build", configuration, configDef.platform, "obj", target });
+	binDir = FilePath::combine(workDir, { "Build", configuration, "bin" });
+	objDir = FilePath::combine(workDir, { "Build", configuration, "obj", target });
 
 	Directory::create(binDir);
 	Directory::create(objDir);

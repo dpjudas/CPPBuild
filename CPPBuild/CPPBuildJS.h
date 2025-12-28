@@ -68,12 +68,10 @@ class Target
 			inputFile: desc.inputFile,
 			commands: [].concat(desc.commands),
 			outputFiles: [].concat(desc.outputFiles),
-			configName: "",
-			configPlatform: ""
+			configName: ""
 		};
-		if (desc.configuration !== undefined && desc.platform !== undefined) {
+		if (desc.configuration !== undefined) {
 			cmd.configName = desc.configuration;
-			cmd.configPlatform = desc.platform;
 		}
 		this.customCommands.push(cmd);
 	}
@@ -83,7 +81,6 @@ class Target
 			var propSet = {
 				files: [].concat(options.files),
 				configName: options.configuration,
-				configPlatform: options.platform,
 				defines: [].concat(defines),
 				compileOptions: [],
 				includePaths: []
@@ -105,7 +102,6 @@ class Target
 			var propSet = {
 				files: [].concat(options.files),
 				configName: options.configuration,
-				configPlatform: options.platform,
 				defines: [],
 				compileOptions: [].concat(opts),
 				includePaths: []
@@ -138,7 +134,6 @@ class Target
 			var propSet = {
 				files: [].concat(options.files),
 				configName: options.configuration,
-				configPlatform: options.platform,
 				defines: [],
 				compileOptions: [],
 				includePaths: [].concat(paths)
@@ -263,27 +258,13 @@ class Target
 
 class Configuration
 {
-	constructor(name, platform) {
-		if (platform === undefined) {
-			if (Environment.isX86()) {
-				platform = "win32";
-			}
-			else if (Environment.isARM64()) {
-				platform = "arm64";
-			}
-			else {
-				platform = "x64";
-			}
-		}
-
+	constructor(name) {
 		this.name = name;
-		this.platform = platform;
 	}
 
 	toConfigDefinition() {
 		return {
 			name: this.name,
-			platform: this.platform
 		}
 	}
 }
@@ -352,8 +333,8 @@ class Project
 		projectName = name;
 	}
 
-	static addConfiguration(name, platform) {
-		var config = new Configuration(name, platform);
+	static addConfiguration(name) {
+		var config = new Configuration(name);
 		configList.push(config);
 		return config;
 	}

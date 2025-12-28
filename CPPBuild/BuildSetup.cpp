@@ -6,7 +6,6 @@ BuildConfiguration BuildConfiguration::fromJson(const JsonValue& json)
 {
 	BuildConfiguration config;
 	config.name = json["name"].to_string();
-	config.platform = json["platform"].to_string();
 	return config;
 }
 
@@ -47,7 +46,6 @@ BuildCustomCommand BuildCustomCommand::fromJson(const JsonValue& json)
 	for (const JsonValue& item : json["outputFiles"].items())
 		cmd.outputFiles.push_back(item.to_string());
 	cmd.configName = json["configName"].to_string();
-	cmd.configPlatform = json["configPlatform"].to_string();
 	return cmd;
 }
 
@@ -59,7 +57,6 @@ BuildFilePropertySet BuildFilePropertySet::fromJson(const JsonValue& json)
 	for (const JsonValue& item : json["files"].items())
 		set.files.push_back(item.to_string());
 	set.configName = json["configName"].to_string();
-	set.configPlatform = json["configPlatform"].to_string();
 	for (const JsonValue& item : json["defines"].items())
 		set.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["compileOptions"].items())

@@ -368,8 +368,8 @@ public:
 		std::string characterSet = "Unicode";
 		std::string wholeProgramOptimization = "true";
 		std::string linkIncremental = "false";
-		std::string outDir = "$(SolutionDir)Build\\$(Configuration)\\$(Platform)\\bin\\";
-		std::string intDir = "$(SolutionDir)Build\\$(Configuration)\\$(Platform)\\obj\\$(ProjectName)\\";
+		std::string outDir = "$(SolutionDir)Build\\$(Configuration)\\bin\\";
+		std::string intDir = "$(SolutionDir)Build\\$(Configuration)\\obj\\$(ProjectName)\\";
 		std::string nmakeBuildCommandLine;
 		std::string nmakeOutput;
 		std::string nmakeCleanCommandLine;

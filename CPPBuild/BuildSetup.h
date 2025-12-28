@@ -6,7 +6,6 @@ class BuildConfiguration
 {
 public:
 	std::string name;
-	std::string platform;
 
 	static BuildConfiguration fromJson(const JsonValue& json);
 };
@@ -35,7 +34,6 @@ public:
 	std::vector<std::string> commands;
 	std::vector<std::string> outputFiles;
 	std::string configName;
-	std::string configPlatform;
 
 	static BuildCustomCommand fromJson(const JsonValue& json);
 };
@@ -46,7 +44,6 @@ public:
 	std::vector<std::string> files;
 
 	std::string configName;
-	std::string configPlatform;
 	std::vector<std::string> defines;
 	std::vector<std::string> compileOptions;
 	std::vector<std::string> includePaths;

@@ -18,8 +18,18 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 	auto solution = std::make_unique<VSSolution>(setup.project.name, workDir, guids.solutionGuid);
 
+#if defined(_M_X64) || defined(__x86_64__)
+	std::string platform = "x64";
+#elif defined(_M_ARM64) || defined(__aarch64__)
+	std::string platform = "arm64";
+#elif defined(_M_IX86) || defined(__i386__)
+	std::string platform = "win32";
+#elif defined(_M_ARM) || defined(__arm__)
+	std::string platform = "arm32";
+#endif
+
 	for (const BuildConfiguration& configDef : setup.project.configurations)
-		solution->configurations.push_back(std::make_unique<VSSolutionConfiguration>(configDef.name, configDef.platform));
+		solution->configurations.push_back(std::make_unique<VSSolutionConfiguration>(configDef.name, platform));
 
 	// Create CPPBuildCheck utility project that runs the cppbuild update check
 	{
@@ -32,7 +42,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 		for (const BuildConfiguration& configDef : setup.project.configurations)
 		{
-			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configDef.name, configDef.platform);
+			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configDef.name, platform);
 			projConfig->general.configurationType = "Utility";
 			project->configurations.push_back(std::move(projConfig));
 		}
@@ -41,7 +51,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 		customBuildFile.file = FilePath::combine(setup.sourcePath, "Configure.js");
 		for (const BuildConfiguration& configDef : setup.project.configurations)
 		{
-			auto props = customBuildFile.getTask(configDef.name, configDef.platform);
+			auto props = customBuildFile.getTask(configDef.name, platform);
 			props->message = "Running CPPBuild generate";
 			props->useUtf8Encoding = "Always";
 			props->linkObjects = "false";
@@ -141,18 +151,18 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				// Add commands targeting all configs
 				for (const BuildCustomCommand* cmd : itCustomCmd->second)
 				{
-					if (cmd->configName.empty() && cmd->configPlatform.empty())
+					if (cmd->configName.empty())
 					{
 						for (const BuildConfiguration& configDef : setup.project.configurations)
 						{
-							VSCustomBuildTask* task = file.getTask(configDef.name, configDef.platform);
+							VSCustomBuildTask* task = file.getTask(configDef.name, platform);
 							task->useUtf8Encoding = "true";
 							task->linkObjects = "false";
 							for (const std::string& cmdline : cmd->commands)
 							{
 								if (!task->command.empty())
 									task->command += "\r\n";
-								task->command += addPathToCommand(cmdline, configDef.name, configDef.platform, setup, workDir);
+								task->command += addPathToCommand(cmdline, configDef.name, setup, workDir);
 							}
 							task->outputs = cmd->outputFiles;
 						}
@@ -162,16 +172,16 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				// Add commands for specific configs
 				for (const BuildCustomCommand* cmd : itCustomCmd->second)
 				{
-					if (!cmd->configName.empty() && !cmd->configPlatform.empty())
+					if (!cmd->configName.empty())
 					{
-						VSCustomBuildTask* task = file.getTask(cmd->configName, cmd->configPlatform);
+						VSCustomBuildTask* task = file.getTask(cmd->configName, platform);
 						task->useUtf8Encoding = "true";
 						task->linkObjects = "false";
 						for (const std::string& cmdline : cmd->commands)
 						{
 							if (!task->command.empty())
 								task->command += "\r\n";
-							task->command += addPathToCommand(cmdline, cmd->configName, cmd->configPlatform, setup, workDir);
+							task->command += addPathToCommand(cmdline, cmd->configName, setup, workDir);
 						}
 						task->outputs = cmd->outputFiles;
 					}
@@ -186,7 +196,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				VSFile<VSCompileTask> file = name;
 				for (const BuildFilePropertySet* set : fileToSets[item])
 				{
-					VSCompileTask* task = file.getTask(set->configName, set->configPlatform);
+					VSCompileTask* task = file.getTask(set->configName, platform);
 					task->applyCompileOptions(set->compileOptions);
 					task->preprocessorDefinitions = set->defines;
 					task->additionalIncludeDirectories = set->includePaths;
@@ -207,7 +217,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				VSFile<VSResourceTask> file = name;
 				for (const BuildFilePropertySet* set : fileToSets[item])
 				{
-					VSResourceTask* task = file.getTask(set->configName, set->configPlatform);
+					VSResourceTask* task = file.getTask(set->configName, platform);
 					task->preprocessorDefinitions = set->defines;
 					task->additionalIncludeDirectories = set->includePaths;
 				}
@@ -427,7 +437,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 				}
 			}
 
-			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, configDef.platform);
+			auto projConfig = std::make_unique<VSCppProjectConfiguration>(configName, platform);
 
 			if (projectType == "website" || projectType == "webcomponent" || projectType == "weblibrary")
 			{
@@ -574,7 +584,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 	saveSolutionGuids(guids, cppbuildDir);
 }
 
-std::string VSWorkspace::addPathToCommand(std::string cmdline, const std::string& configName, const std::string& configPlatform, const BuildSetup& setup, const std::string& workDir)
+std::string VSWorkspace::addPathToCommand(std::string cmdline, const std::string& configName, const BuildSetup& setup, const std::string& workDir)
 {
 	std::string tool;
 	size_t pos = cmdline.find(' ');
@@ -592,8 +602,8 @@ std::string VSWorkspace::addPathToCommand(std::string cmdline, const std::string
 	{
 		if (target.name == tool)
 		{
-			// std::string binPath = "$(SolutionDir)Build\\$(Configuration)\\$(Platform)\\bin\\";
-			std::string binPath = FilePath::combine(workDir, { "Build", configName, configPlatform, "bin" });
+			// std::string binPath = "$(SolutionDir)Build\\$(Configuration)\\bin\\";
+			std::string binPath = FilePath::combine(workDir, { "Build", configName, "bin" });
 			return FilePath::combine(binPath, tool) + cmdline.substr(pos);
 		}
 	}

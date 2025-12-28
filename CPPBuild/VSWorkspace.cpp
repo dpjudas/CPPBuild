@@ -507,6 +507,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 			// Apply defaults that do not produce compiler warnings, modern c++, uses multiple cores and enables safety features:
 
+			projConfig->general.wholeProgramOptimization = "false"; // Too annoying to use as a default for release builds
 			projConfig->clCompile.warningLevel = "Level3";
 			projConfig->clCompile.multiProcessorCompilation = "true";
 			projConfig->clCompile.sdlCheck = "true";
@@ -520,7 +521,6 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			if (configName == "Debug" || configName == "debug")
 			{
 				projConfig->general.useDebugLibraries = "true";
-				projConfig->general.wholeProgramOptimization = "false";
 				projConfig->general.linkIncremental = "true";
 				projConfig->clCompile.runtimeLibrary = "MultiThreadedDebug";
 				projConfig->link.enableCOMDATFolding = "false";
@@ -529,7 +529,7 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			else
 			{
 				projConfig->general.useDebugLibraries = "false";
-				projConfig->general.wholeProgramOptimization = "true";
+				projConfig->general.linkIncremental = "false";
 				projConfig->clCompile.runtimeLibrary = "MultiThreaded";
 				projConfig->clCompile.intrinsicFunctions = "true";
 				projConfig->clCompile.functionLevelLinking = "true";

@@ -161,6 +161,30 @@
     <ClCompile Include="ConsoleProcess.cpp" />
     <ClCompile Include="MakefileWorkspace.cpp" />
     <ClCompile Include="VSWorkspace.cpp" />
+    <ClCompile Include="HttpClient\HttpClient.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient\HttpConnection.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient\SocketAddress.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient\TcpSocket.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient\TlsStreamWin32.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient\HttpConnectionImpl.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient\TlsStream.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
+    <ClCompile Include="HttpClient\SocketStream.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -335,6 +359,36 @@
     <ClInclude Include="ConsoleProcess.h" />
     <ClInclude Include="MakefileWorkspace.h" />
     <ClInclude Include="VSWorkspace.h" />
+    <ClInclude Include="HttpClient\ByteStream.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\HttpClient.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\HttpConnection.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\SocketAddress.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\TcpSocket.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\TlsStreamWin32.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\SocketHeaders.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\SocketStream.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\HttpConnectionImpl.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\TlsStream.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">
@@ -363,6 +417,9 @@
     </Filter>
     <Filter Include="Msi\Dialogs">
       <UniqueIdentifier>{40a03b56-46ad-460c-8ad9-db6f23871a1c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="HttpClient">
+      <UniqueIdentifier>{e3e76286-44ca-4070-9076-0b4bad76b965}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

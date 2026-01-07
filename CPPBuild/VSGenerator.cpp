@@ -161,27 +161,27 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		if (configuration->general.configurationType != "Makefile" && configuration->general.configurationType != "Utility")
 		{
 			output.writeLine("    <ClCompile>");
-			VSCompileTask::writeProperties(output, 6, { { "", &configuration->clCompile } });
+			VSCompileTask::writeProperties(output, 6, std::vector<std::pair<std::string, VSCompileTask*>>{ { "", &configuration->clCompile } });
 			output.writeLine("    </ClCompile>");
 
 			if (configuration->general.configurationType == "StaticLibrary")
 			{
 				output.writeLine("    <Lib>");
-				VSLibTask::writeProperties(output, 6, { { "", &configuration->lib } });
+				VSLibTask::writeProperties(output, 6, std::vector<std::pair<std::string, VSLibTask*>>{ { "", &configuration->lib } });
 				output.writeLine("    </Lib>");
 			}
 			else
 			{
 				output.writeLine("    <Link>");
-				VSLinkTask::writeProperties(output, 6, { { "", &configuration->link } });
+				VSLinkTask::writeProperties(output, 6, std::vector<std::pair<std::string, VSLinkTask*>>{ { "", &configuration->link } });
 				output.writeLine("    </Link>");
 
 				output.writeLine("    <ResourceCompile>");
-				VSResourceTask::writeProperties(output, 6, { { "", &configuration->rc } });
+				VSResourceTask::writeProperties(output, 6, std::vector<std::pair<std::string, VSResourceTask*>>{ { "", &configuration->rc } });
 				output.writeLine("    </ResourceCompile>");
 
 				output.writeLine("    <Manifest>");
-				VSManifestTask::writeProperties(output, 6, { { "", &configuration->manifest } });
+				VSManifestTask::writeProperties(output, 6, std::vector<std::pair<std::string, VSManifestTask*>>{ { "", &configuration->manifest } });
 				output.writeLine("    </Manifest>");
 			}
 		}

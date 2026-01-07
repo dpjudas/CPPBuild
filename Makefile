@@ -34,7 +34,15 @@ _OBJ=\
 	CPPBuild/Msi/MSIGenerator.o \
 	CPPBuild/Zip/miniz.o \
 	CPPBuild/Zip/ZipReader.o \
-	CPPBuild/Zip/ZipWriter.o
+	CPPBuild/Zip/ZipWriter.o \
+	CPPBuild/HttpClient/HttpClient.o \
+	CPPBuild/HttpClient/HttpConnection.o \
+	CPPBuild/HttpClient/HttpConnectionImpl.o \
+	CPPBuild/HttpClient/SocketAddress.o \
+	CPPBuild/HttpClient/SocketStream.o \
+	CPPBuild/HttpClient/TcpSocket.o \
+	CPPBuild/HttpClient/TlsStream.o \
+	CPPBuild/HttpClient/TlsStreamOpenSSL.o
 
 OBJ=$(patsubst %,$(ODIR)/%,$(_OBJ))
 
@@ -68,6 +76,7 @@ build/createdir:
 	@mkdir build/obj/CPPBuild/Text
 	@mkdir build/obj/CPPBuild/Msi
 	@mkdir build/obj/CPPBuild/Zip
+	@mkdir build/obj/CPPBuild/HttpClient
 	@touch build/createdir
 
 clean:

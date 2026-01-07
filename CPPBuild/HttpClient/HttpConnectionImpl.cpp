@@ -4,6 +4,7 @@
 #include "TlsStream.h"
 #include "SocketStream.h"
 #include <stdexcept>
+#include <cstring>
 
 HttpConnectionImpl::HttpConnectionImpl()
 {

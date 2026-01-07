@@ -12,10 +12,11 @@ std::unique_ptr<TlsStream> TlsStream::create(ByteStream* socketStream)
 }
 
 #else
+#include "TlsStreamOpenSSL.h"
 
 std::unique_ptr<TlsStream> TlsStream::create(ByteStream* socketStream)
 {
-	throw std::runtime_error("TlsStream not implemented");
+	return std::make_unique<TlsStreamOpenSSL>(socketStream);
 }
 
 #endif

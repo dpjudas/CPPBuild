@@ -10,6 +10,9 @@
 #else
 
 #include <sys/socket.h>
+#include <netinet/in.h>
+#include <netinet/tcp.h>
+#include <errno.h>
 
 typedef int SOCKET;
 #define INVALID_SOCKET (SOCKET)(-1)

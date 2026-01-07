@@ -2,6 +2,7 @@
 #include "Precomp.h"
 #include "SocketStream.h"
 #include "TcpSocket.h"
+#include <stdexcept>
 
 SocketStream::SocketStream(const std::string& host, int port)
 {
@@ -74,6 +75,6 @@ void SocketStream::process()
 	}
 	else if (writeState.size && ss.isSetExcept(*sock))
 	{
-		throw std::exception("Unable to connect");
+		throw std::runtime_error("Unable to connect");
 	}
 }

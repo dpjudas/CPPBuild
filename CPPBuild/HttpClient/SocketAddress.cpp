@@ -3,6 +3,7 @@
 #include "SocketAddress.h"
 #include <stdexcept>
 #include <string>
+#include <cstring>
 
 #ifdef WIN32
 typedef unsigned long in_addr_t;
@@ -67,6 +68,7 @@ void SocketAddress::toSockaddr(int domain, struct sockaddr* out_addr, int len) c
 	{
 		addr.sin_addr.s_addr = INADDR_ANY;
 	}
+#ifdef WIN32
 	else if (InetPtonA(AF_INET, host.c_str(), &addr.sin_addr) <= 0) // 1 = success, 0 = invalid ip address, -1 = error
 	{
 		ADDRINFOA hints = { 0 };
@@ -90,6 +92,15 @@ void SocketAddress::toSockaddr(int domain, struct sockaddr* out_addr, int len) c
 			throw std::runtime_error("Host not found");
 		}
 	}
+#else
+	else if (inet_pton(AF_INET, host.c_str(), &addr.sin_addr) <= 0)
+	{
+		hostent *result = gethostbyname(host.c_str());
+		if (result == nullptr)
+			throw std::runtime_error("Host not found");
+		addr.sin_addr.s_addr = *((in_addr_t *)result->h_addr_list[0]);
+	}
+#endif
 
 	memcpy(out_addr, &addr, sizeof(sockaddr_in));
 }

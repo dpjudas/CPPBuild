@@ -162,7 +162,7 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 #include <sys/wait.h>
 #include <unistd.h>
 
-int Process::runCommand(const std::string& commandline, const std::function<void(const std::string& outputLine)> printLine)
+int ConsoleProcess::runCommand(const std::string& commandline, const std::function<void(const std::string& outputLine)> printLine)
 {
 	std::string arg;
 	arg.reserve(1024);

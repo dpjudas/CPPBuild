@@ -3,6 +3,10 @@
 #include "TlsStream.h"
 #include "SocketHeaders.h"
 
+#include <openssl/bio.h>
+#include <openssl/ssl.h>
+#include <openssl/err.h>
+
 class TlsStreamOpenSSL : public TlsStream
 {
 public:
@@ -19,5 +23,8 @@ public:
 
 private:
 	ByteStream* socketStream = nullptr;
+	SSL_CTX *ctx = nullptr;
+	SSL *ssl = nullptr;
+	BIO *bio = nullptr;
 };
 

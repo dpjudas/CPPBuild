@@ -11,6 +11,7 @@ TlsStreamOpenSSL::~TlsStreamOpenSSL()
 {
 	SSL_free(ssl);
 	SSL_CTX_free(ctx);
+	BIO_free(network_bio);
 }
 
 void TlsStreamOpenSSL::authenticateAsServer(AuthCompleteCallback authComplete, const void* pfxData, size_t pfxSize, const char* pfxPassword)
@@ -39,11 +40,10 @@ void TlsStreamOpenSSL::authenticateAsClient(AuthCompleteCallback authComplete, c
 	if (!ssl)
 		throw std::runtime_error("Could not create SSL object");
 
-	// see https://github.com/openssl/openssl/blob/master/demos/guide/tls-client-non-block.c
-	// bio = create_socket_bio(hostname, port, AF_INET);
-	if (!bio)
-		throw std::runtime_error("Could not create BIO object");
-	SSL_set_bio(ssl, bio, bio);
+	int result = BIO_new_bio_pair(&internal_bio, 0, &network_bio, 0);
+	if (result)
+		throw std::runtime_error("Could not create BIO pair");
+	SSL_set_bio(ssl, internal_bio, internal_bio); // note: ssl object takes ownership of internal_bio
 
 	// pass hostname to server in case it has multiple certifcates based on the hostname
 	if (!SSL_set_tlsext_host_name(ssl, targetName.c_str()))
@@ -52,6 +52,19 @@ void TlsStreamOpenSSL::authenticateAsClient(AuthCompleteCallback authComplete, c
 	// verify the SNI hostname matches the certificate
 	if (!SSL_set1_host(ssl, targetName.c_str()))
 		throw std::runtime_error("Could not enable hostname verification");
+
+	// see https://github.com/openssl/openssl/blob/master/demos/guide/tls-client-non-block.c
+	// BIO_ctrl_pending
+	// BIO_ctrl_wpending
+	// BIO_get_write_guarantee (macro)
+	// BIO_ctrl_get_write_guarantee (function)
+	// BIO_get_read_request
+	// BIO_ctrl_get_read_request
+	// BIO_pending
+	// BIO_write_ex
+	// BIO_read_ex
+	// BIO_should_read
+	// BIO_eof
 
 	// SSL_connect(ssl);
 	// SSL_write_ex(ssl, data, len, byteswritten);
@@ -78,4 +91,5 @@ void TlsStreamOpenSSL::read(void* data, size_t size, ReadCompleteCallback readCo
 
 void TlsStreamOpenSSL::shutdown(ShutdownCompleteCallback shutdownComplete)
 {
+	// BIO_shutdown_wr ?
 }

@@ -195,6 +195,12 @@
     <ClCompile Include="HttpClient\SocketStream.cpp" />
     <ClCompile Include="HttpClient\TcpSocket.cpp" />
     <ClCompile Include="HttpClient\TlsStream.cpp" />
+    <ClCompile Include="HttpClient\TlsStreamOpenSSL.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="HttpClient\TlsStreamWin32.cpp" />
     <ClCompile Include="IOData\DataBuffer.cpp" />
     <ClCompile Include="IOData\Directory.cpp" />
@@ -294,6 +300,12 @@
     <ClInclude Include="HttpClient\SocketStream.h" />
     <ClInclude Include="HttpClient\TcpSocket.h" />
     <ClInclude Include="HttpClient\TlsStream.h" />
+    <ClInclude Include="HttpClient\TlsStreamOpenSSL.h">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+    </ClInclude>
     <ClInclude Include="HttpClient\TlsStreamWin32.h" />
     <ClInclude Include="HttpClient\SocketHeaders.h" />
     <ClInclude Include="IOData\DataBuffer.h" />

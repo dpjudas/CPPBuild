@@ -636,7 +636,7 @@ void TlsStreamWin32::createCredentials()
 		}
 		else
 		{
-			std::wstring x500 = L"CN=lasernet";
+			std::wstring x500 = L"CN=selfsign";
 			DWORD x500EncodedLength = 0;
 			CertStrToName(X509_ASN_ENCODING, x500.c_str(), CERT_X500_NAME_STR, nullptr, nullptr, &x500EncodedLength, nullptr);
 			std::vector<BYTE> x500Encoding(x500EncodedLength);

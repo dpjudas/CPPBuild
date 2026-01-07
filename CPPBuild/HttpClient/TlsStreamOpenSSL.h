@@ -23,8 +23,9 @@ public:
 
 private:
 	ByteStream* socketStream = nullptr;
-	SSL_CTX *ctx = nullptr;
-	SSL *ssl = nullptr;
-	BIO *bio = nullptr;
+	SSL_CTX* ctx = nullptr;
+	SSL* ssl = nullptr;
+	BIO* internal_bio = nullptr;
+	BIO* network_bio = nullptr;
 };
 

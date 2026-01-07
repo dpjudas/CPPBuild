@@ -185,6 +185,9 @@
     <ClCompile Include="HttpClient\SocketStream.cpp">
       <Filter>HttpClient</Filter>
     </ClCompile>
+    <ClCompile Include="HttpClient\TlsStreamOpenSSL.cpp">
+      <Filter>HttpClient</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -387,6 +390,9 @@
       <Filter>HttpClient</Filter>
     </ClInclude>
     <ClInclude Include="HttpClient\TlsStream.h">
+      <Filter>HttpClient</Filter>
+    </ClInclude>
+    <ClInclude Include="HttpClient\TlsStreamOpenSSL.h">
       <Filter>HttpClient</Filter>
     </ClInclude>
   </ItemGroup>

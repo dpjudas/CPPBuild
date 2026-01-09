@@ -22,18 +22,53 @@ public:
 	void shutdown(ShutdownCompleteCallback shutdownComplete) override;
 
 private:
-	bool processIO(int result);
-	void startSocketRead();
-	void startSocketWrite();
+	void process();
+	bool handleIOFailure(int result);
 
-	enum class State
+	void startReadSocket();
+	void readSocketComplete(size_t bytesRead);
+
+	void startWriteSocket();
+	void writeSocketComplete(size_t bytesWritten);
+
+	enum class TlsStreamState
 	{
-		closed,
-		connecting,
-		open,
-		shuttingDown
+		Closed,
+		Handshake,
+		Open,
+		Shutdown
 	};
-	State state = State::closed;
+
+	TlsStreamState state = TlsStreamState::Closed;
+
+	struct
+	{
+		uint8_t* data = nullptr;
+		size_t size = 0;
+		ReadCompleteCallback readComplete = {};
+	} readState;
+
+	struct
+	{
+		uint8_t* data = nullptr;
+		size_t size = 0;
+		WriteCompleteCallback writeComplete = {};
+	} writeState;
+
+	std::vector<char> readBuffer;
+	size_t readBufferPos = 0;
+	size_t readBufferAvailable = 0;
+	bool readSocketOpen = true;
+
+	std::vector<char> writeBuffer;
+	size_t writeBufferPos = 0;
+	size_t writeBufferSize = 0;
+
+	AuthCompleteCallback authComplete = {};
+	ShutdownCompleteCallback shutdownComplete = {};
+
+	bool readSocketActive = false;
+	bool writeSocketActive = false;
 
 	ByteStream* socketStream = nullptr;
 	SSL_CTX* ctx = nullptr;

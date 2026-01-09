@@ -53,6 +53,12 @@ void TlsStreamOpenSSL::authenticateAsClient(AuthCompleteCallback authComplete, c
 	if (!SSL_set1_host(ssl, targetName.c_str()))
 		throw std::runtime_error("Could not enable hostname verification");
 
+	result = SSL_connect(ssl);
+	if (result == 1)
+		authComplete();
+	else
+		processIO(result);
+
 	// see https://github.com/openssl/openssl/blob/master/demos/guide/tls-client-non-block.c
 	// BIO_ctrl_pending
 	// BIO_ctrl_wpending
@@ -65,31 +71,104 @@ void TlsStreamOpenSSL::authenticateAsClient(AuthCompleteCallback authComplete, c
 	// BIO_read_ex
 	// BIO_should_read
 	// BIO_eof
-
-	// SSL_connect(ssl);
-	// SSL_write_ex(ssl, data, len, byteswritten);
-	// SSL_read_ex(ssl, data, size, bytesread);
-	// SSL_shutdown(ssl);
-
-	// SSL_get_error(ssl, res);
-	// SSL_ERROR_WANT_READ
-	// SSL_ERROR_WANT_WRITE
-	// SSL_ERROR_ZERO_RETURN (EOF)
-	// SSL_ERROR_SYSCALL (failure)
-	// SSL_ERROR_SSL:
-	//	if (SSL_get_verify_result(ssl) != X509_V_OK)
-	//		throw std::runtime_error(X509_verify_cert_error_string(SSL_get_verify_result(ssl)));
 }
 
 void TlsStreamOpenSSL::write(const void* data, size_t size, WriteCompleteCallback writeComplete)
 {
+	size_t written = 0;
+	int result = SSL_write_ex(ssl, data, size, &written);
+	if (result == 0)
+		writeComplete(written);
+	else
+		processIO(result);
 }
 
 void TlsStreamOpenSSL::read(void* data, size_t size, ReadCompleteCallback readComplete)
 {
+	size_t readbytes = 0;
+	int result = SSL_read_ex(ssl, data, size, &readbytes);
+	if (result == 0)
+		readComplete(readbytes);
+	else
+		processIO(result);
 }
 
 void TlsStreamOpenSSL::shutdown(ShutdownCompleteCallback shutdownComplete)
 {
-	// BIO_shutdown_wr ?
+	// To do: do we need to call BIO_shutdown_wr too?
+	int result = SSL_shutdown(ssl);
+	if (result >= 0)
+		shutdownComplete();
+	else
+		processIO(result);
+}
+
+void TlsStreamOpenSSL::startSocketRead()
+{
+}
+
+void TlsStreamOpenSSL::startSocketWrite()
+{
+}
+
+bool TlsStreamOpenSSL::processIO(int result)
+{
+	int error = SSL_get_error(ssl, result);
+	if (error == SSL_ERROR_NONE)
+	{
+		throw std::runtime_error("Unexpected SSL_ERROR_NONE");
+	}
+	else if (error == SSL_ERROR_ZERO_RETURN)
+	{
+		// EOF received
+		return true;
+	}
+	else if (error == SSL_ERROR_WANT_READ)
+	{
+		startSocketRead();
+		return false;
+	}
+	else if (error == SSL_ERROR_WANT_WRITE)
+	{
+		startSocketWrite();
+		return false;
+	}
+	else if (error == SSL_ERROR_WANT_CONNECT)
+	{
+		throw std::runtime_error("Unexpected SSL_ERROR_WANT_CONNECT received");
+	}
+	else if (error == SSL_ERROR_WANT_ACCEPT)
+	{
+		throw std::runtime_error("Unexpected SSL_ERROR_WANT_ACCEPT received");
+	}
+	else if (error == SSL_ERROR_WANT_X509_LOOKUP)
+	{
+		throw std::runtime_error("Unexpected SSL_ERROR_WANT_X509_LOOKUP received");
+	}
+	else if (error == SSL_ERROR_WANT_ASYNC)
+	{
+		throw std::runtime_error("Unexpected SSL_ERROR_WANT_ASYNC received");
+	}
+	else if (error == SSL_ERROR_WANT_ASYNC_JOB)
+	{
+		throw std::runtime_error("Unexpected SSL_ERROR_WANT_ASYNC_JOB received");
+	}
+	else if (error == SSL_ERROR_WANT_CLIENT_HELLO_CB)
+	{
+		throw std::runtime_error("Unexpected SSL_ERROR_WANT_CLIENT_HELLO_CB received");
+	}
+	else if (error == SSL_ERROR_SYSCALL)
+	{
+		throw std::runtime_error("Fatal I/O error (SSL_ERROR_SYSCALL)");
+	}
+	else if (error == SSL_ERROR_SSL)
+	{
+		if (SSL_get_verify_result(ssl) != X509_V_OK)
+			throw std::runtime_error(X509_verify_cert_error_string(SSL_get_verify_result(ssl)));
+		throw std::runtime_error("SSL error");
+	}
+	else
+	{
+		throw std::runtime_error("Unknown SSL error code " + std::to_string(error));
+	}
 }

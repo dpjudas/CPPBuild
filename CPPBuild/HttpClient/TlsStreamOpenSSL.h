@@ -22,6 +22,19 @@ public:
 	void shutdown(ShutdownCompleteCallback shutdownComplete) override;
 
 private:
+	bool processIO(int result);
+	void startSocketRead();
+	void startSocketWrite();
+
+	enum class State
+	{
+		closed,
+		connecting,
+		open,
+		shuttingDown
+	};
+	State state = State::closed;
+
 	ByteStream* socketStream = nullptr;
 	SSL_CTX* ctx = nullptr;
 	SSL* ssl = nullptr;

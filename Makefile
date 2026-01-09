@@ -4,7 +4,7 @@ CX=g++
 
 CFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11
 CXXFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20
-LIBS=-lssl
+LIBS=-lssl -lcrypto
 ODIR=build/obj
 
 _OBJ=\

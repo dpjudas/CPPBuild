@@ -50,13 +50,13 @@ public:
 
 	void setTimeout(int sec, int usec) { timeout.tv_sec = sec; timeout.tv_usec = usec; timeout_set = true; }
 
-	void setRead(const TcpSocket& socket) { SOCKET handle = socket.handle(); FD_SET(handle, &rfds); rfds_set = true; }
-	void setWrite(const TcpSocket& socket) { SOCKET handle = socket.handle(); FD_SET(handle, &wfds); wfds_set = true; }
-	void setExcept(const TcpSocket& socket) { SOCKET handle = socket.handle(); FD_SET(handle, &efds); efds_set = true; }
+	void setRead(const TcpSocket& socket) { SOCKET handle = socket.handle(); FD_SET(handle, &rfds); rfds_set = true; maxfds = std::max(maxfds, handle); }
+	void setWrite(const TcpSocket& socket) { SOCKET handle = socket.handle(); FD_SET(handle, &wfds); wfds_set = true; maxfds = std::max(maxfds, handle); }
+	void setExcept(const TcpSocket& socket) { SOCKET handle = socket.handle(); FD_SET(handle, &efds); efds_set = true; maxfds = std::max(maxfds, handle); }
 
 	bool select()
 	{
-		int result = ::select(0, rfds_set ? &rfds : nullptr, wfds_set ? &wfds : nullptr, efds_set ? &efds : nullptr, timeout_set ? &timeout : nullptr);
+		int result = ::select(maxfds + 1, rfds_set ? &rfds : nullptr, wfds_set ? &wfds : nullptr, efds_set ? &efds : nullptr, timeout_set ? &timeout : nullptr);
 		if (result == SOCKET_ERROR)
 			throw std::runtime_error("Socket select failed");
 		return result > 0;
@@ -71,6 +71,7 @@ private:
 	bool wfds_set = false;
 	bool efds_set = false;
 	bool timeout_set = false;
+	SOCKET maxfds = INVALID_SOCKET;
 	fd_set rfds, wfds, efds;
 	timeval timeout = {};
 };

@@ -41,7 +41,7 @@ void TlsStreamOpenSSL::authenticateAsClient(AuthCompleteCallback authCompleteCal
 		throw std::runtime_error("Could not create SSL object");
 
 	int result = BIO_new_bio_pair(&internal_bio, 0, &network_bio, 0);
-	if (result)
+	if (result != 1)
 		throw std::runtime_error("Could not create BIO pair");
 	SSL_set_bio(ssl, internal_bio, internal_bio); // note: ssl object takes ownership of internal_bio
 
@@ -124,9 +124,9 @@ void TlsStreamOpenSSL::startWriteSocket()
 	if (writeBufferPos == writeBufferSize)
 	{
 		size_t bytesread = 0;
-		int result = BIO_read_ex(network_bio, writeBuffer.data(), writeBuffer.size());
+		int result = BIO_read_ex(network_bio, writeBuffer.data(), writeBuffer.size(), &bytesread);
 		if (result != 1)
-			throw std::runtime_error("BIO_read_ex failed");
+			return;
 		writeBufferPos = 0;
 		writeBufferSize = bytesread;
 	}
@@ -181,7 +181,7 @@ void TlsStreamOpenSSL::process()
 		{
 			size_t written = 0;
 			int result = SSL_write_ex(ssl, writeState.data, writeState.size, &written);
-			if (result == 0)
+			if (result > 0)
 			{
 				writeState.size = 0;
 				writeState.writeComplete(written);
@@ -197,7 +197,7 @@ void TlsStreamOpenSSL::process()
 		{
 			size_t readbytes = 0;
 			int result = SSL_read_ex(ssl, readState.data, readState.size, &readbytes);
-			if (result == 0)
+			if (result > 0)
 			{
 				readState.size = 0;
 				readState.readComplete(readbytes);

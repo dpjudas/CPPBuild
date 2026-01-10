@@ -263,6 +263,7 @@
     <ClCompile Include="Msi\MSIDatabase.cpp" />
     <ClCompile Include="Msi\MSIGenerator.cpp" />
     <ClCompile Include="Msi\MSISequence.cpp" />
+    <ClCompile Include="PackageManager.cpp" />
     <ClCompile Include="Precomp.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'">Create</PrecompiledHeader>
@@ -355,6 +356,7 @@
     <ClInclude Include="Msi\MSIGenerator.h" />
     <ClInclude Include="Msi\MSISchema.h" />
     <ClInclude Include="Msi\MSISequence.h" />
+    <ClInclude Include="PackageManager.h" />
     <ClInclude Include="Precomp.h" />
     <ClInclude Include="ConsoleProcess.h" />
     <ClInclude Include="Text\Text.h" />

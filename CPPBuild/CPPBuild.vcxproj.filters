@@ -188,6 +188,7 @@
     <ClCompile Include="HttpClient\TlsStreamOpenSSL.cpp">
       <Filter>HttpClient</Filter>
     </ClCompile>
+    <ClCompile Include="PackageManager.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -395,6 +396,7 @@
     <ClInclude Include="HttpClient\TlsStreamOpenSSL.h">
       <Filter>HttpClient</Filter>
     </ClInclude>
+    <ClInclude Include="PackageManager.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

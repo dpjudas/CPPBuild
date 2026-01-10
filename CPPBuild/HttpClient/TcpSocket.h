@@ -56,7 +56,11 @@ public:
 
 	bool select()
 	{
+#ifdef WIN32
+		int result = ::select(0, rfds_set ? &rfds : nullptr, wfds_set ? &wfds : nullptr, efds_set ? &efds : nullptr, timeout_set ? &timeout : nullptr);
+#else
 		int result = ::select(maxfds + 1, rfds_set ? &rfds : nullptr, wfds_set ? &wfds : nullptr, efds_set ? &efds : nullptr, timeout_set ? &timeout : nullptr);
+#endif
 		if (result == SOCKET_ERROR)
 			throw std::runtime_error("Socket select failed");
 		return result > 0;

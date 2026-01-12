@@ -5,6 +5,7 @@
 
 class ZipWriter;
 class BuildSetup;
+class PackageManager;
 
 enum class TargetType
 {
@@ -21,7 +22,7 @@ enum class TargetType
 class Target
 {
 public:
-	Target(BuildSetup& setup, const std::string& workDir, const std::string& target, const std::string& configuration);
+	Target(BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& target, const std::string& configuration);
 
 	std::string workDir;
 	std::string target;
@@ -59,7 +60,7 @@ public:
 
 private:
 	void compileThreadMain(int threadIndex, int numThreads);
-	void loadTarget(BuildSetup& setup);
+	void loadTarget(BuildSetup& setup, PackageManager* packages);
 	bool isCppFile(const std::string& filename);
 	void compile();
 	void link();

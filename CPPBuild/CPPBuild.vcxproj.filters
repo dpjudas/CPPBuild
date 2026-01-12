@@ -189,6 +189,7 @@
       <Filter>HttpClient</Filter>
     </ClCompile>
     <ClCompile Include="PackageManager.cpp" />
+    <ClCompile Include="Package.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -397,6 +398,7 @@
       <Filter>HttpClient</Filter>
     </ClInclude>
     <ClInclude Include="PackageManager.h" />
+    <ClInclude Include="Package.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

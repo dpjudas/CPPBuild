@@ -110,9 +110,9 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 
 /////////////////////////////////////////////////////////////////////////////
 
-BuildPackageConfiguration BuildPackageConfiguration::fromJson(const JsonValue& json)
+BuildPackageInstallerConfiguration BuildPackageInstallerConfiguration::fromJson(const JsonValue& json)
 {
-	BuildPackageConfiguration config;
+	BuildPackageInstallerConfiguration config;
 	for (const JsonValue& item : json["defines"].items())
 		config.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())
@@ -132,13 +132,11 @@ BuildPackageConfiguration BuildPackageConfiguration::fromJson(const JsonValue& j
 
 /////////////////////////////////////////////////////////////////////////////
 
-BuildPackage BuildPackage::fromJson(const JsonValue& json)
+BuildPackageInstaller BuildPackageInstaller::fromJson(const JsonValue& json)
 {
-	BuildPackage package;
+	BuildPackageInstaller package;
 	package.subdirectory = json["subdirectory"].to_string();
 	package.name = json["name"].to_string();
-	for (const JsonValue& item : json["sources"].items())
-		package.sources.push_back(item.to_string());
 	for (const JsonValue& item : json["defines"].items())
 		package.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())
@@ -154,7 +152,17 @@ BuildPackage BuildPackage::fromJson(const JsonValue& json)
 	for (const JsonValue& item : json["libraryPaths"].items())
 		package.libraryPaths.push_back(item.to_string());
 	for (const auto& it : json["configurations"].properties())
-		package.configurations[it.first] = BuildPackageConfiguration::fromJson(it.second);
+		package.configurations[it.first] = BuildPackageInstallerConfiguration::fromJson(it.second);
+	return package;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
+BuildPackage BuildPackage::fromJson(const JsonValue& json)
+{
+	BuildPackage package;
+	package.subdirectory = json["subdirectory"].to_string();
+	package.source = json["source"].to_string();
 	return package;
 }
 
@@ -216,6 +224,8 @@ BuildProject BuildProject::fromJson(const JsonValue& json)
 		proj.targets.push_back(BuildTarget::fromJson(target));
 	for (const JsonValue& installer : json["installers"].items())
 		proj.installers.push_back(BuildInstaller::fromJson(installer));
+	for (const JsonValue& installer : json["packageInstallers"].items())
+		proj.packageInstallers.push_back(BuildPackageInstaller::fromJson(installer));
 	for (const JsonValue& package : json["packages"].items())
 		proj.packages.push_back(BuildPackage::fromJson(package));
 	return proj;
@@ -239,16 +249,6 @@ const BuildTarget& BuildProject::getTarget(const std::string& name) const
 			return target;
 	}
 	throw std::runtime_error("Target '" + name + "' not found");
-}
-
-const BuildPackage& BuildProject::getPackage(const std::string& name) const
-{
-	for (const BuildPackage& package : packages)
-	{
-		if (package.name == name)
-			return package;
-	}
-	throw std::runtime_error("Package '" + name + "' not found");
 }
 
 /////////////////////////////////////////////////////////////////////////////

@@ -4,6 +4,7 @@
 #include "CSSTokenizer.h"
 #include "BuildSetup.h"
 #include "ConsoleProcess.h"
+#include "PackageManager.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 #include "IOData/Directory.h"
@@ -13,9 +14,9 @@
 #include <future>
 #include <algorithm>
 
-Target::Target(BuildSetup& setup, const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
+Target::Target(BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
 {
-	loadTarget(setup);
+	loadTarget(setup, packages);
 }
 
 void Target::build()
@@ -545,7 +546,7 @@ std::string Target::getLibPrefix() const
 	return {};
 }
 
-void Target::loadTarget(BuildSetup& setup)
+void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 {
 	const BuildConfiguration& configDef = setup.project.getConfiguration(configuration);
 	const BuildTarget& targetDef = setup.project.getTarget(target);
@@ -640,8 +641,8 @@ void Target::loadTarget(BuildSetup& setup)
 
 	for (const std::string pkgName : targetDef.packages)
 	{
-		const BuildPackage& package = setup.project.getPackage(pkgName);
-		std::string pkgBasePath = FilePath::combine(setup.sourcePath, package.subdirectory);
+		const Package& package = packages->getPackage(pkgName);
+		std::string pkgBasePath = packages->getPackagePath(pkgName);
 
 		for (const std::string& define : package.defines)
 			defines.push_back(define);
@@ -658,21 +659,16 @@ void Target::loadTarget(BuildSetup& setup)
 		for (const std::string& linkLibrary : package.linkLibraries)
 			linkLibraries.push_back(linkLibrary);
 
-		for (const std::string& source : package.sources)
-		{
-			std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+		for (const std::string& path : package.includePaths)
+			includePaths.push_back(FilePath::combine(pkgBasePath, path));
 
-			for (const std::string& path : package.includePaths)
-				includePaths.push_back(FilePath::combine(pkgSourcePath, path));
-
-			for (const std::string& item : package.libraryPaths)
-				libraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
-		}
+		for (const std::string& item : package.libraryPaths)
+			libraryPaths.push_back(FilePath::combine(pkgBasePath, item));
 
 		auto itPackageConfig = package.configurations.find(configuration);
 		if (itPackageConfig != package.configurations.end())
 		{
-			const BuildPackageConfiguration& packageConfigDef = itPackageConfig->second;
+			const PackageConfiguration& packageConfigDef = itPackageConfig->second;
 
 			for (const std::string& define : packageConfigDef.defines)
 				defines.push_back(define);
@@ -689,16 +685,11 @@ void Target::loadTarget(BuildSetup& setup)
 			for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
 				linkLibraries.push_back(linkLibrary);
 
-			for (const std::string& source : package.sources)
-			{
-				std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+			for (const std::string& item : packageConfigDef.includePaths)
+				includePaths.push_back(FilePath::combine(pkgBasePath, item));
 
-				for (const std::string& item : packageConfigDef.includePaths)
-					includePaths.push_back(FilePath::combine(pkgSourcePath, item));
-
-				for (const std::string& item : packageConfigDef.libraryPaths)
-					libraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
-			}
+			for (const std::string& item : packageConfigDef.libraryPaths)
+				libraryPaths.push_back(FilePath::combine(pkgBasePath, item));
 		}
 	}
 

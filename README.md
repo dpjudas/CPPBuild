@@ -9,19 +9,21 @@ cppbuild configure [source path]
 cppbuild [-workdir <path>] build <target> <configuration>
 cppbuild [-workdir <path>] clean <target> <configuration>
 cppbuild [-workdir <path>] rebuild <target> <configuration>
+cppbuild [-workdir <path>] create-package
 cppbuild [-workdir <path>] create-installer
 ```
 
-CPPBuild is configured by a script called Configure.js located at the root of the project. The script creates targets that can be used
-to build the project.
+`cppbuild configure` runs `Configure.js` and outputs makefiles for the platform: a Visual Studio solution on Windows and a Makefile for
+Linux. After this the project can be built either by running cppbuild directly, opening the Visual Studio solution, or via `make all`.
 
-`cppbuild configure` runs the script and outputs makefiles for the platform: a Visual Studio solution on Windows and a Makefile for
-Linux. After this the project can be built either by running cppbuild directly (`cppbuild build <target> <configuration>`),
-opening the Visual Studio, or via the Makefile (`make all`).
+`cppbuild build` will build a specific target. `clean` will remove all intermediate and output files from earlier builds. And `rebuild`
+is shorthand for run clean first and then build.
+
+`cppbuild create-package` creates packages described by the configure script. `create-installer` creates MSI installers.
 
 ## Configure.js
 
-A basic configure script may look like this:
+A basic configure script might look like this:
 
 ```js
 import { Project, Targets, File, FilePath, Directory, Environment } from "cppbuild";
@@ -43,9 +45,12 @@ basic.addFiles(files);
 
 if (Environment.isWindows()) {
 	basic.addDefines(["WIN32", "_WIN32", "UNICODE", "_UNICODE"]);
+}
+
+if (Environment.isMSVC()) {
 	basic.addCompileOptions(["/YuPrecomp.h"]);
-	basic.addCompileOptions(["/YcPrecomp.h"], { files: ["Precomp.cpp"], configuration: "Debug", platform: "x64" });
-	basic.addCompileOptions(["/YcPrecomp.h"], { files: ["Precomp.cpp"], configuration: "Release", platform: "x64" });
+	basic.addCompileOptions(["/YcPrecomp.h"], { files: ["Precomp.cpp"], configuration: "Debug" });
+	basic.addCompileOptions(["/YcPrecomp.h"], { files: ["Precomp.cpp"], configuration: "Release" });
 }
 ```
 
@@ -66,7 +71,7 @@ uses the name of the directory it is placed in. For example, if the subdirectory
 class Project
 {
 	static setName(name);
-	static addConfiguration(name, platform);
+	static addConfiguration(name);
 	static addSubdirectory(path);
 }
 ```
@@ -109,35 +114,18 @@ class Target
 }
 ```
 
-## Package class
+## Packages
 
-The Packages class holds packages that can be used by targets.
+The Packages class holds packages that can then be used by targets.
 
 ```js
 class Packages
 {
-	static add(name);
-}
-```
-
-The add function adds a package to the list of packages. It returns an instance of the Package class:
-
-```js
-class Package
-{
-	getConfiguration(name);
-	addSource(source, options);
-	addDefines(defines, options);
-	addCompileOptions(opts, options);
-	addLinkOptions(opts, options);
-	addIncludePaths(paths, options);
-	addLinkLibraries(libs, options);
-	addLibraryPaths(paths, options);
+	static add(source);
 }
 ```
 
 When a package is referenced by a target it adds the compiler and linker options from the package.
-The `addSource` function specifies where the package is located.
 
 ## File class
 
@@ -216,14 +204,44 @@ class Environment
 }
 ```
 
-## Installer classes
+## Installers
 
-The following classes are used for generating MSI installers.
+Installers are used for deploying build artifacts.
+
+```js
+class Installers
+{
+	static addPackage(name);
+	static addInstaller(name);
+}
+```
+
+## Package Installer
+
+`Installers.addPackage` returns an instance of the package installer class:
+
+```js
+class PackageInstaller
+{
+	getConfiguration(name);
+	addDefines(defines, options);
+	addCompileOptions(opts, options);
+	addLinkOptions(opts, options);
+	addIncludePaths(paths, options);
+	addLinkLibraries(libs, options);
+	addLibraryPaths(paths, options);
+}
+```
+
+## MSI Installer
+
+`Installers.addInstaller` returns an instance of the MSI installer class:
 
 ```js
 class Installers
 {
 	static addInstaller(name);
+	static addPackage(name);
 }
 
 class Installer

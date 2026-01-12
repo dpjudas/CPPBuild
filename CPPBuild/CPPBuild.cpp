@@ -5,6 +5,7 @@
 #include "VSWorkspace.h"
 #include "MakefileWorkspace.h"
 #include "BuildSetup.h"
+#include "PackageManager.h"
 #include "Msi/MSIGenerator.h"
 #include "Guid/Guid.h"
 #include "IOData/Directory.h"
@@ -130,8 +131,9 @@ JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
 void CPPBuild::generateWorkspace()
 {
 #ifdef WIN32
+	PackageManager packages(workDir);
 	VSWorkspace workspace;
-	workspace.generate(loadBuildSetup(), workDir, cppbuildDir);
+	workspace.generate(loadBuildSetup(), &packages, workDir, cppbuildDir);
 #else
 	MakefileWorkspace workspace;
 	workspace.generate(loadBuildSetup(), workDir, cppbuildDir);
@@ -141,9 +143,10 @@ void CPPBuild::generateWorkspace()
 void CPPBuild::build(std::string targetName, std::string configuration)
 {
 	BuildSetup setup = loadBuildSetup();
+	PackageManager packages(workDir);
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
-		Target target(setup, workDir, name, configuration);
+		Target target(setup, &packages, workDir, name, configuration);
 		target.build();
 	}
 }
@@ -151,9 +154,10 @@ void CPPBuild::build(std::string targetName, std::string configuration)
 void CPPBuild::clean(std::string targetName, std::string configuration)
 {
 	BuildSetup setup = loadBuildSetup();
+	PackageManager packages(workDir);
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
-		Target target(setup, workDir, name, configuration);
+		Target target(setup, &packages, workDir, name, configuration);
 		target.clean();
 	}
 }
@@ -161,9 +165,10 @@ void CPPBuild::clean(std::string targetName, std::string configuration)
 void CPPBuild::rebuild(std::string targetName, std::string configuration)
 {
 	BuildSetup setup = loadBuildSetup();
+	PackageManager packages(workDir);
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
-		Target target(setup, workDir, name, configuration);
+		Target target(setup, &packages, workDir, name, configuration);
 		target.rebuild();
 	}
 }
@@ -180,6 +185,47 @@ void CPPBuild::createInstaller()
 	{
 		std::string sourcePath = FilePath::combine(setup.sourcePath, def.subdirectory);
 		msi->generate(binDir, sourcePath, def);
+	}
+}
+
+void CPPBuild::createPackage()
+{
+	BuildSetup setup = loadBuildSetup();
+
+	std::string binDir = FilePath::combine(workDir, { "Build", "Packages" });
+	Directory::create(binDir);
+
+	for (const BuildPackageInstaller& def : setup.project.packageInstallers)
+	{
+		std::string sourcePath = FilePath::combine(setup.sourcePath, def.subdirectory);
+		std::string packageDir = FilePath::combine(binDir, def.name);
+		Directory::create(packageDir);
+
+		Package package;
+		package.name = def.name;
+		package.defines = def.defines;
+		package.cCompileOptions = def.cCompileOptions;
+		package.cxxCompileOptions = def.cxxCompileOptions;
+		package.linkOptions = def.linkOptions;
+		package.includePaths = def.includePaths;
+		package.linkLibraries = def.linkLibraries;
+		package.libraryPaths = def.libraryPaths;
+		for (const auto& configdef : def.configurations)
+		{
+			PackageConfiguration config;
+			config.defines = configdef.second.defines;
+			config.cCompileOptions = configdef.second.cCompileOptions;
+			config.cxxCompileOptions = configdef.second.cxxCompileOptions;
+			config.linkOptions = configdef.second.linkOptions;
+			config.includePaths = configdef.second.includePaths;
+			config.linkLibraries = configdef.second.linkLibraries;
+			config.libraryPaths = configdef.second.libraryPaths;
+			package.configurations[configdef.first] = std::move(config);
+		}
+
+		File::writeAllText(FilePath::combine(packageDir, "package.json"), package.toJson().to_json());
+
+		// To do: copy artifacts
 	}
 }
 

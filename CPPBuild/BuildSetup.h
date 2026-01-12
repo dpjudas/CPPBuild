@@ -117,7 +117,7 @@ public:
 	static BuildInstaller fromJson(const JsonValue& json);
 };
 
-class BuildPackageConfiguration
+class BuildPackageInstallerConfiguration
 {
 public:
 	std::vector<std::string> defines;
@@ -128,23 +128,31 @@ public:
 	std::vector<std::string> linkLibraries;
 	std::vector<std::string> libraryPaths;
 
-	static BuildPackageConfiguration fromJson(const JsonValue& json);
+	static BuildPackageInstallerConfiguration fromJson(const JsonValue& json);
+};
+
+class BuildPackageInstaller
+{
+public:
+	std::string subdirectory;
+	std::string name;
+	std::vector<std::string> defines;
+	std::vector<std::string> cCompileOptions;
+	std::vector<std::string> cxxCompileOptions;
+	std::vector<std::string> linkOptions;
+	std::vector<std::string> includePaths;
+	std::vector<std::string> linkLibraries;
+	std::vector<std::string> libraryPaths;
+	std::map<std::string, BuildPackageInstallerConfiguration> configurations;
+
+	static BuildPackageInstaller fromJson(const JsonValue& json);
 };
 
 class BuildPackage
 {
 public:
 	std::string subdirectory;
-	std::string name;
-	std::vector<std::string> sources;
-	std::vector<std::string> defines;
-	std::vector<std::string> cCompileOptions;
-	std::vector<std::string> cxxCompileOptions;
-	std::vector<std::string> linkOptions;
-	std::vector<std::string> includePaths;
-	std::vector<std::string> linkLibraries;
-	std::vector<std::string> libraryPaths;
-	std::map<std::string, BuildPackageConfiguration> configurations;
+	std::string source;
 
 	static BuildPackage fromJson(const JsonValue& json);
 };
@@ -156,11 +164,11 @@ public:
 	std::vector<BuildTarget> targets;
 	std::vector<BuildConfiguration> configurations;
 	std::vector<BuildInstaller> installers;
+	std::vector<BuildPackageInstaller> packageInstallers;
 	std::vector<BuildPackage> packages;
 
 	const BuildConfiguration& getConfiguration(const std::string& name) const;
 	const BuildTarget& getTarget(const std::string& name) const;
-	const BuildPackage& getPackage(const std::string& name) const;
 
 	static BuildProject fromJson(const JsonValue& json);
 };

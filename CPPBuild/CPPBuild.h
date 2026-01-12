@@ -18,6 +18,7 @@ public:
 	void rebuild(std::string target, std::string configuration);
 	void clean(std::string target, std::string configuration);
 	void createInstaller();
+	void createPackage();
 
 private:
 	void updateMakefile();

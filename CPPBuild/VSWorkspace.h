@@ -4,6 +4,7 @@
 #include <map>
 
 class BuildSetup;
+class PackageManager;
 
 class VSGuids
 {
@@ -15,7 +16,7 @@ public:
 class VSWorkspace
 {
 public:
-	void generate(const BuildSetup& setup, const std::string& workDir, const std::string& cppbuildDir);
+	void generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir);
 
 private:
 	VSGuids loadSolutionGuids(const std::string& cppbuildDir);

@@ -53,9 +53,14 @@ int main(int argc, char** argv)
 			app.rebuild(args[2], args[3]);
 			return 0;
 		}
-		if (args.size() == 2 && args[1] == "create-installer")
+		else if (args.size() == 2 && args[1] == "create-installer")
 		{
 			app.createInstaller();
+			return 0;
+		}
+		else if (args.size() == 2 && args[1] == "create-package")
+		{
+			app.createPackage();
 			return 0;
 		}
 		else
@@ -65,6 +70,7 @@ int main(int argc, char** argv)
 			std::cout << "cppbuild [-workdir <path>] clean <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] rebuild <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] create-installer" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] create-package" << std::endl;
 			return 1;
 		}
 	}

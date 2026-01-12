@@ -715,37 +715,6 @@ class PackageInstaller
 	constructor(subdirectory, name) {
 		this.subdirectory = subdirectory;
 		this.name = name;
-	}
-
-	toInstallerDefinition() {
-		return {
-			subdirectory: this.subdirectory,
-			name: this.name,
-		};
-	}
-}
-
-class Installers
-{
-	static addInstaller(name) {
-		var installer = new Installer(native.subdirectory, name);
-		installerList.push(installer);
-		return installer;
-	}
-
-	static addPackage(name) {
-		var installer = new PackageInstaller(native.subdirectory, name);
-		packageInstallerList.push(installer);
-		return installer;
-	}
-}
-
-class Package
-{
-	constructor(subdirectory, name) {
-		this.subdirectory = subdirectory;
-		this.name = name;
-		this.sources = [];
 		this.defines = [];
 		this.cCompileOptions = [];
 		this.cxxCompileOptions = [];
@@ -759,7 +728,6 @@ class Package
 	getConfiguration(name) {
 		if (this.configurations[name] === undefined) {
 			this.configurations[name] = {
-				sources: [],
 				defines: [],
 				cCompileOptions: [],
 				cxxCompileOptions: [],
@@ -770,21 +738,6 @@ class Package
 			};
 		}
 		return this.configurations[name];
-	}
-
-	addSources(sources, options) {
-		var self = this;
-		sources.forEach(function(define) { self.addSource(source, options); });
-	}
-
-	addSource(source, options) {
-		if (isObject(options) && options.configuration !== undefined) {
-			var config = this.getConfiguration(options.configuration);
-			config.sources.push(source);
-		}
-		else {
-			this.sources.push(source);
-		}
 	}
 
 	addDefines(defines, options) {
@@ -886,11 +839,10 @@ class Package
 		}
 	}
 
-	toPackageDefinition() {
+	toInstallerDefinition() {
 		return {
 			subdirectory: this.subdirectory,
 			name: this.name,
-			sources: this.sources,
 			defines: this.defines,
 			cCompileOptions: this.cCompileOptions,
 			cxxCompileOptions: this.cxxCompileOptions,
@@ -903,10 +855,40 @@ class Package
 	}
 }
 
+class Installers
+{
+	static addInstaller(name) {
+		var installer = new Installer(native.subdirectory, name);
+		installerList.push(installer);
+		return installer;
+	}
+
+	static addPackage(name) {
+		var installer = new PackageInstaller(native.subdirectory, name);
+		packageInstallerList.push(installer);
+		return installer;
+	}
+}
+
+class Package
+{
+	constructor(subdirectory, source) {
+		this.subdirectory = subdirectory;
+		this.source = source;
+	}
+
+	toPackageDefinition() {
+		return {
+			subdirectory: this.subdirectory,
+			source: this.source,
+		};
+	}
+}
+
 class Packages
 {
-	static add(name) {
-		var pkg = new Package(native.subdirectory, name);
+	static add(source) {
+		var pkg = new Package(native.subdirectory, source);
 		packageList.push(pkg);
 		return pkg;
 	}

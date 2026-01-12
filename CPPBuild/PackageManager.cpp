@@ -1,6 +1,7 @@
 
 #include "Precomp.h"
 #include "PackageManager.h"
+#include "Package.h"
 #include "HttpClient/HttpClient.h"
 #include "IOData/File.h"
 #include "IOData/FilePath.h"
@@ -9,29 +10,58 @@
 #include "BuildSetup.h"
 #include <unordered_set>
 
+PackageManager::PackageManager(const std::string& workDir) : workDir(workDir)
+{
+	std::string buildDir = FilePath::combine(workDir, "Build");
+	packagesDir = FilePath::combine(buildDir, "Packages");
+}
+
+std::string PackageManager::getPackagePath(const std::string& name)
+{
+	return FilePath::combine(packagesDir, name);
+}
+
+const Package& PackageManager::getPackage(const std::string& name)
+{
+	auto it = packages.find(name);
+	if (it != packages.end())
+		return it->second;
+
+	std::string packageDir = FilePath::combine(packagesDir, name);
+	try
+	{
+		Package pkg = Package::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(packageDir, "package.json"))));
+		Package& result = packages[name];
+		result = pkg;
+		return result;
+	}
+	catch (...)
+	{
+		throw std::runtime_error("Package '" + name + "' not found");
+	}
+}
+
 void PackageManager::update(const BuildSetup& setup)
 {
-	// To do: make packages path configurable
-	std::string packagesDir = "C:\\Development\\Packages";
+	// To do: should we have a global packages dir too?
 	Directory::create(packagesDir);
 
-	for (const BuildPackage& package : setup.project.packages)
+	for (const BuildPackage& pkgdesc : setup.project.packages)
 	{
-		if (package.sources.empty())
-			throw std::runtime_error("Package " + package.name + " has no source URL");
-
-		HttpUri source = package.sources.front();
+		HttpUri source = pkgdesc.source;
 		if (source.scheme.empty())
 			continue;
 
 		// To do: only update packages if they changed
 
-		std::string packageZip = FilePath::combine(packagesDir, package.name + ".zip");
+		std::string packageZip = FilePath::combine(packagesDir, "package.zip");
 		download(source, packageZip);
 
 		auto zip = ZipReader::open(File::openExisting(packageZip));
 
-		std::string packageDir = FilePath::combine(packagesDir, package.name);
+		Package pkg = Package::fromJson(JsonValue::parse(zip->readAllText("package.json")));
+
+		std::string packageDir = FilePath::combine(packagesDir, pkg.name);
 		Directory::create(packageDir);
 		std::unordered_set<std::string> createdDirs;
 

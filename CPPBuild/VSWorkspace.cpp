@@ -3,12 +3,13 @@
 #include "VSWorkspace.h"
 #include "VSGenerator.h"
 #include "BuildSetup.h"
+#include "PackageManager.h"
 #include "Guid/Guid.h"
 #include "IOData/Directory.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 
-void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, const std::string& cppbuildDir)
+void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir)
 {
 	std::string cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
 
@@ -243,8 +244,8 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 		for (const std::string pkgName : targetDef.packages)
 		{
-			const BuildPackage& package = setup.project.getPackage(pkgName);
-			std::string pkgBasePath = FilePath::combine(setup.sourcePath, package.subdirectory);
+			const Package& package = packages->getPackage(pkgName);
+			std::string pkgBasePath = packages->getPackagePath(pkgName);
 
 			for (const std::string& define : package.defines)
 				defines.push_back(define);
@@ -261,16 +262,11 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 			for (const std::string& linkLibrary : package.linkLibraries)
 				linkLibraries.push_back(linkLibrary);
 
-			for (const std::string& source : package.sources)
-			{
-				std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+			for (const std::string& path : package.includePaths)
+				includePaths.push_back(FilePath::combine(pkgBasePath, path));
 
-				for (const std::string& path : package.includePaths)
-					includePaths.push_back(FilePath::combine(pkgSourcePath, path));
-
-				for (const std::string& item : package.libraryPaths)
-					libraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
-			}
+			for (const std::string& item : package.libraryPaths)
+				libraryPaths.push_back(FilePath::combine(pkgBasePath, item));
 		}
 
 		for (const std::string& define : targetDef.defines)
@@ -357,13 +353,13 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 
 			for (const std::string pkgName : targetDef.packages)
 			{
-				const BuildPackage& package = setup.project.getPackage(pkgName);
-				std::string pkgBasePath = FilePath::combine(setup.sourcePath, package.subdirectory);
+				const Package& package = packages->getPackage(pkgName);
+				std::string pkgBasePath = packages->getPackagePath(pkgName);
 
 				auto itPackageConfig = package.configurations.find(configName);
 				if (itPackageConfig != package.configurations.end())
 				{
-					const BuildPackageConfiguration& packageConfigDef = itPackageConfig->second;
+					const PackageConfiguration& packageConfigDef = itPackageConfig->second;
 
 					for (const std::string& define : packageConfigDef.defines)
 						configDefines.push_back(define);
@@ -380,16 +376,11 @@ void VSWorkspace::generate(const BuildSetup& setup, const std::string& workDir, 
 					for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
 						configLinkLibraries.push_back(linkLibrary);
 
-					for (const std::string& source : package.sources)
-					{
-						std::string pkgSourcePath = FilePath::combine(pkgBasePath, source);
+					for (const std::string& item : packageConfigDef.includePaths)
+						configIncludes.push_back(FilePath::combine(pkgBasePath, item));
 
-						for (const std::string& item : packageConfigDef.includePaths)
-							configIncludes.push_back(FilePath::combine(pkgSourcePath, item));
-
-						for (const std::string& item : packageConfigDef.libraryPaths)
-							configLibraryPaths.push_back(FilePath::combine(pkgSourcePath, item));
-					}
+					for (const std::string& item : packageConfigDef.libraryPaths)
+						configLibraryPaths.push_back(FilePath::combine(pkgBasePath, item));
 				}
 			}
 

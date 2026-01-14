@@ -70,7 +70,7 @@ JsonValue Package::toJson() const
 	obj["includePaths"] = JsonValue::array(includePaths);
 	obj["linkLibraries"] = JsonValue::array(linkLibraries);
 	obj["libraryPaths"] = JsonValue::array(libraryPaths);
-	auto configs = JsonValue::array();
+	auto configs = JsonValue::object();
 	for (const auto& it : configurations)
 		configs[it.first] = it.second.toJson();
 	obj["configurations"] = std::move(configs);

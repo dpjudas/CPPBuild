@@ -164,7 +164,7 @@ class Target
 	addLinkLibraries(libs, options) {
 		if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
-			config.linkLibraries.push(lib);
+			libs.forEach(function(lib) { config.linkLibraries.push(lib); });
 		}
 		else {
 			var self = this;
@@ -175,7 +175,7 @@ class Target
 	addLibraryPaths(paths, options) {
 		if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
-			config.libraryPaths.push(path);
+			paths.forEach(function(path) { config.libraryPaths.push(path); });
 		}
 		else {
 			var self = this;

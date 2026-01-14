@@ -11,6 +11,7 @@
 #include "Zip/ZipWriter.h"
 #include "BuildSetup.h"
 #include <unordered_set>
+#include <iostream>
 
 PackageManager::PackageManager(const std::string& workDir) : workDir(workDir)
 {
@@ -45,21 +46,31 @@ const Package& PackageManager::getPackage(const std::string& name)
 
 void PackageManager::update(const BuildSetup& setup)
 {
-	// To do: should we have a global packages dir too?
 	Directory::create(packagesDir);
 
 	for (const BuildPackage& pkgdesc : setup.project.packages)
 	{
-		HttpUri source = pkgdesc.source;
-		if (source.scheme.empty())
-			continue;
-
 		// To do: only update packages if they changed
 
-		std::string packageZip = FilePath::combine(packagesDir, "package.zip");
-		download(source, packageZip);
+		std::string packageZip;
 
-		auto zip = ZipReader::open(File::openExisting(packageZip));
+		if ((pkgdesc.source.size() >= 5 && pkgdesc.source.substr(0, 5) == "http:") ||
+			(pkgdesc.source.size() >= 6 && pkgdesc.source.substr(0, 6) == "https:"))
+		{
+			HttpUri source = pkgdesc.source;
+			packageZip = FilePath::combine(packagesDir, "package.zip");
+			download(source, packageZip);
+		}
+		else if (!pkgdesc.source.empty())
+		{
+			packageZip = FilePath::combine(setup.sourcePath, { pkgdesc.subdirectory, pkgdesc.source });
+		}
+		else
+		{
+			throw std::runtime_error("Empty package url");
+		}
+
+		std::unique_ptr<ZipReader> zip = ZipReader::open(File::openExisting(packageZip));
 
 		Package pkg = Package::fromJson(JsonValue::parse(zip->readAllText("package.json")));
 

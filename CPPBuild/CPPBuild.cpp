@@ -40,6 +40,9 @@ void CPPBuild::configure(std::string sourcePath)
 	Directory::trySetHidden(cppbuildDir);
 	File::writeAllText(FilePath::combine(cppbuildDir, "config.json"), config.to_json());
 
+	PackageManager packages(workDir);
+	packages.update(setup);
+
 	if (!setup.project.targets.empty())
 		generateWorkspace();
 }

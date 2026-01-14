@@ -63,6 +63,7 @@ Package Package::fromJson(const JsonValue& json)
 JsonValue Package::toJson() const
 {
 	auto obj = JsonValue::object();
+	obj["name"] = JsonValue::string(name);
 	obj["defines"] = JsonValue::array(defines);
 	obj["cCompileOptions"] = JsonValue::array(cCompileOptions);
 	obj["cxxCompileOptions"] = JsonValue::array(cxxCompileOptions);

@@ -10,6 +10,8 @@ class PackageManager
 public:
 	PackageManager(const std::string& workDir);
 
+	void createPackage(const BuildSetup& setup);
+
 	void update(const BuildSetup& setup);
 
 	const Package& getPackage(const std::string& name);

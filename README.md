@@ -174,9 +174,10 @@ The Directory class lists files and folders.
 ```js
 class Directory
 {
-	static files(filename);
-	static folders(filename);
-	static projectPath();
+	static files(searchpattern);
+	static folders(searchpattern);
+	static currentPath(relpath);
+	static buildPath(relpath);
 	static create(path);
 }
 ```
@@ -224,6 +225,7 @@ class Installers
 class PackageInstaller
 {
 	getConfiguration(name);
+	addFiles(files);
 	addDefines(defines, options);
 	addCompileOptions(opts, options);
 	addLinkOptions(opts, options);

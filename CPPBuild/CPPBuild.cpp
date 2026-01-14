@@ -191,42 +191,8 @@ void CPPBuild::createInstaller()
 void CPPBuild::createPackage()
 {
 	BuildSetup setup = loadBuildSetup();
-
-	std::string binDir = FilePath::combine(workDir, { "Build", "Packages" });
-	Directory::create(binDir);
-
-	for (const BuildPackageInstaller& def : setup.project.packageInstallers)
-	{
-		std::string sourcePath = FilePath::combine(setup.sourcePath, def.subdirectory);
-		std::string packageDir = FilePath::combine(binDir, def.name);
-		Directory::create(packageDir);
-
-		Package package;
-		package.name = def.name;
-		package.defines = def.defines;
-		package.cCompileOptions = def.cCompileOptions;
-		package.cxxCompileOptions = def.cxxCompileOptions;
-		package.linkOptions = def.linkOptions;
-		package.includePaths = def.includePaths;
-		package.linkLibraries = def.linkLibraries;
-		package.libraryPaths = def.libraryPaths;
-		for (const auto& configdef : def.configurations)
-		{
-			PackageConfiguration config;
-			config.defines = configdef.second.defines;
-			config.cCompileOptions = configdef.second.cCompileOptions;
-			config.cxxCompileOptions = configdef.second.cxxCompileOptions;
-			config.linkOptions = configdef.second.linkOptions;
-			config.includePaths = configdef.second.includePaths;
-			config.linkLibraries = configdef.second.linkLibraries;
-			config.libraryPaths = configdef.second.libraryPaths;
-			package.configurations[configdef.first] = std::move(config);
-		}
-
-		File::writeAllText(FilePath::combine(packageDir, "package.json"), package.toJson().to_json());
-
-		// To do: copy artifacts
-	}
+	PackageManager packages(workDir);
+	packages.createPackage(setup);
 }
 
 BuildSetup CPPBuild::loadBuildSetup()

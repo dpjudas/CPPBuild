@@ -132,11 +132,23 @@ BuildPackageInstallerConfiguration BuildPackageInstallerConfiguration::fromJson(
 
 /////////////////////////////////////////////////////////////////////////////
 
+BuildPackageFile BuildPackageFile::fromJson(const JsonValue& json)
+{
+	BuildPackageFile file;
+	file.src = json["src"].to_string();
+	file.dest = json["dest"].to_string();
+	return file;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 BuildPackageInstaller BuildPackageInstaller::fromJson(const JsonValue& json)
 {
 	BuildPackageInstaller package;
 	package.subdirectory = json["subdirectory"].to_string();
 	package.name = json["name"].to_string();
+	for (const JsonValue& item : json["files"].items())
+		package.files.push_back(BuildPackageFile::fromJson(item));
 	for (const JsonValue& item : json["defines"].items())
 		package.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())

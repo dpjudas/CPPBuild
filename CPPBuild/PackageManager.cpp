@@ -6,7 +6,9 @@
 #include "IOData/File.h"
 #include "IOData/FilePath.h"
 #include "IOData/Directory.h"
+#include "IOData/MemoryDevice.h"
 #include "Zip/ZipReader.h"
+#include "Zip/ZipWriter.h"
 #include "BuildSetup.h"
 #include <unordered_set>
 
@@ -86,5 +88,54 @@ void PackageManager::download(const HttpUri& url, const std::string& filename)
 	else
 	{
 		throw std::runtime_error("Could not download " + url.toString() + ": " + response.statusText);
+	}
+}
+
+void PackageManager::createPackage(const BuildSetup& setup)
+{
+	Directory::create(packagesDir);
+
+	for (const BuildPackageInstaller& def : setup.project.packageInstallers)
+	{
+		std::string sourcePath = FilePath::combine(setup.sourcePath, def.subdirectory);
+		std::string packageFilename = FilePath::combine(packagesDir, def.name) + ".zip";
+
+		auto memdevice = MemoryDevice::create();
+		auto zip = ZipWriter::create(memdevice);
+
+		Package package;
+		package.name = def.name;
+		package.defines = def.defines;
+		package.cCompileOptions = def.cCompileOptions;
+		package.cxxCompileOptions = def.cxxCompileOptions;
+		package.linkOptions = def.linkOptions;
+		package.includePaths = def.includePaths;
+		package.linkLibraries = def.linkLibraries;
+		package.libraryPaths = def.libraryPaths;
+		for (const auto& configdef : def.configurations)
+		{
+			PackageConfiguration config;
+			config.defines = configdef.second.defines;
+			config.cCompileOptions = configdef.second.cCompileOptions;
+			config.cxxCompileOptions = configdef.second.cxxCompileOptions;
+			config.linkOptions = configdef.second.linkOptions;
+			config.includePaths = configdef.second.includePaths;
+			config.linkLibraries = configdef.second.linkLibraries;
+			config.libraryPaths = configdef.second.libraryPaths;
+			package.configurations[configdef.first] = std::move(config);
+		}
+
+		std::string packageJson = package.toJson().to_json();
+		zip->addFile("package.json", true, packageJson.data(), packageJson.size());
+
+		for (const auto& file : def.files)
+		{
+			std::shared_ptr<DataBuffer> data = File::readAllBytes(FilePath::combine(sourcePath, file.src));
+			zip->addFile(file.dest, true, data->data(), data->size());
+		}
+
+		zip->writeToc();
+		zip.reset();
+		File::writeAllBytes(FilePath::combine(packagesDir, packageFilename), memdevice->buffer());
 	}
 }

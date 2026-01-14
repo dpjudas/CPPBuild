@@ -131,11 +131,21 @@ public:
 	static BuildPackageInstallerConfiguration fromJson(const JsonValue& json);
 };
 
+class BuildPackageFile
+{
+public:
+	std::string src;
+	std::string dest;
+
+	static BuildPackageFile fromJson(const JsonValue& json);
+};
+
 class BuildPackageInstaller
 {
 public:
 	std::string subdirectory;
 	std::string name;
+	std::vector<BuildPackageFile> files;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;
 	std::vector<std::string> cxxCompileOptions;

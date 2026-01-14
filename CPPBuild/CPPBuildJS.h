@@ -715,6 +715,7 @@ class PackageInstaller
 	constructor(subdirectory, name) {
 		this.subdirectory = subdirectory;
 		this.name = name;
+		this.files = [];
 		this.defines = [];
 		this.cCompileOptions = [];
 		this.cxxCompileOptions = [];
@@ -738,6 +739,18 @@ class PackageInstaller
 			};
 		}
 		return this.configurations[name];
+	}
+
+	addFiles(files) {
+		var self = this;
+		files.forEach(function(file) {
+			if (isObject(file)) {
+				self.files.push({ src: file.src, dest: file.dest });
+			}
+			else {
+				self.files.push({ src: file, dest: file });
+			}
+		});
 	}
 
 	addDefines(defines, options) {
@@ -843,6 +856,7 @@ class PackageInstaller
 		return {
 			subdirectory: this.subdirectory,
 			name: this.name,
+			files: this.files,
 			defines: this.defines,
 			cCompileOptions: this.cCompileOptions,
 			cxxCompileOptions: this.cxxCompileOptions,

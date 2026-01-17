@@ -1,4 +1,4 @@
-# Installer: setMsiProductName() instance method
+# Installer: setMsiProductName() method
 
 **`Installer.setMsiProductName()`** sets the MSI product name.
 

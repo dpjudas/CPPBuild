@@ -1,4 +1,4 @@
-# Installer: setMsiManufacturer() instance method
+# Installer: setMsiManufacturer() method
 
 **`Installer.setMsiManufacturer()`** sets the MSI manufacturer name.
 

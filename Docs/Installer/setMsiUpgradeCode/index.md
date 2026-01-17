@@ -1,4 +1,4 @@
-# Installer: setMsiUpgradeCode() instance method
+# Installer: setMsiUpgradeCode() method
 
 **`Installer.setMsiUpgradeCode()`** sets the MSI upgrade code.
 

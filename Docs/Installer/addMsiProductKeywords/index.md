@@ -1,4 +1,4 @@
-# Installer: addMsiProductKeywords() instance method
+# Installer: addMsiProductKeywords() method
 
 **`Installer.addMsiProductKeywords()`** adds MSI keywords to the installer.
 

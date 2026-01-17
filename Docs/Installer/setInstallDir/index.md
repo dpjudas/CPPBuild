@@ -1,4 +1,4 @@
-# Installer: setInstallDir() instance method
+# Installer: setInstallDir() method
 
 **`Installer.setInstallDir()`** sets the base path for where files will be installed.
 

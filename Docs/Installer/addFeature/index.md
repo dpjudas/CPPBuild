@@ -1,4 +1,4 @@
-# Installer: addFeature() instance method
+# Installer: addFeature() method
 
 **`Installer.addFeature()`** adds a new MSI feature to the installer.
 

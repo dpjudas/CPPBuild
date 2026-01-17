@@ -1,4 +1,4 @@
-# Installer: setMsiProductCode() instance method
+# Installer: setMsiProductCode() method
 
 **`Installer.setMsiProductCode()`** sets the MSI product code.
 

@@ -1,4 +1,4 @@
-# Installer: setMsiProductVersion() instance method
+# Installer: setMsiProductVersion() method
 
 **`Installer.setMsiProductVersion()`** sets the MSI product version.
 

@@ -1,4 +1,4 @@
-# Installer: addComponent() instance method
+# Installer: addComponent() method
 
 **`Installer.addComponent()`** adds a new component to the installer.
 

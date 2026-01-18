@@ -1,6 +1,6 @@
-# PackageInstaller: addLinkOptions() method
+# Target: addLinkOptions() method
 
-**`PackageInstaller.addLinkOptions()`** adds linker options to targets that use the package.
+**`Target.addLinkOptions()`** adds linker options to target.
 
 ## Syntax
 

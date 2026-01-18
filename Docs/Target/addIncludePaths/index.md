@@ -1,6 +1,6 @@
-# PackageInstaller: addIncludePaths() method
+# Target: addIncludePaths() method
 
-**`PackageInstaller.addIncludePaths()`** adds include paths to targets that use the package.
+**`Target.addIncludePaths()`** adds include paths to target.
 
 ## Syntax
 
@@ -20,6 +20,10 @@ addIncludePaths(paths, options)
     An object with additional parameters. See below.
 
 ### Additional parameters
+
+- `files`
+
+    An array of files to apply the include paths to. Applies to all if not specified.
 
 - `configuration`
 

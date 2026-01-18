@@ -1,6 +1,6 @@
-# PackageInstaller: addDefines() method
+# Target: addDefines() method
 
-**`PackageInstaller.addDefines()`** adds defines to targets that use the package.
+**`Target.addDefines()`** adds preprocessor defines.
 
 ## Syntax
 
@@ -20,6 +20,10 @@ addDefines(defines, options)
     An object with additional parameters. See below.
 
 ### Additional parameters
+
+- `files`
+
+    An array of files to apply the defines to. Applies to all if not specified.
 
 - `configuration`
 

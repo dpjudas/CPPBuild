@@ -1,6 +1,6 @@
-# PackageInstaller: addCompileOptions() method
+# Target: addCompileOptions() method
 
-**`PackageInstaller.addCompileOptions()`** adds compile options to targets that use the package.
+**`Target.addCompileOptions()`** adds compile options
 
 ## Syntax
 
@@ -20,6 +20,10 @@ addCompileOptions(compileOptions, opt)
     An object with additional parameters. See below.
 
 ### Additional parameters
+
+- `files`
+
+    An array of files to apply the options to. Applies to all if not specified.
 
 - `configuration`
 

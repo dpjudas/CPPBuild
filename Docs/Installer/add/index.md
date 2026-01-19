@@ -1,11 +1,11 @@
-# Installers: addInstaller() static method
+# Installer: add() static method
 
-**`Installers.addInstaller()`** adds a new MSI installer.
+**`Installer.add()`** adds a new MSI installer.
 
 ## Syntax
 
 ```js
-Installers.addInstaller(name)
+Installer.add(name)
 ```
 
 ### Parameters

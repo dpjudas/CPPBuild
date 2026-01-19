@@ -1,11 +1,11 @@
-# Installers: addPackage() static method
+# PackageInstaller: add() static method
 
-**`Installers.addPackage()`** adds a new package installer.
+**`PackageInstaller.add()`** adds a new package installer.
 
 ## Syntax
 
 ```js
-Installers.addPackage(name)
+PackageInstaller.add(name)
 ```
 
 ### Parameters

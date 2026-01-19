@@ -1,11 +1,11 @@
-# Targets: addConsole() static method
+# Target: addWebsite() static method
 
-**`Targets.addConsole()`** adds a new console target.
+**`Target.addWebsite()`** adds a new website target.
 
 ## Syntax
 
 ```js
-Targets.addConsole(name)
+Target.addWebsite(name)
 ```
 
 ### Parameters

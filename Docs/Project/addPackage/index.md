@@ -1,11 +1,11 @@
-# Packages: add() static method
+# Project: addPackage() static method
 
-**`Packages.add()`** adds a new package to the project.
+**`Project.addPackage()`** adds a new package to the project.
 
 ## Syntax
 
 ```js
-Packages.add(source)
+Project.addPackage(source)
 ```
 
 ### Parameters

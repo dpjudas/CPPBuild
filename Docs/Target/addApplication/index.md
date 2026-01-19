@@ -1,11 +1,11 @@
-# Targets: addWebsite() static method
+# Target: addApplication() static method
 
-**`Targets.addWebsite()`** adds a new website target.
+**`Target.addApplication()`** adds a new application target.
 
 ## Syntax
 
 ```js
-Targets.addWebsite(name)
+Target.addApplication(name)
 ```
 
 ### Parameters

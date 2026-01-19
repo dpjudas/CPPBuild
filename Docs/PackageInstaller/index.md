@@ -2,6 +2,12 @@
 
 The **`PackageInstaller`** interface is used to create packages.
 
+## Static methods
+
+- [`PackageInstaller.add()`](add/index.md)
+
+    Adds a package installer.
+
 ## Instance methods
 
 - [`PackageInstaller.addFiles()`](addFiles/index.md)

@@ -2,6 +2,12 @@
 
 The **`Installer`** interface is used to describe a MSI installer.
 
+## Static methods
+
+- [`Installer.add()`](add/index.md)
+
+    Adds a MSI installer.
+
 ## Instance methods
 
 - [`Installer.setInstallDir()`](setInstallDir/index.md)

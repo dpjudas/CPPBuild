@@ -3,14 +3,69 @@
 static const char* cppbuildJS = R"xxxx(
 
 import { native } from "cppbuild/native";
-export { Project, Packages, Targets, Installers, File, FilePath, Directory, Environment };
+export { Project, Target, PackageInstaller, Installer, File, FilePath, Directory, Environment };
 
 function isObject(x) {
 	return typeof x === 'object' && !Array.isArray(x) && x !== null;
 }
 
+var projectName = "";
+var configList = [];
+var targetList = [];
+var packageList = [];
+var installerList = [];
+var packageInstallerList = [];
+
 class Target
 {
+	static addApplication(name) {
+		var target = new Target(native.subdirectory, "application", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addConsole(name) {
+		var target = new Target(native.subdirectory, "console", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addStaticLibrary(name) {
+		var target = new Target(native.subdirectory, "lib", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addDynamicLibrary(name) {
+		var target = new Target(native.subdirectory, "dll", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addCustom(name) {
+		var target = new Target(native.subdirectory, "custom", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addWebsite(name) {
+		var target = new Target(native.subdirectory, "website", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addWebComponent(name) {
+		var target = new Target(native.subdirectory, "webcomponent", name);
+		targetList.push(target);
+		return target;
+	}
+
+	static addWebLibrary(name) {
+		var target = new Target(native.subdirectory, "weblibrary", name);
+		targetList.push(target);
+		return target;
+	}
+
 	constructor(subdirectory, type, name) {
 		this.subdirectory = subdirectory;
 		this.type = type;
@@ -269,81 +324,6 @@ class Configuration
 	}
 }
 
-var projectName = "";
-var configList = [];
-var targetList = [];
-var packageList = [];
-var installerList = [];
-var packageInstallerList = [];
-
-class Targets
-{
-	static addApplication(name) {
-		var target = new Target(native.subdirectory, "application", name);
-		targetList.push(target);
-		return target;
-	}
-
-	static addConsole(name) {
-		var target = new Target(native.subdirectory, "console", name);
-		targetList.push(target);
-		return target;
-	}
-
-	static addStaticLibrary(name) {
-		var target = new Target(native.subdirectory, "lib", name);
-		targetList.push(target);
-		return target;
-	}
-
-	static addDynamicLibrary(name) {
-		var target = new Target(native.subdirectory, "dll", name);
-		targetList.push(target);
-		return target;
-	}
-
-	static addCustom(name) {
-		var target = new Target(native.subdirectory, "custom", name);
-		targetList.push(target);
-		return target;
-	}
-
-	static addWebsite(name) {
-		var target = new Target(native.subdirectory, "website", name);
-		targetList.push(target);
-		return target;
-	}
-
-	static addWebComponent(name) {
-		var target = new Target(native.subdirectory, "webcomponent", name);
-		targetList.push(target);
-		return target;
-	}
-
-	static addWebLibrary(name) {
-		var target = new Target(native.subdirectory, "weblibrary", name);
-		targetList.push(target);
-		return target;
-	}
-}
-
-class Project
-{
-	static setName(name) {
-		projectName = name;
-	}
-
-	static addConfiguration(name) {
-		var config = new Configuration(name);
-		configList.push(config);
-		return config;
-	}
-
-	static addSubdirectory(path) {
-		native.addSubdirectory(path);
-	}
-}
-
 class File
 {
 	static readAllText(filename) {
@@ -574,6 +554,12 @@ class Environment
 
 class Installer
 {
+	static add(name) {
+		var installer = new Installer(native.subdirectory, name);
+		installerList.push(installer);
+		return installer;
+	}
+
 	constructor(subdirectory, name) {
 		this.subdirectory = subdirectory;
 		this.name = name;
@@ -712,6 +698,12 @@ class InstallerFeature
 
 class PackageInstaller
 {
+	static add(name) {
+		var installer = new PackageInstaller(native.subdirectory, name);
+		packageInstallerList.push(installer);
+		return installer;
+	}
+
 	constructor(subdirectory, name) {
 		this.subdirectory = subdirectory;
 		this.name = name;
@@ -869,21 +861,6 @@ class PackageInstaller
 	}
 }
 
-class Installers
-{
-	static addInstaller(name) {
-		var installer = new Installer(native.subdirectory, name);
-		installerList.push(installer);
-		return installer;
-	}
-
-	static addPackage(name) {
-		var installer = new PackageInstaller(native.subdirectory, name);
-		packageInstallerList.push(installer);
-		return installer;
-	}
-}
-
 class Package
 {
 	constructor(subdirectory, source) {
@@ -899,12 +876,26 @@ class Package
 	}
 }
 
-class Packages
+class Project
 {
-	static add(source) {
+	static setName(name) {
+		projectName = name;
+	}
+
+	static addConfiguration(name) {
+		var config = new Configuration(name);
+		configList.push(config);
+		return config;
+	}
+
+	static addPackage(source) {
 		var pkg = new Package(native.subdirectory, source);
 		packageList.push(pkg);
 		return pkg;
+	}
+
+	static addSubdirectory(path) {
+		native.addSubdirectory(path);
 	}
 }
 

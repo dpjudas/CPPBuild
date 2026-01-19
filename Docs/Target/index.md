@@ -32,6 +32,10 @@ The **`Target`** interface is used to describe targets.
 
     Adds an emscripten static library with CSS resources target.
 
+- [`Target.addCustom()`](addCustom/index.md)
+
+    Adds a custom build target.
+
 ## Instance methods
 
 - [`Target.addFiles()`](addFiles/index.md)

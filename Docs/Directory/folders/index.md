@@ -7,6 +7,7 @@ scans a directory and returns the subdirectories contained within it.
 
 ```js
 Directory.folders(searchPattern)
+Directory.folders(searchPattern, options)
 ```
 
 ### Parameters
@@ -18,6 +19,16 @@ Directory.folders(searchPattern)
     The search pattern consists of a path followed by an asterisk (`*`) as
     the wildcard character. For example `Directory("/foobar/*")` will
     return all subdirectories in the `/foobar` directory.
+
+- `options` - optional
+
+    An object with additional parameters. See below.
+
+### Additional parameters
+
+- `recursive`
+
+    If set to true, recursively scan for matches.
 
 ### Return value
 

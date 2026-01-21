@@ -135,8 +135,16 @@ BuildPackageInstallerConfiguration BuildPackageInstallerConfiguration::fromJson(
 BuildPackageFile BuildPackageFile::fromJson(const JsonValue& json)
 {
 	BuildPackageFile file;
-	file.src = json["src"].to_string();
-	file.dest = json["dest"].to_string();
+	if (json.type() == JsonType::string)
+	{
+		file.src = json.to_string();
+		file.dest = file.src;
+	}
+	else
+	{
+		file.src = json["src"].to_string();
+		file.dest = json["dest"].to_string();
+	}
 	return file;
 }
 

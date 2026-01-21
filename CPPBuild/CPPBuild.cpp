@@ -99,7 +99,7 @@ void CPPBuild::validateConfig(const BuildSetup& setup)
 	if (setup.project.name.empty())
 		throw std::runtime_error("No project name specified");
 
-	if (!setup.project.installers.empty())
+	if (!setup.project.installers.empty() || !setup.project.packageInstallers.empty())
 	{
 		return;
 	}

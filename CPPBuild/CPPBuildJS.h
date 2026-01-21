@@ -439,23 +439,38 @@ class FilePath
 	}
 
 	static combine(path1, path2) {
-		if (path1 == "") {
-			return FilePath.forceSlash(path1);
+		if (Array.isArray(path1)) {
+			return FilePath.combine(...path1);
 		}
-		else if (path2 == "") {
-			return FilePath.forceSlash(path1);
+		else if (arguments.length == 1) {
+			return path1;
 		}
-		else if (path2.startsWith("\\") || path2.startsWith("/")) {
-			return FilePath.forceSlash(path2);
-		}
-		else if (path2.length >= 2 && path2[1] == ':') {
-			return FilePath.forceSlash(path2);
-		}
-		else if (!path2.endsWith("\\") && !path2.endsWith("/")) {
-			return FilePath.forceSlash(path1 + "/" + path2);
+		else if (arguments.length > 2) {
+			var result = path1;
+			for (var i = 1; i < arguments.length; i++) {
+				result = FilePath.combine(result, arguments[i]);
+			}
+			return result;
 		}
 		else {
-			return FilePath.forceSlash(path1 + path2);
+			if (path1 == "") {
+				return FilePath.forceSlash(path1);
+			}
+			else if (path2 == "") {
+				return FilePath.forceSlash(path1);
+			}
+			else if (path2.startsWith("\\") || path2.startsWith("/")) {
+				return FilePath.forceSlash(path2);
+			}
+			else if (path2.length >= 2 && path2[1] == ':') {
+				return FilePath.forceSlash(path2);
+			}
+			else if (!path2.endsWith("\\") && !path2.endsWith("/")) {
+				return FilePath.forceSlash(path1 + "/" + path2);
+			}
+			else {
+				return FilePath.forceSlash(path1 + path2);
+			}
 		}
 	}
 
@@ -470,12 +485,40 @@ class FilePath
 
 class Directory
 {
-	static files(searchpattern) {
-		return native.getFiles(Directory.currentPath(searchpattern));
+	static files(searchpattern, options) {
+		if (isObject(options) && options.recursive === true) {
+			var pattern = FilePath.lastComponent(searchpattern);
+			var basedir = FilePath.removeLastComponent(searchpattern);
+			var files = [];
+			Directory.files(FilePath.combine(basedir, pattern)).forEach(function(filename) {
+				files.push(FilePath.combine(basedir, filename));
+			});
+			Directory.folders(FilePath.combine(basedir, pattern)).forEach(function(foldername) {
+				files = files.concat(Directory.files(FilePath.combine(basedir, foldername, pattern), options));
+			});
+			return files;
+		}
+		else {
+			return native.getFiles(Directory.currentPath(searchpattern));
+		}
 	}
 
-	static folders(searchpattern) {
-		return native.getFolders(Directory.currentPath(searchpattern));
+	static folders(searchpattern, options) {
+		if (isObject(options) && options.recursive === true) {
+			var pattern = FilePath.lastComponent(searchpattern);
+			var basedir = FilePath.removeLastComponent(searchpattern);
+			var files = [];
+			Directory.folders(FilePath.combine(basedir, pattern)).forEach(function(filename) {
+				files.push(FilePath.combine(basedir, filename));
+			});
+			Directory.folders(FilePath.combine(basedir, pattern)).forEach(function(foldername) {
+				files = files.concat(Directory.folders(FilePath.combine(basedir, foldername, pattern), options));
+			});
+			return files;
+		}
+		else {
+			return native.getFolders(Directory.currentPath(searchpattern));
+		}
 	}
 
 	static currentPath(relpath) {
@@ -736,12 +779,7 @@ class PackageInstaller
 	addFiles(files) {
 		var self = this;
 		files.forEach(function(file) {
-			if (isObject(file)) {
-				self.files.push({ src: file.src, dest: file.dest });
-			}
-			else {
-				self.files.push({ src: file, dest: file });
-			}
+			self.files.push(file);
 		});
 	}
 

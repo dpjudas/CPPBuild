@@ -5,7 +5,8 @@ The **`combine()`** static method of the `FilePath` object combines multiple pat
 ## Syntax
 
 ```js
-FilePath.combine(path1, path2)
+FilePath.combine(path1, path2, ...)
+FilePath.combine(paths)
 ```
 
 ### Parameters
@@ -17,6 +18,14 @@ FilePath.combine(path1, path2)
 - `path2`
 
     A string with the second path to combine.
+
+- `paths`
+
+    An array of strings. Each string is a path to combine.
+
+-  `...`
+
+    Each extra parameter is an additional string path to combine.
 
 ### Return value
 

@@ -366,7 +366,7 @@ public:
 	{
 		std::string configurationType = "Application";
 		std::string useDebugLibraries = "false";
-		std::string platformToolset = "v143";
+		std::string platformToolset;
 		std::string characterSet = "Unicode";
 		std::string wholeProgramOptimization = "true";
 		std::string linkIncremental = "false";
@@ -467,6 +467,9 @@ public:
 	void writeProjectFilters(const VSCppProject* project);
 
 private:
+	std::string version;
+	std::string platformToolset;
+
 	static std::string toLowerCase(std::string text);
 
 	template<typename T>

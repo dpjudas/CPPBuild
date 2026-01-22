@@ -3,6 +3,8 @@
 #include "VSGenerator.h"
 #include "IOData/File.h"
 #include "IOData/FilePath.h"
+#include "Json/JsonValue.h"
+#include "ConsoleProcess.h"
 
 VSSolution::VSSolution(const std::string& name, const std::string& location, const std::string& solutionGuid) : name(name), location(location), solutionGuid(solutionGuid)
 {
@@ -22,9 +24,37 @@ void VSSolution::generate()
 
 void VSGenerator::writeSolution(const VSSolution* solution)
 {
+#ifdef WIN32
+	try
+	{
+		// Microslop at its finest! After over 35 years of devenv development this was the best engineered solution they could come up with!
+		std::string vsinfotxt;
+		ConsoleProcess::runCommand("\"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\"\" -utf8 -format json -latest", [&](const std::string& line) { vsinfotxt += line; vsinfotxt += '\n'; });
+		JsonValue vsinfo = JsonValue::parse(vsinfotxt);
+		if (!vsinfo.is_array() || vsinfo.items().size() == 0)
+			throw std::runtime_error("Visual Studio not found");
+
+		std::string productLineVersion = vsinfo.items().front()["catalog"]["productLineVersion"].to_string();
+		if (productLineVersion.empty())
+			throw std::runtime_error("Could not find catalog.productLineVersion in vswhere's output");
+		version = productLineVersion;
+		if (version == "17")
+			platformToolset = "v143";
+		else
+			platformToolset = "v145"; // is there a way to find this?
+	}
+	catch (...)
+	{
+		throw std::runtime_error("Could not run \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\"");
+	}
+#else
+	version = "18";
+	platformToolset = "v145";
+#endif
+
 	VSLineWriter output;
 	output.writeLine("Microsoft Visual Studio Solution File, Format Version 12.00");
-	output.writeLine("# Visual Studio Version 17");
+	output.writeLine("# Visual Studio Version " + version);
 	if (!solution->visualStudioVersion.empty())
 		output.writeLine("VisualStudioVersion = " + solution->visualStudioVersion);
 	if (!solution->minimumVisualStudioVersion.empty())
@@ -88,7 +118,10 @@ void VSGenerator::writeProject(const VSCppProject* project)
 		output.writeLine("  <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='" + configuration->name + "|" + configuration->platform + "'\" Label=\"Configuration\">");
 		output.writeLine("    <ConfigurationType>" + configuration->general.configurationType + "</ConfigurationType>");
 		output.writeLine("    <UseDebugLibraries>" + configuration->general.useDebugLibraries + "</UseDebugLibraries>");
-		output.writeLine("    <PlatformToolset>" + configuration->general.platformToolset + "</PlatformToolset>");
+		if (configuration->general.platformToolset.empty())
+			output.writeLine("    <PlatformToolset>" + platformToolset + "</PlatformToolset>");
+		else
+			output.writeLine("    <PlatformToolset>" + configuration->general.platformToolset + "</PlatformToolset>");
 		if (configuration->general.configurationType != "Makefile" && configuration->general.configurationType != "Utility")
 		{
 			output.writeLine("    <WholeProgramOptimization>" + configuration->general.wholeProgramOptimization + "</WholeProgramOptimization>");

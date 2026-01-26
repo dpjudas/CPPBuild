@@ -30,6 +30,10 @@ Directory.files(searchPattern, options)
 
     If set to true, recursively scan for matches.
 
+- `includeSearchPath`
+
+    If set to true, includes the searchPattern path in the results. Defaults to true.
+
 ### Return value
 
 A list of strings. Each string is a filename relative to the path from the

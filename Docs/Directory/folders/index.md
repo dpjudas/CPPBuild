@@ -28,7 +28,11 @@ Directory.folders(searchPattern, options)
 
 - `recursive`
 
-    If set to true, recursively scan for matches.
+    If set to true, recursively scan for matches. Defaults to false.
+
+- `includeSearchPath`
+
+    If set to true, includes the searchPattern path in the results. Defaults to true.
 
 ### Return value
 

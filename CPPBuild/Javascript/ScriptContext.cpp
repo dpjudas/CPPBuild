@@ -87,8 +87,8 @@ ScriptContext::ScriptContext(const std::string& sourcePath, const std::string& b
 #endif
 
 	native.setPropertyStr("createDirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::createDirectory, "createDirectory", 1)));
-	native.setPropertyStr("getFiles", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFiles, "getFiles", 1)));
-	native.setPropertyStr("getFolders", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFolders, "getFolders", 1)));
+	native.setPropertyStr("getFiles", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFiles, "getFiles", 2)));
+	native.setPropertyStr("getFolders", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFolders, "getFolders", 2)));
 	native.setPropertyStr("readAllText", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::readAllText, "readAllText", 1)));
 	native.setPropertyStr("readAllBytes", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::readAllBytes, "readAllBytes", 1)));
 	native.setPropertyStr("writeAllText", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::writeAllText, "writeAllText", 2)));
@@ -194,19 +194,38 @@ JSValue ScriptContext::createDirectory(JSContext* ctx, JSValueConst this_val, in
 	}
 }
 
+static void scanFiles(JSContext* ctx, std::vector<JSValue>& result, const std::string& searchDir, const std::string& searchPattern, const std::string& basePath, bool recursive)
+{
+	std::string s = FilePath::combine(searchDir, searchPattern);
+	for (const std::string& filename : Directory::files(s))
+	{
+		result.push_back(JS_NewString(ctx, FilePath::combine(basePath, filename).c_str()));
+	}
+	if (recursive)
+	{
+		for (const std::string& foldername : Directory::folders(s))
+		{
+			scanFiles(ctx, result, FilePath::combine(searchDir, foldername), searchPattern, FilePath::combine(basePath, foldername), true);
+		}
+	}
+}
+
 JSValue ScriptContext::getFiles(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-	if (argc < 1 || !JS_IsString(argv[0]))
+	if (argc < 2 || !JS_IsString(argv[0]) || !JS_IsBool(argv[1]))
 		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to Directory.files"));
 
 	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptValueConst arg1(ctx, argv[1]);
 	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
 
 	try
 	{
+		std::string searchPattern = arg0.toString();
+		bool recursive = arg1.toBool();
+
 		std::vector<JSValue> files;
-		for (const std::string& filename : Directory::files(arg0.toString()))
-			files.push_back(JS_NewString(ctx, filename.c_str()));
+		scanFiles(ctx, files, FilePath::removeLastComponent(searchPattern), FilePath::lastComponent(searchPattern), std::string(), recursive);
 		return JS_NewArrayFrom(ctx, (int)files.size(), files.data());
 	}
 	catch (const std::exception& e)
@@ -215,19 +234,33 @@ JSValue ScriptContext::getFiles(JSContext* ctx, JSValueConst this_val, int argc,
 	}
 }
 
+static void scanFolders(JSContext* ctx, std::vector<JSValue>& result, const std::string& searchDir, const std::string& searchPattern, const std::string& basePath, bool recursive)
+{
+	for (const std::string& foldername : Directory::folders(FilePath::combine(searchDir, searchPattern)))
+	{
+		std::string s = FilePath::combine(basePath, foldername);
+		result.push_back(JS_NewString(ctx, s.c_str()));
+		if (recursive)
+			scanFolders(ctx, result, FilePath::combine(searchDir, foldername), searchPattern, s, true);
+	}
+}
+
 JSValue ScriptContext::getFolders(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
 {
-	if (argc < 1 || !JS_IsString(argv[0]))
-		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to Directory.folders"));
+	if (argc < 2 || !JS_IsString(argv[0]) || !JS_IsBool(argv[1]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to Directory.files"));
 
 	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptValueConst arg1(ctx, argv[1]);
 	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
 
 	try
 	{
+		std::string searchPattern = arg0.toString();
+		bool recursive = arg1.toBool();
+
 		std::vector<JSValue> folders;
-		for (const std::string& filename : Directory::folders(arg0.toString()))
-			folders.push_back(JS_NewString(ctx, filename.c_str()));
+		scanFolders(ctx, folders, FilePath::removeLastComponent(searchPattern), FilePath::lastComponent(searchPattern), std::string(), recursive);
 		return JS_NewArrayFrom(ctx, (int)folders.size(), folders.data());
 	}
 	catch (const std::exception& e)

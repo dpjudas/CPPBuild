@@ -205,6 +205,14 @@ public:
 		return str;
 	}
 
+	bool toBool() const
+	{
+		int val = JS_ToBool(context, value);
+		if (val == -1)
+			throw std::runtime_error("ScriptValueConst is an exception");
+		return val == 1;
+	}
+
 	std::shared_ptr<DataBuffer> toBuffer() const
 	{
 		size_t size = 0;

@@ -483,41 +483,38 @@ class FilePath
 	}
 }
 
+function scanFiles(output, searchDir, searchPattern, basePath, recursive) {
+	native.getFiles(FilePath.combine(searchDir, searchPattern)).forEach(function(filename) {
+		output.push(FilePath.combine(basePath, filename));
+	}
+	if (recursive) {
+		scanFolders(output, searchDir, searchPattern
+	}
+}
+
 class Directory
 {
 	static files(searchpattern, options) {
-		if (isObject(options) && options.recursive === true) {
-			var pattern = FilePath.lastComponent(searchpattern);
+		var recursive = isObject(options) && options.recursive === true;
+		var includeSearchPath = !isObject(options) || options.includeSearchPath === false;
+		if (includeSearchPath) {
 			var basedir = FilePath.removeLastComponent(searchpattern);
-			var files = [];
-			Directory.files(FilePath.combine(basedir, pattern)).forEach(function(filename) {
-				files.push(FilePath.combine(basedir, filename));
-			});
-			Directory.folders(FilePath.combine(basedir, pattern)).forEach(function(foldername) {
-				files = files.concat(Directory.files(FilePath.combine(basedir, foldername, pattern), options));
-			});
-			return files;
+			return native.getFiles(Directory.currentPath(searchpattern), recursive).map(function(name) { return FilePath.combine(basedir, name); });
 		}
 		else {
-			return native.getFiles(Directory.currentPath(searchpattern));
+			return native.getFiles(Directory.currentPath(searchpattern), recursive);
 		}
 	}
 
 	static folders(searchpattern, options) {
-		if (isObject(options) && options.recursive === true) {
-			var pattern = FilePath.lastComponent(searchpattern);
+		var recursive = isObject(options) && options.recursive === true;
+		var includeSearchPath = !isObject(options) || options.includeSearchPath === false;
+		if (includeSearchPath) {
 			var basedir = FilePath.removeLastComponent(searchpattern);
-			var files = [];
-			Directory.folders(FilePath.combine(basedir, pattern)).forEach(function(filename) {
-				files.push(FilePath.combine(basedir, filename));
-			});
-			Directory.folders(FilePath.combine(basedir, pattern)).forEach(function(foldername) {
-				files = files.concat(Directory.folders(FilePath.combine(basedir, foldername, pattern), options));
-			});
-			return files;
+			return native.getFolders(Directory.currentPath(searchpattern), recursive).map(function(name) { return FilePath.combine(basedir, name); });
 		}
 		else {
-			return native.getFolders(Directory.currentPath(searchpattern));
+			return native.getFolders(Directory.currentPath(searchpattern), recursive);
 		}
 	}
 

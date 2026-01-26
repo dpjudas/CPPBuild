@@ -483,15 +483,6 @@ class FilePath
 	}
 }
 
-function scanFiles(output, searchDir, searchPattern, basePath, recursive) {
-	native.getFiles(FilePath.combine(searchDir, searchPattern)).forEach(function(filename) {
-		output.push(FilePath.combine(basePath, filename));
-	}
-	if (recursive) {
-		scanFolders(output, searchDir, searchPattern
-	}
-}
-
 class Directory
 {
 	static files(searchpattern, options) {

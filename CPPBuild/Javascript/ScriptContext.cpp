@@ -203,7 +203,7 @@ static void scanFiles(JSContext* ctx, std::vector<JSValue>& result, const std::s
 	}
 	if (recursive)
 	{
-		for (const std::string& foldername : Directory::folders(s))
+		for (const std::string& foldername : Directory::folders(FilePath::combine(searchDir, "*")))
 		{
 			scanFiles(ctx, result, FilePath::combine(searchDir, foldername), searchPattern, FilePath::combine(basePath, foldername), true);
 		}
@@ -242,6 +242,13 @@ static void scanFolders(JSContext* ctx, std::vector<JSValue>& result, const std:
 		result.push_back(JS_NewString(ctx, s.c_str()));
 		if (recursive)
 			scanFolders(ctx, result, FilePath::combine(searchDir, foldername), searchPattern, s, true);
+	}
+	if (recursive)
+	{
+		for (const std::string& foldername : Directory::folders(FilePath::combine(searchDir, "*")))
+		{
+			scanFolders(ctx, result, FilePath::combine(searchDir, foldername), searchPattern, FilePath::combine(basePath, foldername), true);
+		}
 	}
 }
 

@@ -487,7 +487,7 @@ class Directory
 {
 	static files(searchpattern, options) {
 		var recursive = isObject(options) && options.recursive === true;
-		var includeSearchPath = !isObject(options) || options.includeSearchPath === false;
+		var includeSearchPath = !isObject(options) || options.includeSearchPath !== false;
 		if (includeSearchPath) {
 			var basedir = FilePath.removeLastComponent(searchpattern);
 			return native.getFiles(Directory.currentPath(searchpattern), recursive).map(function(name) { return FilePath.combine(basedir, name); });
@@ -499,7 +499,7 @@ class Directory
 
 	static folders(searchpattern, options) {
 		var recursive = isObject(options) && options.recursive === true;
-		var includeSearchPath = !isObject(options) || options.includeSearchPath === false;
+		var includeSearchPath = !isObject(options) || options.includeSearchPath !== false;
 		if (includeSearchPath) {
 			var basedir = FilePath.removeLastComponent(searchpattern);
 			return native.getFolders(Directory.currentPath(searchpattern), recursive).map(function(name) { return FilePath.combine(basedir, name); });

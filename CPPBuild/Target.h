@@ -54,15 +54,15 @@ public:
 
 	std::string buildCommand, cleanCommand;
 
-	void build();
+	int build();
 	void clean();
-	void rebuild();
+	int rebuild();
 
 private:
 	void compileThreadMain(int threadIndex, int numThreads);
 	void loadTarget(BuildSetup& setup, PackageManager* packages);
 	bool isCppFile(const std::string& filename);
-	void compile();
+	bool compile();
 	void link();
 	void linkCSS();
 	void package();

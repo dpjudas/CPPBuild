@@ -40,8 +40,7 @@ int main(int argc, char** argv)
 		}
 		else if (args.size() == 4 && args[1] == "build")
 		{
-			app.build(args[2], args[3]);
-			return 0;
+			return app.build(args[2], args[3]);
 		}
 		else if (args.size() == 4 && args[1] == "clean")
 		{
@@ -50,8 +49,7 @@ int main(int argc, char** argv)
 		}
 		else if (args.size() == 4 && args[1] == "rebuild")
 		{
-			app.rebuild(args[2], args[3]);
-			return 0;
+			return app.rebuild(args[2], args[3]);
 		}
 		else if (args.size() == 2 && args[1] == "create-installer")
 		{

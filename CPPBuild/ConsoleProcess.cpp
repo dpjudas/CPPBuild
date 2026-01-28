@@ -36,27 +36,13 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 		throw std::runtime_error("Could not create stdout pipe");
 	}
 
-	HANDLE stderrRead = INVALID_HANDLE_VALUE, stderrWrite = INVALID_HANDLE_VALUE;
-	result = CreatePipe(&stderrRead, &stderrWrite, &inheritAttr, 0);
-	if (result == FALSE)
-	{
-		CloseHandle(stdinRead);
-		CloseHandle(stdinWrite);
-		CloseHandle(stdoutRead);
-		CloseHandle(stdoutWrite);
-		throw std::runtime_error("Could not create stderr pipe");
-	}
-
 	if (SetHandleInformation(stdinWrite, HANDLE_FLAG_INHERIT, 0) == FALSE ||
-		SetHandleInformation(stdoutRead, HANDLE_FLAG_INHERIT, 0) == FALSE ||
-		SetHandleInformation(stderrRead, HANDLE_FLAG_INHERIT, 0) == FALSE)
+		SetHandleInformation(stdoutRead, HANDLE_FLAG_INHERIT, 0) == FALSE)
 	{
 		CloseHandle(stdinRead);
 		CloseHandle(stdinWrite);
 		CloseHandle(stdoutRead);
 		CloseHandle(stdoutWrite);
-		CloseHandle(stderrRead);
-		CloseHandle(stderrWrite);
 		throw std::runtime_error("SetHandleInformation failed");
 	}
 
@@ -65,18 +51,16 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 	startupInfo.dwFlags = STARTF_FORCEOFFFEEDBACK | STARTF_USESTDHANDLES;
 	startupInfo.hStdInput = stdinRead;
 	startupInfo.hStdOutput = stdoutWrite;
-	startupInfo.hStdError = stderrWrite;
+	startupInfo.hStdError = stdoutWrite;
 	PROCESS_INFORMATION processInfo = {};
 	result = CreateProcess(nullptr, cmd.data(), nullptr, nullptr, TRUE, CREATE_NO_WINDOW, nullptr, nullptr, &startupInfo, &processInfo);
 
 	CloseHandle(stdinRead);
 	CloseHandle(stdoutWrite);
-	CloseHandle(stderrWrite);
 	if (result == FALSE)
 	{
 		CloseHandle(stdinWrite);
 		CloseHandle(stdoutRead);
-		CloseHandle(stderrRead);
 		throw std::runtime_error("Could not create process");
 	}
 
@@ -115,37 +99,12 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 		printLine(line);
 	line.clear();
 
-	// Read stderr
-	while (true)
-	{
-		DWORD bytesRead = 0;
-		result = ReadFile(stderrRead, buffer.data(), (DWORD)buffer.size(), &bytesRead, nullptr);
-		if (result == FALSE || bytesRead == 0)
-			break;
-		for (DWORD i = 0; i < bytesRead; i++)
-		{
-			if (buffer[i] == '\n')
-			{
-				printLine(line);
-				line.clear();
-			}
-			else if (buffer[i] != '\r')
-			{
-				line.push_back(buffer[i]);
-			}
-		}
-	}
-	if (!line.empty())
-		printLine(line);
-	line.clear();
-
 	WaitForSingleObject(processInfo.hProcess, INFINITE);
 
 	DWORD exitCode = 255;
 	GetExitCodeProcess(processInfo.hProcess, &exitCode);
 
 	CloseHandle(stdoutRead);
-	CloseHandle(stderrRead);
 	CloseHandle(processInfo.hThread);
 	CloseHandle(processInfo.hProcess);
 
@@ -212,23 +171,12 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 	if (result < 0)
 		throw std::runtime_error("pipe failed");
 
-	int stderrfd[2] = {};
-	result = pipe(stderrfd);
-	if (result < 0)
-	{
-		close(stdoutfd[0]);
-		close(stdoutfd[1]);
-		throw std::runtime_error("pipe failed");
-	}
-
 	int stdinfd[2] = {};
 	result = pipe(stdinfd);
 	if (result < 0)
 	{
 		close(stdoutfd[0]);
 		close(stdoutfd[1]);
-		close(stderrfd[0]);
-		close(stderrfd[1]);
 		throw std::runtime_error("pipe failed");
 	}
 
@@ -237,8 +185,6 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 	{
 		close(stdoutfd[0]);
 		close(stdoutfd[1]);
-		close(stderrfd[0]);
-		close(stderrfd[1]);
 		close(stdinfd[0]);
 		close(stdinfd[1]);
 		throw std::runtime_error("fork failed");
@@ -249,10 +195,9 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 		// Child process
 		close(stdinfd[1]);
 		close(stdoutfd[0]);
-		close(stderrfd[0]);
 		dup2(stdinfd[0], 0);
 		dup2(stdoutfd[1], 1);
-		dup2(stderrfd[1], 2);
+		dup2(stdoutfd[1], 2);
 		execvp(argv[0], const_cast<char**>(argv.data()));
 		_exit(EXIT_FAILURE);
 		return 0;
@@ -262,7 +207,6 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 		// Parent process
 		close(stdinfd[0]);
 		close(stdoutfd[1]);
-		close(stderrfd[1]);
 
 		lock.unlock(); // Is this enough on Linux? The other handles are still copied to forks...
 
@@ -294,30 +238,7 @@ int ConsoleProcess::runCommand(const std::string& commandline, const std::functi
 			printLine(line);
 		line.clear();
 
-		while (true)
-		{
-			int bytesRead = read(stderrfd[0], buffer.data(), (int)buffer.size());
-			if (bytesRead <= 0)
-				break;
-			for (int i = 0; i < bytesRead; i++)
-			{
-				if (buffer[i] == '\n')
-				{
-					printLine(line);
-					line.clear();
-				}
-				else
-				{
-					line.push_back(buffer[i]);
-				}
-			}
-		}
-		if (!line.empty())
-			printLine(line);
-		line.clear();
-
 		close(stdoutfd[0]);
-		close(stderrfd[0]);
 
 		int wstatus = 0;
 		result = waitpid(cpid, &wstatus, 0);

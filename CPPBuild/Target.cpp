@@ -19,18 +19,21 @@ Target::Target(BuildSetup& setup, PackageManager* packages, const std::string& w
 	loadTarget(setup, packages);
 }
 
-void Target::build()
+int Target::build()
 {
 	if (targetType == TargetType::custom)
 	{
 		runCommand(buildCommand, "Could not run build command");
-		return;
+		return 0;
 	}
 
-	compile();
+	if (!compile())
+		return 255;
 	link();
 	linkCSS();
 	package();
+
+	return 0;
 }
 
 void Target::clean()
@@ -75,13 +78,13 @@ void Target::clean()
 	}
 }
 
-void Target::rebuild()
+int Target::rebuild()
 {
 	clean();
-	build();
+	return build();
 }
 
-void Target::compile()
+bool Target::compile()
 {
 	std::vector<std::future<void>> results;
 
@@ -95,8 +98,7 @@ void Target::compile()
 		result.get();
 
 	std::unique_lock lock(mutex);
-	if (compileFailed)
-		throw std::runtime_error("Compile failed");
+	return !compileFailed;
 }
 
 void Target::compileThreadMain(int threadIndex, int numThreads)

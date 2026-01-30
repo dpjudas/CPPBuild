@@ -28,7 +28,7 @@ int Target::build()
 	}
 
 	if (!compile())
-		return 255;
+		return 2;
 	link();
 	linkCSS();
 	package();

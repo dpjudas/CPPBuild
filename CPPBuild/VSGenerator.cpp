@@ -38,7 +38,7 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 		if (productLineVersion.empty())
 			throw std::runtime_error("Could not find catalog.productLineVersion in vswhere's output");
 		version = productLineVersion;
-		if (version == "17")
+		if (version == "17" || version == "2022")
 			platformToolset = "v143";
 		else
 			platformToolset = "v145"; // is there a way to find this?

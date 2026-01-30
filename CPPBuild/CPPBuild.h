@@ -14,8 +14,8 @@ public:
 
 	void configure(std::string sourcePath);
 	void checkMakefile();
-	void build(std::string target, std::string configuration);
-	void rebuild(std::string target, std::string configuration);
+	int build(std::string target, std::string configuration);
+	int rebuild(std::string target, std::string configuration);
 	void clean(std::string target, std::string configuration);
 	void createInstaller();
 	void createPackage();

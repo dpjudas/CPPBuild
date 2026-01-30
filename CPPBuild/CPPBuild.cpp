@@ -143,15 +143,18 @@ void CPPBuild::generateWorkspace()
 #endif
 }
 
-void CPPBuild::build(std::string targetName, std::string configuration)
+int CPPBuild::build(std::string targetName, std::string configuration)
 {
 	BuildSetup setup = loadBuildSetup();
 	PackageManager packages(workDir);
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
 		Target target(setup, &packages, workDir, name, configuration);
-		target.build();
+		int result = target.build();
+		if (result != 0)
+			return result;
 	}
+	return 0;
 }
 
 void CPPBuild::clean(std::string targetName, std::string configuration)
@@ -165,15 +168,18 @@ void CPPBuild::clean(std::string targetName, std::string configuration)
 	}
 }
 
-void CPPBuild::rebuild(std::string targetName, std::string configuration)
+int CPPBuild::rebuild(std::string targetName, std::string configuration)
 {
 	BuildSetup setup = loadBuildSetup();
 	PackageManager packages(workDir);
 	for (std::string name : getBuildOrder(setup, targetName, configuration))
 	{
 		Target target(setup, &packages, workDir, name, configuration);
-		target.rebuild();
+		int result = target.rebuild();
+		if (result != 0)
+			return result;
 	}
+	return 0;
 }
 
 void CPPBuild::createInstaller()

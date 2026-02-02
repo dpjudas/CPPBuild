@@ -15,6 +15,7 @@
 #include <future>
 #include <algorithm>
 #include <optional>
+#include <unordered_set>
 
 Target::Target(BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
 {
@@ -24,6 +25,8 @@ Target::Target(BuildSetup& setup, PackageManager* packages, const std::string& w
 int Target::postBuild()
 {
 	auto lock = ProcessMutex::lock(); // Make sure only one CPPBuild process is doing this at a time
+
+	std::unordered_set<std::string> createdDirs;
 
 	for (auto& it : copyFiles)
 	{
@@ -49,6 +52,11 @@ int Target::postBuild()
 		if (src.has_value())
 		{
 			std::string destFile = FilePath::combine(binDir, it.first);
+
+			std::string destDir = FilePath::removeLastComponent(destFile);
+			if (createdDirs.insert(destDir).second)
+				Directory::create(destDir);
+
 			File::writeAllBytes(destFile, File::readAllBytes(src.value()));
 		}
 	}

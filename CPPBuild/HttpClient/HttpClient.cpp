@@ -2,6 +2,7 @@
 #include "Precomp.h"
 #include "HttpClient.h"
 #include "HttpConnection.h"
+#include <regex>
 
 HttpUri::HttpUri(const std::string& uri)
 {
@@ -224,17 +225,28 @@ HttpResponse HttpClient::send(const HttpRequest& request)
 
 	// Read the response header
 	std::string statusline = connection->readLine();
-	size_t pos = statusline.find(' ');
-	if (pos == std::string::npos) pos = statusline.length();
-	response.statusCode = std::atoi(statusline.substr(0, pos).c_str());
-	if (pos != statusline.length())
-		response.statusText = statusline.substr(pos + 1);
+
+	try
+	{
+		std::regex status_regex(R"(^(HTTP/[\d.]+)\s+(\d{3})\s+(.+)$)", std::regex::icase);
+		std::smatch matches;
+		if (std::regex_match(statusline, matches, status_regex) && matches.size() == 4)
+		{
+			// std::string version = matches[1];
+			response.statusCode = std::atoi(matches[2].str().c_str());
+			response.statusText = matches[3];
+		}
+	}
+	catch (...)
+	{
+	}
+
 	while (true)
 	{
 		std::string line = connection->readLine();
 		if (line.empty())
 			break;
-		pos = line.find(':');
+		size_t pos = line.find(':');
 		if (pos != std::string::npos)
 		{
 			std::string name = line.substr(0, pos);

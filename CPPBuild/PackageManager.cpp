@@ -12,6 +12,7 @@
 #include "BuildSetup.h"
 #include <unordered_set>
 #include <iostream>
+#include <format>
 
 PackageManager::PackageManager(const std::string& workDir) : workDir(workDir)
 {
@@ -98,7 +99,7 @@ void PackageManager::download(const HttpUri& url, const std::string& filename)
 	}
 	else
 	{
-		throw std::runtime_error("Could not download " + url.toString() + ": " + response.statusText);
+		throw std::runtime_error(std::format("Could not download {}: {} ({})", url.toString(), response.statusText, response.statusCode));
 	}
 }
 

@@ -190,6 +190,7 @@
     </ClCompile>
     <ClCompile Include="PackageManager.cpp" />
     <ClCompile Include="Package.cpp" />
+    <ClCompile Include="ProcessMutex.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CPPBuild.h" />
@@ -399,6 +400,7 @@
     </ClInclude>
     <ClInclude Include="PackageManager.h" />
     <ClInclude Include="Package.h" />
+    <ClInclude Include="ProcessMutex.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">

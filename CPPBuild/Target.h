@@ -54,6 +54,8 @@ public:
 
 	std::string buildCommand, cleanCommand;
 
+	std::map<std::string, std::vector<std::string>> copyFiles;
+
 	int build();
 	void clean();
 	int rebuild();

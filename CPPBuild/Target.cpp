@@ -5,6 +5,7 @@
 #include "BuildSetup.h"
 #include "ConsoleProcess.h"
 #include "PackageManager.h"
+#include "ProcessMutex.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 #include "IOData/Directory.h"
@@ -13,6 +14,7 @@
 #include <iostream>
 #include <future>
 #include <algorithm>
+#include <optional>
 
 Target::Target(BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& target, const std::string& configuration) : workDir(workDir), target(target), configuration(configuration)
 {
@@ -21,6 +23,36 @@ Target::Target(BuildSetup& setup, PackageManager* packages, const std::string& w
 
 int Target::postBuild()
 {
+	auto lock = ProcessMutex::lock(); // Make sure only one CPPBuild process is doing this at a time
+
+	for (auto& it : copyFiles)
+	{
+		std::optional<std::string> src;
+		int64_t srcTime = 0;
+		for (const std::string& srcFile : it.second)
+		{
+			try
+			{
+				int64_t t = File::getLastWriteTime(srcFile);
+				if (!src.has_value() || t > srcTime)
+				{
+					srcTime = t;
+					src = srcFile;
+				}
+			}
+			catch (...)
+			{
+				// Couldn't read the date. File probably doesn't exist. Should we write this as an error?
+			}
+		}
+
+		if (src.has_value())
+		{
+			std::string destFile = FilePath::combine(binDir, it.first);
+			File::writeAllBytes(destFile, File::readAllBytes(src.value()));
+		}
+	}
+
 	return 0;
 }
 
@@ -646,6 +678,9 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		}
 	}
 
+	for (const BuildCopyFile& fileDef : targetDef.copyFiles)
+		copyFiles[fileDef.dest].push_back(FilePath::combine(sourcePath, fileDef.src));
+
 	for (const std::string pkgName : targetDef.packages)
 	{
 		const Package& package = packages->getPackage(pkgName);
@@ -672,6 +707,9 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		for (const std::string& item : package.libraryPaths)
 			libraryPaths.push_back(FilePath::combine(pkgBasePath, item));
 
+		for (const PackageCopyFile& fileDef : package.copyFiles)
+			copyFiles[fileDef.dest].push_back(FilePath::combine(pkgBasePath, fileDef.src));
+
 		auto itPackageConfig = package.configurations.find(configuration);
 		if (itPackageConfig != package.configurations.end())
 		{
@@ -697,6 +735,9 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 
 			for (const std::string& item : packageConfigDef.libraryPaths)
 				libraryPaths.push_back(FilePath::combine(pkgBasePath, item));
+
+			for (const PackageCopyFile& fileDef : packageConfigDef.copyFiles)
+				copyFiles[fileDef.dest].push_back(FilePath::combine(pkgBasePath, fileDef.src));
 		}
 	}
 
@@ -746,6 +787,9 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 
 		for (const std::string& item : targetConfigDef.libraryPaths)
 			libraryPaths.push_back(FilePath::combine(sourcePath, item));
+
+		for (const BuildCopyFile& fileDef : targetConfigDef.copyFiles)
+			copyFiles[fileDef.dest].push_back(FilePath::combine(sourcePath, fileDef.src));
 	}
 
 	bool cLangVersion = isOptionSpecified("--std=", cCompileOptions);

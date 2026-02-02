@@ -37,3 +37,7 @@ The **`PackageInstaller`** interface is used to create packages.
 - [`PackageInstaller.addLibraryPaths()`](addLibraryPaths/index.md)
 
     Adds library paths to targets using the package.
+
+- [`PackageInstaller.addCopyFiles()`](addCopyFiles/index.md)
+
+    Adds files to copy to the output folder when the package is used.

@@ -66,6 +66,10 @@ The **`Target`** interface is used to describe targets.
 
     Add library search paths.
 
+- [`Target.addCopyFiles()`](addCopyFiles/index.md)
+
+    Adds files to copy to the output folder.
+
 - [`Target.addPackages()`](addPackages/index.md)
 
     Add packages to use.

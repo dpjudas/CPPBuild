@@ -117,6 +117,8 @@ void PackageManager::createPackage(const BuildSetup& setup)
 		Package package;
 		package.name = def.name;
 		package.defines = def.defines;
+		for (const auto& src : def.copyFiles)
+			package.copyFiles.push_back(PackageCopyFile{ src.src, src.dest });
 		package.cCompileOptions = def.cCompileOptions;
 		package.cxxCompileOptions = def.cxxCompileOptions;
 		package.linkOptions = def.linkOptions;
@@ -133,6 +135,8 @@ void PackageManager::createPackage(const BuildSetup& setup)
 			config.includePaths = configdef.second.includePaths;
 			config.linkLibraries = configdef.second.linkLibraries;
 			config.libraryPaths = configdef.second.libraryPaths;
+			for (const auto& src : configdef.second.copyFiles)
+				config.copyFiles.push_back(PackageCopyFile{ src.src, src.dest });
 			package.configurations[configdef.first] = std::move(config);
 		}
 

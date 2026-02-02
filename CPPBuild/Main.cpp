@@ -61,12 +61,17 @@ int main(int argc, char** argv)
 			app.createPackage();
 			return 0;
 		}
+		else if (args.size() == 4 && args[1] == "postbuild")
+		{
+			return app.postBuild(args[2], args[3]);
+		}
 		else
 		{
 			std::cout << "cppbuild configure [source path]" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] build <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] clean <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] rebuild <target> <configuration>" << std::endl;
+			std::cout << "cppbuild [-workdir <path>] postbuild <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] create-installer" << std::endl;
 			std::cout << "cppbuild [-workdir <path>] create-package" << std::endl;
 			return 1;

@@ -379,6 +379,12 @@ public:
 		std::vector<std::string> nmakePreprocessorDefinitions;
 		std::vector<std::string> nmakeIncludeSearchPath;
 	} general;
+
+	struct
+	{
+		std::string command;
+		std::string message;
+	} postBuild;
 	
 	VSCompileTask clCompile;
 	VSLinkTask link;

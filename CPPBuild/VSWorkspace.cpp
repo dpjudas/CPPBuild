@@ -480,6 +480,8 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 				projConfig->link.subSystem = "Windows";
 			}
 
+			projConfig->postBuild.command = cppbuildexe + " -workdir $(SolutionDir) postbuild " + projectName + " " + configName;
+
 			if (!configDefines.empty())
 				configDefines.push_back("%(PreprocessorDefinitions)");
 			if (!configIncludes.empty())

@@ -16,6 +16,7 @@ public:
 	void checkMakefile();
 	int build(std::string target, std::string configuration);
 	int rebuild(std::string target, std::string configuration);
+	int postBuild(std::string target, std::string configuration);
 	void clean(std::string target, std::string configuration);
 	void createInstaller();
 	void createPackage();

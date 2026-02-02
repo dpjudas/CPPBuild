@@ -57,6 +57,7 @@ public:
 	int build();
 	void clean();
 	int rebuild();
+	int postBuild();
 
 private:
 	void compileThreadMain(int threadIndex, int numThreads);

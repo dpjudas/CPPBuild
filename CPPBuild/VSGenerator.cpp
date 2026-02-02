@@ -218,6 +218,14 @@ void VSGenerator::writeProject(const VSCppProject* project)
 				output.writeLine("    </Manifest>");
 			}
 		}
+		if (!configuration->postBuild.command.empty())
+		{
+			output.writeLine("    <PostBuildEvent>");
+			output.writeLine("      <Command>" + configuration->postBuild.command + "</Command>");
+			if (!configuration->postBuild.message.empty())
+				output.writeLine("      <Message>" + configuration->postBuild.message + "</Message>");
+			output.writeLine("    </PostBuildEvent>");
+		}
 		output.writeLine("  </ItemDefinitionGroup>");
 	}
 

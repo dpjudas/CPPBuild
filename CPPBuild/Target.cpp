@@ -19,6 +19,11 @@ Target::Target(BuildSetup& setup, PackageManager* packages, const std::string& w
 	loadTarget(setup, packages);
 }
 
+int Target::postBuild()
+{
+	return 0;
+}
+
 int Target::build()
 {
 	if (targetType == TargetType::custom)

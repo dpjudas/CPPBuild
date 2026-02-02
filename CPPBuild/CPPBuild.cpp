@@ -143,6 +143,20 @@ void CPPBuild::generateWorkspace()
 #endif
 }
 
+int CPPBuild::postBuild(std::string targetName, std::string configuration)
+{
+	BuildSetup setup = loadBuildSetup();
+	PackageManager packages(workDir);
+	for (std::string name : getBuildOrder(setup, targetName, configuration))
+	{
+		Target target(setup, &packages, workDir, name, configuration);
+		int result = target.postBuild();
+		if (result != 0)
+			return result;
+	}
+	return 0;
+}
+
 int CPPBuild::build(std::string targetName, std::string configuration)
 {
 	BuildSetup setup = loadBuildSetup();

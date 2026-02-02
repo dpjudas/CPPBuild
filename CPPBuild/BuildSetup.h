@@ -10,9 +10,19 @@ public:
 	static BuildConfiguration fromJson(const JsonValue& json);
 };
 
+class BuildCopyFile
+{
+public:
+	std::string src;
+	std::string dest;
+
+	static BuildCopyFile fromJson(const JsonValue& json);
+};
+
 class BuildTargetConfiguration
 {
 public:
+	std::vector<BuildCopyFile> copyFiles;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;
 	std::vector<std::string> cxxCompileOptions;
@@ -57,6 +67,7 @@ public:
 	std::string subdirectory;
 	std::string type;
 	std::string name;
+	std::vector<BuildCopyFile> copyFiles;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;
 	std::vector<std::string> cxxCompileOptions;
@@ -120,6 +131,7 @@ public:
 class BuildPackageInstallerConfiguration
 {
 public:
+	std::vector<BuildCopyFile> copyFiles;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;
 	std::vector<std::string> cxxCompileOptions;
@@ -131,21 +143,13 @@ public:
 	static BuildPackageInstallerConfiguration fromJson(const JsonValue& json);
 };
 
-class BuildPackageFile
-{
-public:
-	std::string src;
-	std::string dest;
-
-	static BuildPackageFile fromJson(const JsonValue& json);
-};
-
 class BuildPackageInstaller
 {
 public:
 	std::string subdirectory;
 	std::string name;
-	std::vector<BuildPackageFile> files;
+	std::vector<BuildCopyFile> files;
+	std::vector<BuildCopyFile> copyFiles;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;
 	std::vector<std::string> cxxCompileOptions;

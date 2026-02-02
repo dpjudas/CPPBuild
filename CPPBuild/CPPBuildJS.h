@@ -70,6 +70,7 @@ class Target
 		this.subdirectory = subdirectory;
 		this.type = type;
 		this.name = name;
+		this.copyFiles = [];
 		this.defines = [];
 		this.cCompileOptions = [];
 		this.cxxCompileOptions = [];
@@ -93,6 +94,7 @@ class Target
 	getConfiguration(name) {
 		if (this.configurations[name] === undefined) {
 			this.configurations[name] = {
+				copyFiles: [],
 				defines: [],
 				cCompileOptions: [],
 				cxxCompileOptions: [],
@@ -129,6 +131,20 @@ class Target
 			cmd.configName = desc.configuration;
 		}
 		this.customCommands.push(cmd);
+	}
+
+	addCopyFiles(files) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			files.forEach(function(file) {
+				config.copyFiles.push(file);
+			});
+		}
+		else {
+			files.forEach(function(file) {
+				self.copyFiles.push(file);
+			});
+		}
 	}
 
 	addDefines(defines, options) {
@@ -291,6 +307,7 @@ class Target
 			subdirectory: this.subdirectory,
 			type: this.type,
 			name: this.name,
+			copyFiles: this.copyFiles,
 			defines: this.defines,
 			cCompileOptions: this.cCompileOptions,
 			cxxCompileOptions: this.cxxCompileOptions,
@@ -739,6 +756,7 @@ class PackageInstaller
 		this.subdirectory = subdirectory;
 		this.name = name;
 		this.files = [];
+		this.copyFiles = [];
 		this.defines = [];
 		this.cCompileOptions = [];
 		this.cxxCompileOptions = [];
@@ -752,6 +770,7 @@ class PackageInstaller
 	getConfiguration(name) {
 		if (this.configurations[name] === undefined) {
 			this.configurations[name] = {
+				copyFiles: [],
 				defines: [],
 				cCompileOptions: [],
 				cxxCompileOptions: [],
@@ -769,6 +788,20 @@ class PackageInstaller
 		files.forEach(function(file) {
 			self.files.push(file);
 		});
+	}
+
+	addCopyFiles(files) {
+		if (isObject(options) && options.configuration !== undefined) {
+			var config = this.getConfiguration(options.configuration);
+			files.forEach(function(file) {
+				config.copyFiles.push(file);
+			});
+		}
+		else {
+			files.forEach(function(file) {
+				self.copyFiles.push(file);
+			});
+		}
 	}
 
 	addDefines(defines, options) {
@@ -875,6 +908,7 @@ class PackageInstaller
 			subdirectory: this.subdirectory,
 			name: this.name,
 			files: this.files,
+			copyFiles: this.copyFiles,
 			defines: this.defines,
 			cCompileOptions: this.cCompileOptions,
 			cxxCompileOptions: this.cxxCompileOptions,

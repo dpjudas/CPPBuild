@@ -2,9 +2,20 @@
 
 #include "Json/JsonValue.h"
 
+class PackageCopyFile
+{
+public:
+	std::string src;
+	std::string dest;
+
+	static PackageCopyFile fromJson(const JsonValue& json);
+	JsonValue toJson() const;
+};
+
 class PackageConfiguration
 {
 public:
+	std::vector<PackageCopyFile> copyFiles;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;
 	std::vector<std::string> cxxCompileOptions;
@@ -21,6 +32,7 @@ class Package
 {
 public:
 	std::string name;
+	std::vector<PackageCopyFile> copyFiles;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;
 	std::vector<std::string> cxxCompileOptions;

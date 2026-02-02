@@ -14,6 +14,8 @@ BuildConfiguration BuildConfiguration::fromJson(const JsonValue& json)
 BuildTargetConfiguration BuildTargetConfiguration::fromJson(const JsonValue& json)
 {
 	BuildTargetConfiguration config;
+	for (const JsonValue& item : json["copyFiles"].items())
+		config.copyFiles.push_back(BuildCopyFile::fromJson(item));
 	for (const JsonValue& item : json["defines"].items())
 		config.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())
@@ -81,6 +83,8 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 	target.cleanCommand = json["cleanCommand"].to_string();
 	for (const JsonValue& item : json["customCommands"].items())
 		target.customCommands.push_back(BuildCustomCommand::fromJson(item));
+	for (const JsonValue& item : json["copyFiles"].items())
+		target.copyFiles.push_back(BuildCopyFile::fromJson(item));
 	for (const JsonValue& item : json["defines"].items())
 		target.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())
@@ -113,6 +117,8 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 BuildPackageInstallerConfiguration BuildPackageInstallerConfiguration::fromJson(const JsonValue& json)
 {
 	BuildPackageInstallerConfiguration config;
+	for (const JsonValue& item : json["copyFiles"].items())
+		config.copyFiles.push_back(BuildCopyFile::fromJson(item));
 	for (const JsonValue& item : json["defines"].items())
 		config.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())
@@ -132,9 +138,9 @@ BuildPackageInstallerConfiguration BuildPackageInstallerConfiguration::fromJson(
 
 /////////////////////////////////////////////////////////////////////////////
 
-BuildPackageFile BuildPackageFile::fromJson(const JsonValue& json)
+BuildCopyFile BuildCopyFile::fromJson(const JsonValue& json)
 {
-	BuildPackageFile file;
+	BuildCopyFile file;
 	if (json.type() == JsonType::string)
 	{
 		file.src = json.to_string();
@@ -156,7 +162,9 @@ BuildPackageInstaller BuildPackageInstaller::fromJson(const JsonValue& json)
 	package.subdirectory = json["subdirectory"].to_string();
 	package.name = json["name"].to_string();
 	for (const JsonValue& item : json["files"].items())
-		package.files.push_back(BuildPackageFile::fromJson(item));
+		package.files.push_back(BuildCopyFile::fromJson(item));
+	for (const JsonValue& item : json["copyFiles"].items())
+		package.copyFiles.push_back(BuildCopyFile::fromJson(item));
 	for (const JsonValue& item : json["defines"].items())
 		package.defines.push_back(item.to_string());
 	for (const JsonValue& item : json["cCompileOptions"].items())

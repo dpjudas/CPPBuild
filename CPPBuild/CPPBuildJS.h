@@ -141,6 +141,7 @@ class Target
 			});
 		}
 		else {
+			var self = this;
 			files.forEach(function(file) {
 				self.copyFiles.push(file);
 			});
@@ -798,6 +799,7 @@ class PackageInstaller
 			});
 		}
 		else {
+			var self = this;
 			files.forEach(function(file) {
 				self.copyFiles.push(file);
 			});

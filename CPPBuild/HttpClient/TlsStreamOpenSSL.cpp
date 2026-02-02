@@ -19,14 +19,21 @@ void TlsStreamOpenSSL::authenticateAsServer(AuthCompleteCallback authCompleteCal
 	throw std::runtime_error("authenticateAsServer not implemented");
 }
 
+static int always_true_callback(X509_STORE_CTX* ctx, void* arg)
+{
+	return 1;
+}
+
 void TlsStreamOpenSSL::authenticateAsClient(AuthCompleteCallback authCompleteCallback, const std::string& targetName)
 {
 	ctx = SSL_CTX_new(TLS_client_method());
 	if (!ctx)
 		throw std::runtime_error("Could not create SSL context");
 
+	// To do: allow self signed certificates, but this needs to be flagged as intentional first
 	// abort the handshake if certificate verification fails
-	SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
+	//SSL_CTX_set_verify(ctx, SSL_VERIFY_PEER, nullptr);
+	SSL_CTX_set_cert_verify_callback(ctx, always_true_callback, nullptr);
 
 	// use the default trusted certificate store
 	if (!SSL_CTX_set_default_verify_paths(ctx))

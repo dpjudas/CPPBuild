@@ -22,6 +22,7 @@ _OBJ=\
 	CPPBuild/PackageManager.o \
 	CPPBuild/Base64/Base64.o \
 	CPPBuild/Guid/Guid.o \
+	CPPBuild/ProcessMutex.o \
 	CPPBuild/IOData/DataBuffer.o \
 	CPPBuild/IOData/Directory.o \
 	CPPBuild/IOData/File.o \

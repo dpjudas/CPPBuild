@@ -689,6 +689,8 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 	for (const BuildCopyFile& fileDef : targetDef.copyFiles)
 		copyFiles[fileDef.dest].push_back(FilePath::combine(sourcePath, fileDef.src));
 
+	// Packages first:
+
 	for (const std::string pkgName : targetDef.packages)
 	{
 		const Package& package = packages->getPackage(pkgName);
@@ -705,9 +707,6 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 
 		for (const std::string& opt : package.linkOptions)
 			linkOptions.push_back(opt);
-
-		for (const std::string& linkLibrary : package.linkLibraries)
-			linkLibraries.push_back(linkLibrary);
 
 		for (const std::string& path : package.includePaths)
 			includePaths.push_back(FilePath::combine(pkgBasePath, path));
@@ -735,9 +734,6 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 			for (const std::string& opt : packageConfigDef.linkOptions)
 				linkOptions.push_back(opt);
 
-			for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
-				linkLibraries.push_back(linkLibrary);
-
 			for (const std::string& item : packageConfigDef.includePaths)
 				includePaths.push_back(FilePath::combine(pkgBasePath, item));
 
@@ -748,6 +744,8 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 				copyFiles[fileDef.dest].push_back(FilePath::combine(pkgBasePath, fileDef.src));
 		}
 	}
+
+	// Then target generic rules:
 
 	for (const std::string& define : targetDef.defines)
 		defines.push_back(define);
@@ -761,14 +759,13 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 	for (const std::string& opt : targetDef.linkOptions)
 		linkOptions.push_back(opt);
 
-	for (const std::string& linkLibrary : targetDef.linkLibraries)
-		linkLibraries.push_back(linkLibrary);
-
-	for (const std::string& path: targetDef.includePaths)
+	for (const std::string& path : targetDef.includePaths)
 		includePaths.push_back(FilePath::combine(sourcePath, path));
 
 	for (const std::string& item : targetDef.libraryPaths)
 		libraryPaths.push_back(FilePath::combine(sourcePath, item));
+
+	// Then configuration specific:
 
 	auto itTargetConfig = targetDef.configurations.find(configuration);
 	if (itTargetConfig != targetDef.configurations.end())
@@ -787,9 +784,6 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		for (const std::string& opt : targetConfigDef.linkOptions)
 			linkOptions.push_back(opt);
 
-		for (const std::string& linkLibrary : targetConfigDef.linkLibraries)
-			linkLibraries.push_back(linkLibrary);
-
 		for (const std::string& item : targetConfigDef.includePaths)
 			includePaths.push_back(FilePath::combine(sourcePath, item));
 
@@ -798,6 +792,37 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 
 		for (const BuildCopyFile& fileDef : targetConfigDef.copyFiles)
 			copyFiles[fileDef.dest].push_back(FilePath::combine(sourcePath, fileDef.src));
+	}
+
+	// Link libraries need special handling due to unix linker wanting them in reverse order:
+	// 
+	// We can't just reverse all the link libraries as then the order won't be consistent to the order specified in Configure.js.
+
+	itTargetConfig = targetDef.configurations.find(configuration);
+	if (itTargetConfig != targetDef.configurations.end())
+	{
+		const BuildTargetConfiguration& targetConfigDef = itTargetConfig->second;
+		for (const std::string& linkLibrary : targetConfigDef.linkLibraries)
+			linkLibraries.push_back(linkLibrary);
+	}
+
+	for (const std::string& linkLibrary : targetDef.linkLibraries)
+		linkLibraries.push_back(linkLibrary);
+
+	for (const std::string pkgName : targetDef.packages)
+	{
+		const Package& package = packages->getPackage(pkgName);
+
+		auto itPackageConfig = package.configurations.find(configuration);
+		if (itPackageConfig != package.configurations.end())
+		{
+			const PackageConfiguration& packageConfigDef = itPackageConfig->second;
+			for (const std::string& linkLibrary : packageConfigDef.linkLibraries)
+				linkLibraries.push_back(linkLibrary);
+		}
+
+		for (const std::string& linkLibrary : package.linkLibraries)
+			linkLibraries.push_back(linkLibrary);
 	}
 
 	bool cLangVersion = isOptionSpecified("--std=", cCompileOptions);

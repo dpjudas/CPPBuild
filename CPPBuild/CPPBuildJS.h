@@ -133,7 +133,7 @@ class Target
 		this.customCommands.push(cmd);
 	}
 
-	addCopyFiles(files) {
+	addCopyFiles(files, options) {
 		if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
 			files.forEach(function(file) {
@@ -790,7 +790,7 @@ class PackageInstaller
 		});
 	}
 
-	addCopyFiles(files) {
+	addCopyFiles(files, options) {
 		if (isObject(options) && options.configuration !== undefined) {
 			var config = this.getConfiguration(options.configuration);
 			files.forEach(function(file) {

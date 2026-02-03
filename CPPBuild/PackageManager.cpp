@@ -71,21 +71,27 @@ void PackageManager::update(const BuildSetup& setup)
 			throw std::runtime_error("Empty package url");
 		}
 
-		std::unique_ptr<ZipReader> zip = ZipReader::open(File::openExisting(packageZip));
-
-		Package pkg = Package::fromJson(JsonValue::parse(zip->readAllText("package.json")));
-
-		std::string packageDir = FilePath::combine(packagesDir, pkg.name);
-		Directory::create(packageDir);
-		std::unordered_set<std::string> createdDirs;
-
-		for (const ZipFileEntry& entry : zip->getFiles())
+		// unzip package
 		{
-			std::string path = FilePath::removeLastComponent(entry.filename);
-			if (createdDirs.insert(path).second)
-				Directory::create(FilePath::combine(packageDir, path));
-			File::writeAllBytes(FilePath::combine(packageDir, entry.filename), zip->readAllBytes(entry.filename));
+			std::unique_ptr<ZipReader> zip = ZipReader::open(File::openExisting(packageZip));
+
+			Package pkg = Package::fromJson(JsonValue::parse(zip->readAllText("package.json")));
+
+			std::string packageDir = FilePath::combine(packagesDir, pkg.name);
+			Directory::create(packageDir);
+			std::unordered_set<std::string> createdDirs;
+
+			for (const ZipFileEntry& entry : zip->getFiles())
+			{
+				std::string path = FilePath::removeLastComponent(entry.filename);
+				if (createdDirs.insert(path).second)
+					Directory::create(FilePath::combine(packageDir, path));
+				File::writeAllBytes(FilePath::combine(packageDir, entry.filename), zip->readAllBytes(entry.filename));
+			}
 		}
+
+		// delete temp package
+		File::tryDelete(packageZip);
 	}
 }
 

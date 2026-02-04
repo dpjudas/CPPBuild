@@ -53,6 +53,7 @@ void PackageManager::update(const BuildSetup& setup)
 	{
 		// To do: only update packages if they changed
 
+		bool deletePackageZip = false;
 		std::string packageZip;
 
 		if ((pkgdesc.source.size() >= 5 && pkgdesc.source.substr(0, 5) == "http:") ||
@@ -61,6 +62,7 @@ void PackageManager::update(const BuildSetup& setup)
 			HttpUri source = pkgdesc.source;
 			packageZip = FilePath::combine(packagesDir, "package.zip");
 			download(source, packageZip);
+			deletePackageZip = true;
 		}
 		else if (!pkgdesc.source.empty())
 		{
@@ -91,7 +93,8 @@ void PackageManager::update(const BuildSetup& setup)
 		}
 
 		// delete temp package
-		File::tryDelete(packageZip);
+		if (deletePackageZip == true)
+			File::tryDelete(packageZip);
 	}
 }
 

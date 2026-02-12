@@ -18,7 +18,10 @@ public:
 	std::string getPackagePath(const std::string& name);
 
 private:
-	void download(const HttpUri& url, const std::string& filename);
+	bool download(const HttpUri& url, const std::string& filename, std::string& etag);
+	std::string getPackageCacheFilename();
+	std::map<std::string, std::string> loadPackageCache();
+	void savePackageCache(const std::map<std::string, std::string>& cache);
 
 	std::string workDir;
 	std::string packagesDir;

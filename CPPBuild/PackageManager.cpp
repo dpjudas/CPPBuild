@@ -45,14 +45,53 @@ const Package& PackageManager::getPackage(const std::string& name)
 	}
 }
 
+std::string PackageManager::getPackageCacheFilename()
+{
+	return FilePath::combine(packagesDir, "PackageCache.json");
+}
+
+std::map<std::string, std::string> PackageManager::loadPackageCache()
+{
+	try
+	{
+		JsonValue cache = JsonValue::parse(File::readAllText(getPackageCacheFilename()));
+		std::map<std::string, std::string> etags;
+		for (const JsonValue& item : cache["etags"].items())
+		{
+			std::string src = item["source"].to_string();
+			std::string etag = item["etag"].to_string();
+			if (!src.empty() && !etag.empty())
+				etags[src] = etag;
+		}
+		return etags;
+	}
+	catch (...)
+	{
+		return {};
+	}
+}
+
+void PackageManager::savePackageCache(const std::map<std::string, std::string>& cache)
+{
+	JsonValue items = JsonValue::array();
+	for (auto& it : cache)
+	{
+		JsonValue item = JsonValue::object();
+		item["source"] = JsonValue::string(it.first);
+		item["etag"] = JsonValue::string(it.second);
+		items.items().push_back(std::move(item));
+	}
+	JsonValue cacheJson = JsonValue::object();
+	cacheJson["etags"] = std::move(items);
+	File::writeAllText(getPackageCacheFilename(), cacheJson.to_string());
+}
+
 void PackageManager::update(const BuildSetup& setup)
 {
 	Directory::create(packagesDir);
-
+	std::map<std::string, std::string> etags = loadPackageCache();
 	for (const BuildPackage& pkgdesc : setup.project.packages)
 	{
-		// To do: only update packages if they changed
-
 		bool deletePackageZip = false;
 		std::string packageZip;
 
@@ -61,7 +100,14 @@ void PackageManager::update(const BuildSetup& setup)
 		{
 			HttpUri source = pkgdesc.source;
 			packageZip = FilePath::combine(packagesDir, "package.zip");
-			download(source, packageZip);
+			if (download(source, packageZip, etags[pkgdesc.source]))
+			{
+				std::cout << "Downloaded " << pkgdesc.source << std::endl;
+			}
+			else
+			{
+				continue;
+			}
 			deletePackageZip = true;
 		}
 		else if (!pkgdesc.source.empty())
@@ -96,15 +142,24 @@ void PackageManager::update(const BuildSetup& setup)
 		if (deletePackageZip == true)
 			File::tryDelete(packageZip);
 	}
+	savePackageCache(etags);
 }
 
-void PackageManager::download(const HttpUri& url, const std::string& filename)
+bool PackageManager::download(const HttpUri& url, const std::string& filename, std::string& etag)
 {
 	HttpRequest request("GET", url);
+	if (!etag.empty())
+		request.headers["If-None-Match"] = etag;
 	HttpResponse response = HttpClient::send(request);
 	if (response.statusCode == 200)
 	{
+		etag = response.getHeader("ETag");
 		File::writeAllBytes(filename, response.data.data(), response.data.size());
+		return true;
+	}
+	else if (response.statusCode == 304)
+	{
+		return false;
 	}
 	else
 	{

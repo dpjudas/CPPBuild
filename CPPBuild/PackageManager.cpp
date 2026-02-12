@@ -83,7 +83,7 @@ void PackageManager::savePackageCache(const std::map<std::string, std::string>& 
 	}
 	JsonValue cacheJson = JsonValue::object();
 	cacheJson["etags"] = std::move(items);
-	File::writeAllText(getPackageCacheFilename(), cacheJson.to_string());
+	File::writeAllText(getPackageCacheFilename(), cacheJson.to_json());
 }
 
 void PackageManager::update(const BuildSetup& setup)

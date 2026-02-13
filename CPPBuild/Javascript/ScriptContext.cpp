@@ -5,6 +5,7 @@
 #include "IOData/FilePath.h"
 #include "IOData/Directory.h"
 #include "CPPBuildJS.h"
+#include <iostream>
 
 ScriptContext::ScriptContext(const std::string& sourcePath, const std::string& buildPath) : sourcePath(sourcePath)
 {
@@ -23,6 +24,14 @@ ScriptContext::ScriptContext(const std::string& sourcePath, const std::string& b
 	}
 
 	JS_SetContextOpaque(context, this);
+
+	ScriptValue console(context, JS_NewObject(context));
+	console.setPropertyStr("log", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleLog, "log", 1)));
+	console.setPropertyStr("info", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleInfo, "info", 1)));
+	console.setPropertyStr("warn", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleWarn, "warn", 1)));
+	console.setPropertyStr("error", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleError, "error", 1)));
+	JS_SetPropertyStr(context, JS_GetGlobalObject(context), "console", console.release());
+
 	native = ScriptValue(context, JS_NewObject(context));
 	native.setPropertyStr("addSubdirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::addSubdirectory, "addSubdirectory", 1)));
 	native.setPropertyStr("subdirectory", ScriptValue(context, JS_NewString(context, "")));
@@ -352,6 +361,97 @@ JSValue ScriptContext::writeAllBytes(JSContext* ctx, JSValueConst this_val, int 
 	{
 		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
 	}
+}
+
+JSValue ScriptContext::consoleLog(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1)
+		return JS_UNDEFINED;
+
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		if (JS_IsString(argv[0]))
+		{
+			std::string msg = ScriptValueConst(ctx, argv[0]).toString();
+			if (argc == 1)
+			{
+				std::cout << msg.c_str() << std::endl;
+			}
+			else
+			{
+				int nextarg = 1;
+				size_t pos = 0;
+				while (pos < msg.length())
+				{
+					size_t next = msg.find('%', pos);
+					if (next == std::string::npos || next + 1 == msg.length() || nextarg == argc)
+						break;
+
+					std::cout << msg.substr(pos, next - pos).c_str();
+
+					if (msg[next + 1] == 's')
+					{
+						ScriptValue str(ctx, JS_ToString(ctx, argv[nextarg++]));
+						std::cout << str.toString().c_str();
+						pos = next + 2;
+					}
+					else if (msg[next + 1] == 'd' || msg[next + 1] == 'i')
+					{
+						int value = 0;
+						JS_ToInt32(ctx, &value, argv[nextarg++]);
+						std::cout << std::to_string(value).c_str();
+						pos = next + 2;
+					}
+					else if (msg[next + 1] == 'f')
+					{
+						double value = 0.0;
+						JS_ToFloat64(ctx, &value, argv[nextarg++]);
+						std::cout << std::to_string(value).c_str();
+						pos = next + 2;
+					}
+					else
+					{
+						pos = next + 1;
+					}
+				}
+				std::cout << msg.substr(pos).c_str() << std::endl;
+			}
+		}
+		else
+		{
+			for (int i = 0; i < argc; i++)
+			{
+				ScriptValue str(ctx, JS_ToString(ctx, argv[i]));
+				if (i > 0)
+					std::cout << " ";
+				std::cout << str.toString().c_str();
+			}
+			std::cout << std::endl;
+		}
+
+		return JS_UNDEFINED;
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::consoleInfo(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	return consoleLog(ctx, this_val, argc, argv);
+}
+
+JSValue ScriptContext::consoleWarn(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	return consoleLog(ctx, this_val, argc, argv);
+}
+
+JSValue ScriptContext::consoleError(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	return consoleLog(ctx, this_val, argc, argv);
 }
 
 ScriptValue ScriptContext::eval(const std::string& code, const std::string& filename, int flags)

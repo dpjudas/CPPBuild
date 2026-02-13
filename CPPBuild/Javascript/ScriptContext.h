@@ -28,6 +28,11 @@ private:
 	static JSValue writeAllText(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 	static JSValue writeAllBytes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 
+	static JSValue consoleLog(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+	static JSValue consoleInfo(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+	static JSValue consoleWarn(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+	static JSValue consoleError(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+
 	JSRuntime* runtime = nullptr;
 	JSContext* context = nullptr;
 

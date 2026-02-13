@@ -382,7 +382,7 @@ class FilePath
 			return "";
 		}
 		else {
-			return filename.substring(pos + 1);
+			return file.substring(pos + 1);
 		}
 	
 	}

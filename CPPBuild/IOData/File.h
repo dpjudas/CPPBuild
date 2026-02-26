@@ -3,6 +3,7 @@
 #include "DataBuffer.h"
 #include "IODevice.h"
 #include <string>
+#include <optional>
 
 class File : public IODevice
 {
@@ -14,6 +15,7 @@ public:
 	static void deleteAlways(const std::string& filename);
 
 	static int64_t getLastWriteTime(const std::string& filename);
+	static std::optional<int64_t> tryGetLastWriteTime(const std::string& filename);
 	static bool exists(const std::string filename);
 
 	static std::string readAllText(const std::string& filename);

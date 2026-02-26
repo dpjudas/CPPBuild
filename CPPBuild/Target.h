@@ -2,6 +2,7 @@
 
 #include "Json/JsonValue.h"
 #include <mutex>
+#include <optional>
 
 class ZipWriter;
 class BuildSetup;
@@ -81,6 +82,8 @@ private:
 	void runCommand(const std::string& commandline, const std::string& errorMessage);
 	std::string processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level = 0);
 	void addFolder(ZipWriter* zip, std::string srcdir, std::string destdir);
+
+	static std::optional<bool> isUpToDate(const std::string& filename, int64_t checkTime);
 
 	enum class MakeTokenType
 	{

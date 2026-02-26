@@ -276,39 +276,29 @@ void Target::link()
 		outputPath = objDir;
 	}
 
-	bool needsLink = false;
-	try
+	if (targetType == TargetType::webLibrary || targetType == TargetType::lib)
 	{
-		int64_t exeTime = File::getLastWriteTime(FilePath::combine(outputPath, outputFile));
-		for (const std::string& dependency : objFiles)
+		bool needsLink = false;
+		auto outputTime = File::tryGetLastWriteTime(FilePath::combine(outputPath, outputFile));
+		if (outputTime.has_value())
 		{
-			int64_t depTime = File::getLastWriteTime(dependency);
-			if (depTime > exeTime)
+			int64_t exeTime = outputTime.value();
+			for (const std::string& dependency : objFiles)
 			{
-				needsLink = true;
-				break;
+				auto upToDate = isUpToDate(dependency, exeTime);
+				if (!upToDate.has_value() || !upToDate.value())
+				{
+					needsLink = true;
+					break;
+				}
 			}
 		}
-
-		for (const auto& dep : linkLibraries)
+		else
 		{
-			std::string depFilename = FilePath::combine(binDir, "lib" + dep + ".a");
-			int64_t depTime = File::getLastWriteTime(depFilename);
-			if (depTime > exeTime)
-			{
-				needsLink = true;
-				break;
-			}
+			needsLink = true;
 		}
-	}
-	catch (...)
-	{
-		needsLink = true;
-	}
 
-	if (needsLink)
-	{
-		if (targetType == TargetType::webLibrary || targetType == TargetType::lib)
+		if (needsLink)
 		{
 			printLine("Creating static library " + outputFile);
 
@@ -327,7 +317,60 @@ void Target::link()
 			std::string cmdline = ar + " \"@" + responsefilename + "\"";
 			runCommand(cmdline, "Could not link " + outputFile);
 		}
+	}
+	else
+	{
+		bool needsLink = false;
+		std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(outputFile) + ".d");
+		auto outputTime = File::tryGetLastWriteTime(FilePath::combine(outputPath, outputFile));
+		if (outputTime.has_value())
+		{
+			int64_t exeTime = outputTime.value();
+
+			for (const std::string& dependency : objFiles)
+			{
+				std::optional<bool> upToDate = isUpToDate(dependency, exeTime);
+				if (!upToDate.has_value() || !upToDate.value())
+				{
+					needsLink = true;
+					break;
+				}
+			}
+
+			if (!needsLink)
+			{
+				for (const auto& dep : linkLibraries)
+				{
+					std::string libName = "lib" + dep + ".a";
+					std::string depFilename = FilePath::combine(binDir, libName);
+					std::optional<bool> upToDate = isUpToDate(depFilename, exeTime);
+					if (!upToDate.has_value())
+					{
+						for (const std::string& libraryPath : libraryPaths)
+						{
+							std::string depFilename = FilePath::combine(libraryPath, libName);
+							upToDate = isUpToDate(depFilename, exeTime);
+							if (upToDate.has_value())
+								break;
+						}
+					}
+
+					// If we found a library, check its date.
+					// If we didn't find anything, assume for now that its a system library and ignore it.
+					if (upToDate.has_value() && !upToDate.value())
+					{
+						needsLink = true;
+						break;
+					}
+				}
+			}
+		}
 		else
+		{
+			needsLink = true;
+		}
+
+		if (needsLink)
 		{
 			printLine("Linking " + outputFile);
 
@@ -357,6 +400,19 @@ void Target::link()
 			std::string cmdline = ccpp + " \"@" + responsefilename + "\"";
 			runCommand(cmdline, "Could not link " + outputFile);
 		}
+	}
+}
+
+std::optional<bool> Target::isUpToDate(const std::string& filename, int64_t checkTime)
+{
+	try
+	{
+		int64_t depTime = File::getLastWriteTime(filename);
+		return depTime < checkTime;
+	}
+	catch (...)
+	{
+		return {};
 	}
 }
 

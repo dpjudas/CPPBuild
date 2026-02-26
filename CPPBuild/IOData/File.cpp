@@ -327,3 +327,14 @@ void File::writeAllBytes(const std::string& filename, const void* data, const ui
 	file->write(data, size);
 }
 
+std::optional<int64_t> File::tryGetLastWriteTime(const std::string& filename)
+{
+	try
+	{
+		return File::getLastWriteTime(filename);
+	}
+	catch (...)
+	{
+		return {};
+	}
+}

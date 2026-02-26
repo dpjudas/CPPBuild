@@ -20,6 +20,7 @@ _OBJ=\
 	CPPBuild/MakefileWorkspace.o \
 	CPPBuild/Package.o \
 	CPPBuild/PackageManager.o \
+	CPPBuild/FileTimeCache.o \
 	CPPBuild/Base64/Base64.o \
 	CPPBuild/Guid/Guid.o \
 	CPPBuild/ProcessMutex.o \

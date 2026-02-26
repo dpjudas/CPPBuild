@@ -6,6 +6,7 @@
 #include "MakefileWorkspace.h"
 #include "BuildSetup.h"
 #include "PackageManager.h"
+#include "FileTimeCache.h"
 #include "Msi/MSIGenerator.h"
 #include "Guid/Guid.h"
 #include "IOData/Directory.h"
@@ -59,10 +60,10 @@ void CPPBuild::checkMakefile()
 	try
 	{
 		std::string configFilename = FilePath::combine(cppbuildDir, "config.json");
-		int64_t makefileTime = File::getLastWriteTime(configFilename);
+		int64_t makefileTime = FileTimeCache::getLastWriteTime(configFilename);
 		BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(configFilename)));
 
-		int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(setup.sourcePath, "Configure.js"));
+		int64_t srcFileTime = FileTimeCache::getLastWriteTime(FilePath::combine(setup.sourcePath, "Configure.js"));
 		if (makefileTime < srcFileTime)
 		{
 			needsUpdate = true;
@@ -73,7 +74,7 @@ void CPPBuild::checkMakefile()
 			std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
 
 			// To do: need to check all files that Configure.js included
-			int64_t srcFileTime = File::getLastWriteTime(FilePath::combine(sourcePath, target.subdirectory + ".js"));
+			int64_t srcFileTime = FileTimeCache::getLastWriteTime(FilePath::combine(sourcePath, target.subdirectory + ".js"));
 			if (makefileTime < srcFileTime)
 			{
 				needsUpdate = true;

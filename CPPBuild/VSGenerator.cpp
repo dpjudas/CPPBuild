@@ -5,6 +5,7 @@
 #include "IOData/FilePath.h"
 #include "Json/JsonValue.h"
 #include "ConsoleProcess.h"
+#include <iostream>
 
 VSSolution::VSSolution(const std::string& name, const std::string& location, const std::string& solutionGuid) : name(name), location(location), solutionGuid(solutionGuid)
 {
@@ -27,6 +28,7 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 #ifdef WIN32
 	try
 	{
+		std::cout << "Checking for Visual Studio version" << std::endl;
 		// Microslop at its finest! After over 35 years of devenv development this was the best engineered solution they could come up with!
 		std::string vsinfotxt;
 		ConsoleProcess::runCommand("\"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\"\" -utf8 -format json -latest", [&](const std::string& line) { vsinfotxt += line; vsinfotxt += '\n'; });
@@ -42,6 +44,7 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 			platformToolset = "v143";
 		else
 			platformToolset = "v145"; // is there a way to find this?
+		std::cout << "Using platform toolset " << platformToolset.c_str() << std::endl;
 	}
 	catch (...)
 	{

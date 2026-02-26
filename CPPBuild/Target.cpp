@@ -6,6 +6,7 @@
 #include "ConsoleProcess.h"
 #include "PackageManager.h"
 #include "ProcessMutex.h"
+#include "FileTimeCache.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 #include "IOData/Directory.h"
@@ -36,7 +37,7 @@ int Target::postBuild()
 		{
 			try
 			{
-				int64_t t = File::getLastWriteTime(srcFile);
+				int64_t t = FileTimeCache::getLastWriteTime(srcFile);
 				if (!src.has_value() || t > srcTime)
 				{
 					srcTime = t;
@@ -171,10 +172,10 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 				bool needsCompile = false;
 				try
 				{
-					int64_t objTime = File::getLastWriteTime(objFile);
+					int64_t objTime = FileTimeCache::getLastWriteTime(objFile);
 					for (const std::string& dependency : readMakefileDependencyFile(depFile))
 					{
-						int64_t depTime = File::getLastWriteTime(dependency);
+						int64_t depTime = FileTimeCache::getLastWriteTime(dependency);
 						if (depTime > objTime)
 						{
 							needsCompile = true;
@@ -279,7 +280,7 @@ void Target::link()
 	if (targetType == TargetType::webLibrary || targetType == TargetType::lib)
 	{
 		bool needsLink = false;
-		auto outputTime = File::tryGetLastWriteTime(FilePath::combine(outputPath, outputFile));
+		auto outputTime = FileTimeCache::tryGetLastWriteTime(FilePath::combine(outputPath, outputFile));
 		if (outputTime.has_value())
 		{
 			int64_t exeTime = outputTime.value();
@@ -322,7 +323,7 @@ void Target::link()
 	{
 		bool needsLink = false;
 		std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(outputFile) + ".d");
-		auto outputTime = File::tryGetLastWriteTime(FilePath::combine(outputPath, outputFile));
+		auto outputTime = FileTimeCache::tryGetLastWriteTime(FilePath::combine(outputPath, outputFile));
 		if (outputTime.has_value())
 		{
 			int64_t exeTime = outputTime.value();
@@ -407,7 +408,7 @@ std::optional<bool> Target::isUpToDate(const std::string& filename, int64_t chec
 {
 	try
 	{
-		int64_t depTime = File::getLastWriteTime(filename);
+		int64_t depTime = FileTimeCache::getLastWriteTime(filename);
 		return depTime < checkTime;
 	}
 	catch (...)
@@ -432,10 +433,10 @@ void Target::linkCSS()
 	bool needsCompile = false;
 	try
 	{
-		int64_t objTime = File::getLastWriteTime(objFile);
+		int64_t objTime = FileTimeCache::getLastWriteTime(objFile);
 		for (const std::string& dependency : readDependencyFile(depFile))
 		{
-			int64_t depTime = File::getLastWriteTime(dependency);
+			int64_t depTime = FileTimeCache::getLastWriteTime(dependency);
 			if (depTime > objTime)
 			{
 				needsCompile = true;
@@ -573,10 +574,10 @@ void Target::package()
 	bool needsCompile = false;
 	try
 	{
-		int64_t objTime = File::getLastWriteTime(FilePath::combine(binDir, outputPackage));
+		int64_t objTime = FileTimeCache::getLastWriteTime(FilePath::combine(binDir, outputPackage));
 		for (const std::string& dependency : readDependencyFile(depFile))
 		{
-			int64_t depTime = File::getLastWriteTime(dependency);
+			int64_t depTime = FileTimeCache::getLastWriteTime(dependency);
 			if (depTime > objTime)
 			{
 				needsCompile = true;

@@ -187,6 +187,7 @@
     <ClCompile Include="BuildSetup.cpp" />
     <ClCompile Include="CPPBuild.cpp" />
     <ClCompile Include="CSSTokenizer.cpp" />
+    <ClCompile Include="FileTimeCache.cpp" />
     <ClCompile Include="Guid\Guid.cpp" />
     <ClCompile Include="HttpClient\HttpClient.cpp" />
     <ClCompile Include="HttpClient\HttpConnection.cpp" />
@@ -294,6 +295,7 @@
     <ClInclude Include="CPPBuild.h" />
     <ClInclude Include="CPPBuildJS.h" />
     <ClInclude Include="CSSTokenizer.h" />
+    <ClInclude Include="FileTimeCache.h" />
     <ClInclude Include="Guid\Guid.h" />
     <ClInclude Include="HttpClient\ByteStream.h" />
     <ClInclude Include="HttpClient\HttpClient.h" />

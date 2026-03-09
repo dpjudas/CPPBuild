@@ -61,7 +61,10 @@ void HttpConnectionImpl::readAll(void* data, size_t size)
 	size_t pos = 0;
 	while (pos < size)
 	{
-		pos += read((uint8_t*)data + pos, size - pos);
+		size_t bytesRead = read((uint8_t*)data + pos, size - pos);
+		if (bytesRead == 0)
+			throw std::runtime_error("Connection closed by the remote host");
+		pos += bytesRead;
 	}
 }
 

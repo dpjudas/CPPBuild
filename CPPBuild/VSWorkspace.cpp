@@ -8,6 +8,7 @@
 #include "IOData/Directory.h"
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
+#include <set>
 
 void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir)
 {
@@ -18,6 +19,8 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 		guids.solutionGuid = Guid::makeGuid().toString();
 
 	auto solution = std::make_unique<VSSolution>(setup.project.name, workDir, guids.solutionGuid);
+
+	std::set<std::string> solutionFolders;
 
 #if defined(_M_X64) || defined(__x86_64__)
 	std::string platform = "x64";
@@ -316,6 +319,15 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 		project->extraFiles = extraFiles;
 		project->customFiles = customFiles;
 
+		if (!targetDef.group.empty())
+		{
+			auto& guid = guids.solutionFolderGuids[targetDef.group];
+			if (guid.empty())
+				guid = Guid::makeGuid().toString();
+			project->solutionFolderGuid = guid;
+			solutionFolders.insert(targetDef.group);
+		}
+
 		for (auto& it : filters)
 			project->filters.push_back(std::move(it.second));
 
@@ -544,6 +556,12 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 		solution->projects.push_back(std::move(project));
 	}
 
+	for (const std::string& group : solutionFolders)
+	{
+		std::string guid = guids.solutionFolderGuids[group];
+		solution->folders.push_back(std::make_unique<VSSolutionFolder>(group, guid));
+	}
+
 	solution->generate();
 	saveSolutionGuids(guids, cppbuildDir);
 }
@@ -588,6 +606,12 @@ VSGuids VSWorkspace::loadSolutionGuids(const std::string& cppbuildDir)
 			std::string guid = item["guid"].to_string();
 			guids.projectGuids[name] = guid;
 		}
+		for (JsonValue& item : file["solutionFolderGuids"].items())
+		{
+			std::string name = item["name"].to_string();
+			std::string guid = item["guid"].to_string();
+			guids.solutionFolderGuids[name] = guid;
+		}
 	}
 	catch (...)
 	{
@@ -606,8 +630,18 @@ void VSWorkspace::saveSolutionGuids(const VSGuids& guids, const std::string& cpp
 		projectGuids.items().push_back(std::move(item));
 	}
 
+	auto solutionFolderGuids = JsonValue::array();
+	for (auto& it : guids.solutionFolderGuids)
+	{
+		auto item = JsonValue::object();
+		item["name"] = JsonValue::string(it.first);
+		item["guid"] = JsonValue::string(it.second);
+		solutionFolderGuids.items().push_back(std::move(item));
+	}
+
 	auto file = JsonValue::object();
 	file["solutionGuid"] = JsonValue::string(guids.solutionGuid);
 	file["projectGuids"] = std::move(projectGuids);
+	file["solutionFolderGuids"] = std::move(solutionFolderGuids);
 	File::writeAllText(FilePath::combine(cppbuildDir, "vsguids.json"), file.to_json());
 }

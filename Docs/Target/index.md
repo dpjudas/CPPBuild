@@ -86,3 +86,7 @@ The **`Target`** interface is used to describe targets.
 
     Set HTML shell input file.
 
+- [`Target.setGroup()`](setGroup/index.md)
+
+    Set solution folder to place target in.
+

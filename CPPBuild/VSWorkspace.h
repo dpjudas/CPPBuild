@@ -11,6 +11,7 @@ class VSGuids
 public:
 	std::string solutionGuid;
 	std::map<std::string, std::string> projectGuids;
+	std::map<std::string, std::string> solutionFolderGuids;
 };
 
 class VSWorkspace

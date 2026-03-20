@@ -67,6 +67,11 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 		output.writeLine("Project(\"" + project->typeGuid + "\") = \"" + project->name + "\", \"" + FilePath::combine(project->location, project->name + ".vcxproj") + "\", \"" + project->projectGuid + "\")");
 		output.writeLine("EndProject");
 	}
+	for (const auto& folder : solution->folders)
+	{
+		output.writeLine("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"" + folder->name + "\", \"" + folder->name + "\", \"{" + folder->folderGuid + "}\"");
+		output.writeLine("EndProject");
+	}
 	output.writeLine("Global");
 	output.writeLine("\tGlobalSection(SolutionConfigurationPlatforms) = preSolution");
 	for (const auto& configuration : solution->configurations)
@@ -87,6 +92,20 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 	output.writeLine("\tGlobalSection(SolutionProperties) = preSolution");
 	output.writeLine("\t\tHideSolutionNode = FALSE");
 	output.writeLine("\tEndGlobalSection");
+
+	if (!solution->folders.empty())
+	{
+		output.writeLine("\tGlobalSection(NestedProjects) = preSolution");
+		for (const auto& project : solution->projects)
+		{
+			if (!project->solutionFolderGuid.empty())
+			{
+				output.writeLine("\t\t{" + project->projectGuid + "} = {" + project->solutionFolderGuid + "}");
+			}
+		}
+		output.writeLine("\tEndGlobalSection");
+	}
+
 	output.writeLine("\tGlobalSection(ExtensibilityGlobals) = postSolution");
 	output.writeLine("\t\tSolutionGuid = {" + solution->solutionGuid + "}");
 	output.writeLine("\tEndGlobalSection");

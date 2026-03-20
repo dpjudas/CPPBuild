@@ -4,6 +4,7 @@ class VSLineWriter;
 class VSSolution;
 class VSCppProject;
 class VSSolutionConfiguration;
+class VSSolutionFolder;
 class VSGenerator;
 
 class VSLineWriter
@@ -32,6 +33,7 @@ public:
 	std::string minimumVisualStudioVersion;// = "10.0.40219.1";
 	std::string solutionGuid;
 	std::vector<std::unique_ptr<VSCppProject>> projects;
+	std::vector<std::unique_ptr<VSSolutionFolder>> folders;
 	std::vector<std::unique_ptr<VSSolutionConfiguration>> configurations;
 };
 
@@ -443,13 +445,23 @@ public:
 	std::map<std::string, std::shared_ptr<T>> conditions;
 };
 
+class VSSolutionFolder
+{
+public:
+	VSSolutionFolder(const std::string& name, const std::string& folderGuid) : name(name), folderGuid(folderGuid) {}
+
+	std::string name;
+	std::string folderGuid;
+};
+
 class VSCppProject
 {
 public:
 	VSCppProject(const std::string& name, const std::string& location, std::string projectGuid) : name(name), location(location), projectGuid(projectGuid) { }
 
-	std::string name = name;
-	std::string location = location;
+	std::string solutionFolderGuid;
+	std::string name;
+	std::string location;
 	std::string typeGuid = "8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942";
 	std::string projectGuid;
 	std::string vcProjectVersion = "17.0";

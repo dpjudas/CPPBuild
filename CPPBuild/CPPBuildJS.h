@@ -70,6 +70,7 @@ class Target
 		this.subdirectory = subdirectory;
 		this.type = type;
 		this.name = name;
+		this.group = "";
 		this.copyFiles = [];
 		this.defines = [];
 		this.cCompileOptions = [];
@@ -108,6 +109,10 @@ class Target
 			};
 		}
 		return this.configurations[name];
+	}
+
+	setGroup(group) {
+		this.group = group;
 	}
 
 	addFiles(files) {
@@ -308,6 +313,7 @@ class Target
 			subdirectory: this.subdirectory,
 			type: this.type,
 			name: this.name,
+			group: this.group,
 			copyFiles: this.copyFiles,
 			defines: this.defines,
 			cCompileOptions: this.cCompileOptions,

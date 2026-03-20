@@ -76,6 +76,7 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 	target.subdirectory = json["subdirectory"].to_string();
 	target.type = json["type"].to_string();
 	target.name = json["name"].to_string();
+	target.group = json["group"].to_string();
 	target.wwwRootDir = json["wwwRootDir"].to_string();
 	target.cssRootFile = json["cssRootFile"].to_string();
 	target.htmlShellFile = json["htmlShellFile"].to_string();

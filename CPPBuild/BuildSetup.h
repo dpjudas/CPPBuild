@@ -67,6 +67,7 @@ public:
 	std::string subdirectory;
 	std::string type;
 	std::string name;
+	std::string group;
 	std::vector<BuildCopyFile> copyFiles;
 	std::vector<std::string> defines;
 	std::vector<std::string> cCompileOptions;

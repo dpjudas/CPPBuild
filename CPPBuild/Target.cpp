@@ -59,6 +59,7 @@ int Target::postBuild()
 				Directory::create(destDir);
 
 			File::writeAllBytes(destFile, File::readAllBytes(src.value()));
+			FileTimeCache::setTouched(destFile);
 		}
 	}
 
@@ -74,7 +75,10 @@ int Target::build()
 	}
 
 	if (!compile())
+	{
+		printLine("Compile failed");
 		return 2;
+	}
 	link();
 	linkCSS();
 	package();
@@ -202,6 +206,8 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 						std::string commandline = ccpp + " " + cxxflags + " -MD -c " + cppFile + " -o " + objFile;
 						runCommand(commandline, "Could not compile " + filename);
 					}
+
+					FileTimeCache::setTouched(objFile);
 				}
 			}
 		}
@@ -488,6 +494,7 @@ void Target::linkCSS()
 
 		writeDependencyFile(depFile, cssFile, includes);
 		File::writeAllText(objFile, css);
+		FileTimeCache::setTouched(objFile);
 	}
 }
 
@@ -570,11 +577,12 @@ void Target::package()
 	std::string outputPackage = target + ".webpkg";
 
 	std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(target) + ".pkgdep");
+	std::string outFile = FilePath::combine(binDir, outputPackage);
 
 	bool needsCompile = false;
 	try
 	{
-		int64_t objTime = FileTimeCache::getLastWriteTime(FilePath::combine(binDir, outputPackage));
+		int64_t objTime = FileTimeCache::getLastWriteTime(outFile);
 		for (const std::string& dependency : readDependencyFile(depFile))
 		{
 			int64_t depTime = FileTimeCache::getLastWriteTime(dependency);
@@ -617,7 +625,8 @@ void Target::package()
 		zip->writeToc();
 		zip.reset();
 		writeDependencyFile(depFile, "", includes);
-		File::writeAllBytes(FilePath::combine(binDir, outputPackage), memdevice->buffer());
+		File::writeAllBytes(outFile, memdevice->buffer());
+		FileTimeCache::setTouched(outFile);
 	}
 }
 

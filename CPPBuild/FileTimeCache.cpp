@@ -32,3 +32,11 @@ int64_t FileTimeCache::getLastWriteTime(const std::string& filename)
 		return result.value();
 	throw std::runtime_error("Could not get last write time for: " + filename);
 }
+
+void FileTimeCache::setTouched(const std::string& filename)
+{
+	static std::mutex mutex;
+	std::unique_lock lock(mutex);
+	auto& item = cache[filename];
+	item = std::numeric_limits<int64_t>::max();
+}

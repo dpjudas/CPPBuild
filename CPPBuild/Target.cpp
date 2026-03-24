@@ -462,31 +462,36 @@ void Target::linkCSS()
 		std::vector<std::string> includes;
 		std::string css;
 
-		for (const auto& dep : linkLibraries)
-		{
-			std::string cssFilename = "lib" + dep + ".css";
-			std::string depFilename = FilePath::combine(binDir, cssFilename);
-			bool found = File::exists(depFilename);
-			if (!found)
-			{
-				for (const std::string& libPath : libraryPaths)
-				{
-					depFilename = FilePath::combine(libPath, cssFilename);
-					found = File::exists(depFilename);
-					if (found)
-						break;
-				}
-			}
+		std::unordered_set<std::string> seenFiles;
 
-			if (found)
+		if (targetType != TargetType::webLibrary)
+		{
+			for (const auto& dep : linkLibraries)
 			{
-				css += File::readAllText(depFilename);
+				std::string cssFilename = "lib" + dep + ".css";
+				std::string depFilename = FilePath::combine(binDir, cssFilename);
+				bool found = File::exists(depFilename);
+				if (!found)
+				{
+					for (const std::string& libPath : libraryPaths)
+					{
+						depFilename = FilePath::combine(libPath, cssFilename);
+						found = File::exists(depFilename);
+						if (found)
+							break;
+					}
+				}
+
+				if (found && seenFiles.insert(depFilename).second)
+				{
+					css += File::readAllText(depFilename);
 #ifdef WIN32
-				css += "\r\n";
+					css += "\r\n";
 #else
-				css += "\n";
+					css += "\n";
 #endif
-				includes.push_back(depFilename);
+					includes.push_back(depFilename);
+				}
 			}
 		}
 

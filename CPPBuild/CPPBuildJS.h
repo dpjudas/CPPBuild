@@ -277,7 +277,7 @@ class Target
 	}
 
 	setWebRootPath(path) {
-		this.wwwrootDir = path;
+		this.wwwRootDir = path;
 	}
 
 	setCSSRootFile(file) {

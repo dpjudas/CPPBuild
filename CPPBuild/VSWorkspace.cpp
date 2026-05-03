@@ -64,9 +64,12 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 
 			for (const BuildTarget& target : setup.project.targets)
 			{
-				std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
-				std::string scriptFile = FilePath::lastComponent(target.subdirectory) + ".js";
-				props->additionalInputs.push_back(FilePath::combine(sourcePath, scriptFile));
+				if (!target.subdirectory.empty())
+				{
+					std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
+					std::string scriptFile = FilePath::lastComponent(target.subdirectory) + ".js";
+					props->additionalInputs.push_back(FilePath::combine(sourcePath, scriptFile));
+				}
 			}
 			
 			if (!props->additionalInputs.empty())

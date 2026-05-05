@@ -57,6 +57,14 @@ public:
 
 	std::map<std::string, std::vector<std::string>> copyFiles;
 
+	struct CustomCommandFile
+	{
+		std::string filename;
+		std::vector<std::string> commands;
+		std::vector<std::string> outputFiles;
+	};
+	std::vector<std::unique_ptr<CustomCommandFile>> customFiles;
+
 	int build();
 	void clean();
 	int rebuild();

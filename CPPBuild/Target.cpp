@@ -136,6 +136,22 @@ int Target::rebuild()
 
 bool Target::compile()
 {
+	for (const std::unique_ptr<CustomCommandFile>& inputFile : customFiles)
+	{
+		std::unique_lock lock(mutex);
+		if (compileFailed)
+			break;
+		lock.unlock();
+
+		std::string filename = FilePath::lastComponent(inputFile->filename);
+		printLine(filename);
+
+		for (const std::string commandline : inputFile->commands)
+		{
+			runCommand(commandline, "Could not compile " + filename);
+		}
+	}
+
 	std::vector<std::future<void>> results;
 
 	int numThreads = std::max((int)(std::thread::hardware_concurrency() * 3) / 4, 2);
@@ -749,9 +765,50 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 
 	wwwrootDir = FilePath::combine(sourcePath, targetDef.wwwRootDir);
 
+	std::unordered_map<std::string, std::vector<const BuildCustomCommand*>> fileToCustomCmd;
+	for (const BuildCustomCommand& cmd : targetDef.customCommands)
+	{
+		fileToCustomCmd[cmd.inputFile].push_back(&cmd);
+	}
+
 	for (const std::string& name : targetDef.files)
 	{
-		if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
+		auto itCustomCmd = fileToCustomCmd.find(name);
+		if (itCustomCmd != fileToCustomCmd.end())
+		{
+			auto file = std::make_unique<CustomCommandFile>();
+
+			file->filename = FilePath::combine(sourcePath, name);
+
+			// Add commands targeting all configs
+			for (const BuildCustomCommand* cmd : itCustomCmd->second)
+			{
+				if (cmd->configName.empty())
+				{
+					for (const std::string& cmdline : cmd->commands)
+					{
+						file->commands.push_back(addPathToCommand(cmdline, setup));
+					}
+					file->outputFiles.insert(file->outputFiles.end(), cmd->outputFiles.begin(), cmd->outputFiles.end());
+				}
+			}
+
+			// Add commands for specific configs
+			for (const BuildCustomCommand* cmd : itCustomCmd->second)
+			{
+				if (cmd->configName == configuration)
+				{
+					for (const std::string& cmdline : cmd->commands)
+					{
+						file->commands.push_back(addPathToCommand(cmdline, setup));
+					}
+					file->outputFiles.insert(file->outputFiles.end(), cmd->outputFiles.begin(), cmd->outputFiles.end());
+				}
+			}
+
+			customFiles.push_back(std::move(file));
+		}
+		else if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
 		{
 			sourceFiles.push_back(FilePath::combine(sourcePath, name));
 		}

@@ -26,11 +26,12 @@ ScriptContext::ScriptContext(const std::string& sourcePath, const std::string& b
 	JS_SetContextOpaque(context, this);
 
 	ScriptValue console(context, JS_NewObject(context));
+	ScriptValue globalObj(context, JS_GetGlobalObject(context));
 	console.setPropertyStr("log", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleLog, "log", 1)));
 	console.setPropertyStr("info", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleInfo, "info", 1)));
 	console.setPropertyStr("warn", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleWarn, "warn", 1)));
 	console.setPropertyStr("error", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::consoleError, "error", 1)));
-	JS_SetPropertyStr(context, JS_GetGlobalObject(context), "console", console.release());
+	JS_SetPropertyStr(context, globalObj.handle(), "console", console.release());
 
 	native = ScriptValue(context, JS_NewObject(context));
 	native.setPropertyStr("addSubdirectory", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::addSubdirectory, "addSubdirectory", 1)));

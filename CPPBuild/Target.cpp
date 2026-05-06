@@ -144,11 +144,37 @@ bool Target::compile()
 		lock.unlock();
 
 		std::string filename = FilePath::lastComponent(inputFile->filename);
-		printLine(filename);
+		std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".d");
 
-		for (const std::string commandline : inputFile->commands)
+		bool needsCompile = false;
+
+		if (inputFile->outputFiles.empty())
+		try
 		{
-			runCommand(commandline, "Could not compile " + filename);
+			int64_t inputTime = FileTimeCache::getLastWriteTime(inputFile->filename);
+			int64_t depTime = FileTimeCache::getLastWriteTime(depFile);
+			if (inputTime > depTime)
+			{
+				needsCompile = true;
+				break;
+			}
+		}
+		catch (...)
+		{
+			needsCompile = true;
+		}
+
+		if (needsCompile)
+		{
+			printLine(filename);
+
+			for (const std::string commandline : inputFile->commands)
+			{
+				runCommand(commandline, "Could not compile " + filename);
+			}
+
+			File::writeAllText(depFile, "{}");
+			FileTimeCache::setTouched(depFile);
 		}
 	}
 
@@ -789,7 +815,11 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 					{
 						file->commands.push_back(addPathToCommand(cmdline, setup));
 					}
-					file->outputFiles.insert(file->outputFiles.end(), cmd->outputFiles.begin(), cmd->outputFiles.end());
+
+					for (const std::string& outputFile : file->outputFiles)
+					{
+						file->outputFiles.push_back(FilePath::combine(sourcePath, outputFile));
+					}
 				}
 			}
 
@@ -802,7 +832,11 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 					{
 						file->commands.push_back(addPathToCommand(cmdline, setup));
 					}
-					file->outputFiles.insert(file->outputFiles.end(), cmd->outputFiles.begin(), cmd->outputFiles.end());
+
+					for (const std::string& outputFile : file->outputFiles)
+					{
+						file->outputFiles.push_back(FilePath::combine(sourcePath, outputFile));
+					}
 				}
 			}
 

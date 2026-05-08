@@ -775,6 +775,14 @@ void VSCompileTask::applyCompileOptions(const std::vector<std::string>& options)
 			generateXMLDocumentationFiles = "true";
 			xmlDocumentationFileName = opt.substr(4);
 		}
+		else if (opt.starts_with("/std:c++"))
+		{
+			languageStandard = "stdcpp" + opt.substr(8);
+		}
+		else if (opt.starts_with("/std:c"))
+		{
+			languageStandard_C = "stdc" + opt.substr(6);
+		}
 		else
 		{
 			if (!additionalOptions.empty())

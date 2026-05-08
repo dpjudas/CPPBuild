@@ -173,7 +173,9 @@ JSValue ScriptContext::getEnvironmentVar(JSContext* ctx, JSValueConst this_val, 
 		#pragma warning(push)
 		#pragma warning(disable: 4996) // C4996: 'getenv': This function or variable may be unsafe. Consider using _dupenv_s instead
 		#endif
-		std::string value = std::getenv(arg0.toString().c_str());
+		std::string value;
+		if (auto v = std::getenv(arg0.toString().c_str()))
+			value = v;
 		#ifdef _MSC_VER
 		#pragma warning(pop)
 		#endif

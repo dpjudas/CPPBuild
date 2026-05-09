@@ -16,6 +16,10 @@ The **`File`** interface provides access to reading or writing files on the disk
 
     Read entire file and return it as a byte array.
 
+- [`File.readAllBytesAsHex()`](readAllBytes/index.md)
+
+    Read entire file and return it as a hex string.
+
 - [`File.writeAllText()`](writeAllText/index.md)
 
     Write string to file as UTF-8 text.

@@ -351,19 +351,23 @@ class Configuration
 class File
 {
 	static readAllText(filename) {
-		return native.readAllText(filename);
+		return native.readAllText(Directory.currentPath(filename));
 	}
 
 	static readAllJson(filename) {
-		return JSON.parse(File.readAllText());
+		return JSON.parse(File.readAllText(filename));
 	}
 
 	static readAllBytes(filename) {
-		return native.readAllBytes(filename);
+		return native.readAllBytes(Directory.currentPath(filename));
+	}
+
+	static readAllBytesAsHex(filename) {
+		return native.readAllBytesAsHex(Directory.currentPath(filename));
 	}
 
 	static writeAllText(filename, text) {
-		native.writeAllText(filename, text);
+		native.writeAllText(Directory.currentPath(filename), text);
 	}
 
 	static writeAllJson(filename, obj) {
@@ -371,7 +375,7 @@ class File
 	}
 
 	static writeAllBytes(filename, bytes) {
-		native.writeAllBytes(filename, bytes);
+		native.writeAllBytes(Directory.currentPath(filename), bytes);
 	}
 }
 

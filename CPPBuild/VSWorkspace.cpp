@@ -125,6 +125,8 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 			fileToCustomCmd[cmd.inputFile].push_back(&cmd);
 		}
 
+		std::set<std::string> objDuplicates;
+
 		for (const std::string& item : targetDef.files)
 		{
 			VSCppProjectFilter* filter = nullptr;
@@ -201,6 +203,24 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 			else if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
 			{
 				VSFile<VSCompileTask> file = name;
+
+				std::string origName = FilePath::removeExtension(FilePath::lastComponent(item));
+				if (!objDuplicates.insert(origName).second)
+				{
+					int nextDuplicate = 1;
+					std::string dupObjName;
+					do
+					{
+						dupObjName = origName + "__" + std::to_string(nextDuplicate++);
+					} while (!objDuplicates.insert(dupObjName).second);
+
+					for (const auto& config : setup.project.configurations)
+					{
+						VSCompileTask* task = file.getTask(config.name, platform);
+						task->objectFileName = "$(IntDir)" + dupObjName + ".obj";
+					}
+				}
+
 				for (const BuildFilePropertySet* set : fileToSets[item])
 				{
 					VSCompileTask* task = file.getTask(set->configName, platform);
@@ -208,6 +228,7 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 					task->preprocessorDefinitions = set->defines;
 					task->additionalIncludeDirectories = set->includePaths;
 				}
+
 				sourceFiles.push_back(std::move(file));
 				if (filter)
 					filter->sourceFiles.push_back(name);

@@ -101,6 +101,7 @@ ScriptContext::ScriptContext(const std::string& sourcePath, const std::string& b
 	native.setPropertyStr("getFolders", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::getFolders, "getFolders", 2)));
 	native.setPropertyStr("readAllText", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::readAllText, "readAllText", 1)));
 	native.setPropertyStr("readAllBytes", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::readAllBytes, "readAllBytes", 1)));
+	native.setPropertyStr("readAllBytesAsHex", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::readAllBytesAsHex, "readAllBytesAsHex", 1)));
 	native.setPropertyStr("writeAllText", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::writeAllText, "writeAllText", 2)));
 	native.setPropertyStr("writeAllBytes", ScriptValue(context, JS_NewCFunction(context, &ScriptContext::writeAllBytes, "writeAllBytes", 2)));
 }
@@ -299,7 +300,7 @@ JSValue ScriptContext::readAllText(JSContext* ctx, JSValueConst this_val, int ar
 	try
 	{
 		std::string text = File::readAllText(arg0.toString());
-		return JS_NewString(ctx, text.c_str());
+		return JS_NewStringLen(ctx, text.c_str(), text.size());
 	}
 	catch (const std::exception& e)
 	{
@@ -318,7 +319,36 @@ JSValue ScriptContext::readAllBytes(JSContext* ctx, JSValueConst this_val, int a
 	try
 	{
 		auto data = File::readAllBytes(arg0.toString());
-		return JS_NewArrayBufferCopy(ctx, data->data<uint8_t>(), data->size());
+		return JS_NewUint8ArrayCopy(ctx, data->data<uint8_t>(), data->size());
+	}
+	catch (const std::exception& e)
+	{
+		return JS_Throw(ctx, JS_NewString(ctx, e.what()));
+	}
+}
+
+JSValue ScriptContext::readAllBytesAsHex(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv)
+{
+	if (argc < 1 || !JS_IsString(argv[0]))
+		return JS_Throw(ctx, JS_NewString(ctx, "Invalid arguments passed to File.readAllBytesAsHex"));
+
+	ScriptValueConst arg0(ctx, argv[0]);
+	ScriptContext* context = static_cast<ScriptContext*>(JS_GetContextOpaque(ctx));
+
+	try
+	{
+		auto data = File::readAllBytes(arg0.toString());
+		std::string text;
+		text.reserve(data->size() * 2);
+		const uint8_t* src = data->data<uint8_t>();
+		size_t size = data->size();
+		const char nibbleToHex[16] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f' };
+		for (size_t i = 0; i < size; i++)
+		{
+			text += nibbleToHex[(src[i] >> 4) & 15];
+			text += nibbleToHex[src[i] & 15];
+		}
+		return JS_NewStringLen(ctx, text.c_str(), text.size());
 	}
 	catch (const std::exception& e)
 	{

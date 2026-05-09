@@ -25,6 +25,7 @@ private:
 	static JSValue getFolders(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 	static JSValue readAllText(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 	static JSValue readAllBytes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
+	static JSValue readAllBytesAsHex(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 	static JSValue writeAllText(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 	static JSValue writeAllBytes(JSContext* ctx, JSValueConst this_val, int argc, JSValueConst* argv);
 

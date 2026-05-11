@@ -147,8 +147,6 @@ bool Target::compile()
 		std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".d");
 
 		bool needsCompile = false;
-
-		if (inputFile->outputFiles.empty())
 		try
 		{
 			int64_t inputTime = FileTimeCache::getLastWriteTime(inputFile->filename);

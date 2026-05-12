@@ -565,6 +565,39 @@ std::string Target::processCSSFile(const std::string& filename, std::string text
 			break;
 		}
 
+		if (token.type == CSSTokenType::atkeyword && token.value == "layer")
+		{
+			size_t layerStart = token.offset;
+			tokenizer->read(token, true);
+			while (token.type == CSSTokenType::ident || token.type == CSSTokenType::delim)
+				tokenizer->read(token, true);
+
+			if (token.type == CSSTokenType::semi_colon)
+			{
+				// If this is a statement we want to keep it
+				tokenizer->read(token, true);
+				size_t layerEnd = (token.type != CSSTokenType::null) ? token.offset : text.size();
+				includeCSS += text.substr(layerStart, layerEnd - layerStart);
+			}
+			else if (token.type == CSSTokenType::curly_brace_begin)
+			{
+				// If it is a block we are done processing imports
+				importEnd = layerStart;
+				break;
+			}
+			else
+			{
+				// Syntax error in @layer statement
+				throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: expected ';' or '{' in @layer");
+			}
+
+			if (token.type == CSSTokenType::null)
+			{
+				importEnd = text.size();
+				break;
+			}
+		}
+
 		importEnd = token.offset;
 		if (token.type == CSSTokenType::atkeyword && token.value == "import")
 		{
@@ -666,20 +699,6 @@ std::string Target::processCSSFile(const std::string& filename, std::string text
 			{
 				includeCSS += "}" + newline;
 			}
-		}
-		else if (token.type == CSSTokenType::atkeyword && token.value == "layer")
-		{
-			// If this is a @layer statement we want to keep it. If it is a @layer block we are done processing imports
-			size_t layerStart = token.offset;
-			while (token.type == CSSTokenType::ident || token.type == CSSTokenType::delim)
-				tokenizer->read(token, true);
-			if (token.type != CSSTokenType::semi_colon)
-				break;
-			tokenizer->read(token, true);
-			if (token.type == CSSTokenType::null)
-				break;
-			size_t layerEnd = token.offset;
-			includeCSS += text.substr(layerStart, layerEnd - layerStart);
 		}
 		else
 		{

@@ -165,6 +165,7 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 						for (const BuildConfiguration& configDef : setup.project.configurations)
 						{
 							VSCustomBuildTask* task = file.getTask(configDef.name, platform);
+							task->message = FilePath::lastComponent(item);
 							task->useUtf8Encoding = "true";
 							task->linkObjects = "false";
 							for (const std::string& cmdline : cmd->commands)

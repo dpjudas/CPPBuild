@@ -545,6 +545,11 @@ void Target::linkCSS()
 
 std::string Target::processCSSFile(const std::string& filename, std::string text, std::vector<std::string>& includes, int level)
 {
+	// This code parses the @import directives at the top of a CSS file.
+	// As of this writing, @charset must be the very first directive if present. We don't support that keyword.
+	// Then, only @import or @layer statements (but not blocks) are allowed to follow.
+	// We only need to parse the imports as that is what we're resolving. The rest of the CSS file we leave untouched.
+
 	auto tokenizer = CSSTokenizer::create(text);
 
 	std::string includeCSS;
@@ -567,10 +572,55 @@ std::string Target::processCSSFile(const std::string& filename, std::string text
 			if (token.type != CSSTokenType::string)
 				throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: expected string after @import");
 
+			std::string importFilename = token.value;
+			std::optional<std::string> layer;
+
+			tokenizer->read(token, true);
+			if (token.type == CSSTokenType::function)
+			{
+				if (token.value == "layer")
+				{
+					tokenizer->read(token, true);
+
+					std::string layerName;
+					if (token.type != CSSTokenType::bracket_end)
+					{
+						while (true)
+						{
+							if (token.type == CSSTokenType::ident)
+								layerName += token.value;
+							else
+								throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: invalid layer name");
+
+							tokenizer->read(token, true);
+							if (token.type == CSSTokenType::bracket_end)
+								break;
+							else if (token.type == CSSTokenType::delim && token.value == ".")
+								tokenizer->read(token, true);
+							else
+								throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: invalid layer name");
+
+							layerName += '.';
+						}
+					}
+					layer = layerName;
+					tokenizer->read(token, true);
+				}
+				else
+				{
+					throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: unsupported import function " + token.value + "()");
+				}
+			}
+
+			if (token.type != CSSTokenType::semi_colon)
+			{
+				throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: ';' expected after import directive");
+			}
+
 			if (level >= 10)
 				throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: @import recursion too deep");
 
-			std::string includeFilename = FilePath::combine(FilePath::removeLastComponent(filename), token.value);
+			std::string includeFilename = FilePath::combine(FilePath::removeLastComponent(filename), importFilename);
 			std::string includeText;
 			try
 			{
@@ -583,7 +633,7 @@ std::string Target::processCSSFile(const std::string& filename, std::string text
 				{
 					try
 					{
-						includeFilename = FilePath::combine(includePath, token.value);
+						includeFilename = FilePath::combine(includePath, importFilename);
 						includeText = File::readAllText(includeFilename);
 						found = true;
 					}
@@ -592,14 +642,44 @@ std::string Target::processCSSFile(const std::string& filename, std::string text
 					}
 				}
 				if (!found)
-					throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: could not include '" + token.value);
+					throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: could not include '" + importFilename);
 			}
 			includes.push_back(includeFilename);
-			includeCSS += processCSSFile(includeFilename, std::move(includeText), includes, level + 1);
 
-			tokenizer->read(token, true);
+#ifdef WIN32
+			std::string newline = "\r\n";
+#else
+			std::string newline = "\n";
+#endif
+
+			if (layer.has_value())
+			{
+				std::string layerName = layer.value();
+				if (layerName.empty())
+					includeCSS += "@layer" + newline;
+				else
+					includeCSS += "@layer " + layerName + newline;
+				includeCSS += "{" + newline;
+			}
+			includeCSS += processCSSFile(includeFilename, std::move(includeText), includes, level + 1);
+			if (layer.has_value())
+			{
+				includeCSS += "}" + newline;
+			}
+		}
+		else if (token.type == CSSTokenType::atkeyword && token.value == "layer")
+		{
+			// If this is a @layer statement we want to keep it. If it is a @layer block we are done processing imports
+			size_t layerStart = token.offset;
+			while (token.type == CSSTokenType::ident || token.type == CSSTokenType::delim)
+				tokenizer->read(token, true);
 			if (token.type != CSSTokenType::semi_colon)
-				throw std::runtime_error(FilePath::normalizePathDelimiters(filename) + ": error: ';' expected after import directive");
+				break;
+			tokenizer->read(token, true);
+			if (token.type == CSSTokenType::null)
+				break;
+			size_t layerEnd = token.offset;
+			includeCSS += text.substr(layerStart, layerEnd - layerStart);
 		}
 		else
 		{

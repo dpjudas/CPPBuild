@@ -68,17 +68,27 @@ int Target::postBuild()
 
 int Target::build()
 {
-	if (targetType == TargetType::custom)
+#ifdef WIN32
+	if (targetType == TargetType::application || targetType == TargetType::console || targetType == TargetType::lib || targetType == TargetType::dll)
 	{
-		runCommand(buildCommand, "Could not run build command");
+		// These targets are built by msbuild
+		// To do: add support for building without msbuild from command line
 		return 0;
 	}
+#endif
 
 	if (!compile())
 	{
 		printLine("Compile failed");
 		return 2;
 	}
+
+	if (targetType == TargetType::custom)
+	{
+		runCommand(buildCommand, "Could not run build command");
+		return 0;
+	}
+
 	link();
 	linkCSS();
 	package();
@@ -151,11 +161,7 @@ bool Target::compile()
 		{
 			int64_t inputTime = FileTimeCache::getLastWriteTime(inputFile->filename);
 			int64_t depTime = FileTimeCache::getLastWriteTime(depFile);
-			if (inputTime > depTime)
-			{
-				needsCompile = true;
-				break;
-			}
+			needsCompile = inputTime > depTime;
 		}
 		catch (...)
 		{
@@ -857,8 +863,6 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 			buildCommand = addPathToCommand(buildCommand, setup);
 		if (!cleanCommand.empty())
 			cleanCommand = addPathToCommand(cleanCommand, setup);
-
-		return;
 	}
 
 	if (targetType == TargetType::webComponent ||
@@ -939,11 +943,14 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 
 			customFiles.push_back(std::move(file));
 		}
-		else if (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c"))
+		else if (targetType != TargetType::custom && (FilePath::hasExtension(name, "cpp") || FilePath::hasExtension(name, "cc") || FilePath::hasExtension(name, "c")))
 		{
 			sourceFiles.push_back(FilePath::combine(sourcePath, name));
 		}
 	}
+
+	if (targetType == TargetType::custom)
+		return;
 
 	for (const BuildCopyFile& fileDef : targetDef.copyFiles)
 		copyFiles[fileDef.dest].push_back(FilePath::combine(sourcePath, fileDef.src));
@@ -1083,6 +1090,17 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		for (const std::string& linkLibrary : package.linkLibraries)
 			linkLibraries.push_back(linkLibrary);
 	}
+
+	// Don't actually link to a target that doesn't produce a library
+	// To do: improve this check
+	std::erase_if(linkLibraries, [&](const std::string& name) -> bool {
+		for (const BuildTarget& target : setup.project.targets)
+		{
+			if (name == target.name && target.type == "custom" && target.buildCommand.empty())
+				return true;
+		}
+		return false;
+		});
 
 	bool cLangVersion = isOptionSpecified("--std=", cCompileOptions);
 	bool cOptimizeSet = isOptionSpecified("-O", cCompileOptions);

@@ -20,3 +20,7 @@ The **`Project`** interface is used to set up project global settings.
 
     Adds a subdirectory with an additional configure script.
 
+- [`Project.addSolutionFolder()`](addSolutionFolder/index.md)
+
+    Adds a Visual Studio solution folder containing file items. Ignored by other generators.
+

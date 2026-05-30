@@ -587,6 +587,31 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 		solution->folders.push_back(std::make_unique<VSSolutionFolder>(group, guid));
 	}
 
+	std::map<std::string, std::string> fileFolderGuids;
+	for (const BuildSolutionFolder& folderDef : setup.project.fileFolders)
+	{
+		auto& guid = guids.solutionFolderGuids[folderDef.name];
+		if (guid.empty())
+			guid = Guid::makeGuid().toString();
+		fileFolderGuids[folderDef.name] = guid;
+	}
+	for (const BuildSolutionFolder& folderDef : setup.project.fileFolders)
+	{
+		size_t slash = folderDef.name.rfind('/');
+		std::string displayName = (slash == std::string::npos) ? folderDef.name : folderDef.name.substr(slash + 1);
+		std::string parentPath  = (slash == std::string::npos) ? "" : folderDef.name.substr(0, slash);
+
+		auto vsFolder = std::make_unique<VSSolutionFolder>(displayName, fileFolderGuids[folderDef.name]);
+		vsFolder->files = folderDef.files;
+		if (!parentPath.empty())
+		{
+			auto it = fileFolderGuids.find(parentPath);
+			if (it != fileFolderGuids.end())
+				vsFolder->parentFolderGuid = it->second;
+		}
+		solution->folders.push_back(std::move(vsFolder));
+	}
+
 	solution->generate();
 	saveSolutionGuids(guids, cppbuildDir);
 }

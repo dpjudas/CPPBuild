@@ -243,6 +243,17 @@ BuildInstaller BuildInstaller::fromJson(const JsonValue& json)
 
 /////////////////////////////////////////////////////////////////////////////
 
+BuildSolutionFolder BuildSolutionFolder::fromJson(const JsonValue& json)
+{
+	BuildSolutionFolder folder;
+	folder.name = json["name"].to_string();
+	for (const JsonValue& item : json["files"].items())
+		folder.files.push_back(item.to_string());
+	return folder;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 BuildProject BuildProject::fromJson(const JsonValue& json)
 {
 	BuildProject proj;
@@ -257,6 +268,8 @@ BuildProject BuildProject::fromJson(const JsonValue& json)
 		proj.packageInstallers.push_back(BuildPackageInstaller::fromJson(installer));
 	for (const JsonValue& package : json["packages"].items())
 		proj.packages.push_back(BuildPackage::fromJson(package));
+	for (const JsonValue& folder : json["fileFolders"].items())
+		proj.fileFolders.push_back(BuildSolutionFolder::fromJson(folder));
 	return proj;
 }
 

@@ -452,6 +452,8 @@ public:
 
 	std::string name;
 	std::string folderGuid;
+	std::string parentFolderGuid;
+	std::vector<std::string> files;
 };
 
 class VSCppProject

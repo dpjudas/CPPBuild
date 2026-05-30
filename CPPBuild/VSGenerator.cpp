@@ -70,6 +70,16 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 	for (const auto& folder : solution->folders)
 	{
 		output.writeLine("Project(\"{2150E333-8FDC-42A3-9474-1A3956D46DE8}\") = \"" + folder->name + "\", \"" + folder->name + "\", \"{" + folder->folderGuid + "}\"");
+		if (!folder->files.empty())
+		{
+			output.writeLine("\tProjectSection(SolutionItems) = preProject");
+			for (const auto& file : folder->files)
+			{
+				std::string f = FilePath::forceBackslash(file);
+				output.writeLine("\t\t" + f + " = " + f);
+			}
+			output.writeLine("\tEndProjectSection");
+		}
 		output.writeLine("EndProject");
 	}
 	output.writeLine("Global");
@@ -101,6 +111,13 @@ void VSGenerator::writeSolution(const VSSolution* solution)
 			if (!project->solutionFolderGuid.empty())
 			{
 				output.writeLine("\t\t{" + project->projectGuid + "} = {" + project->solutionFolderGuid + "}");
+			}
+		}
+		for (const auto& folder : solution->folders)
+		{
+			if (!folder->parentFolderGuid.empty())
+			{
+				output.writeLine("\t\t{" + folder->folderGuid + "} = {" + folder->parentFolderGuid + "}");
 			}
 		}
 		output.writeLine("\tEndGlobalSection");

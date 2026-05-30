@@ -15,6 +15,7 @@ var targetList = [];
 var packageList = [];
 var installerList = [];
 var packageInstallerList = [];
+var solutionFolderList = [];
 
 class Target
 {
@@ -969,6 +970,10 @@ class Project
 	static addSubdirectory(path) {
 		native.addSubdirectory(path);
 	}
+
+	static addSolutionFolder(name, files) {
+		solutionFolderList.push({ name: name, files: files });
+	}
 }
 
 native.generate = function() {
@@ -978,7 +983,8 @@ native.generate = function() {
 		configurations: configList.map(function(config) { return config.toConfigDefinition(); }),
 		packages: packageList.map(function(pkg) { return pkg.toPackageDefinition(); }),
 		installers: installerList.map(function(installer) { return installer.toInstallerDefinition(); }),
-		packageInstallers: packageInstallerList.map(function(installer) { return installer.toInstallerDefinition(); })
+		packageInstallers: packageInstallerList.map(function(installer) { return installer.toInstallerDefinition(); }),
+		fileFolders: solutionFolderList
 	};
 };
 

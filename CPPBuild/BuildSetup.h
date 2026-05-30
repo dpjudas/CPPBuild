@@ -172,6 +172,15 @@ public:
 	static BuildPackage fromJson(const JsonValue& json);
 };
 
+class BuildSolutionFolder
+{
+public:
+	std::string name;
+	std::vector<std::string> files;
+
+	static BuildSolutionFolder fromJson(const JsonValue& json);
+};
+
 class BuildProject
 {
 public:
@@ -181,6 +190,7 @@ public:
 	std::vector<BuildInstaller> installers;
 	std::vector<BuildPackageInstaller> packageInstallers;
 	std::vector<BuildPackage> packages;
+	std::vector<BuildSolutionFolder> fileFolders; // VS only - ignored by other generators
 
 	const BuildConfiguration& getConfiguration(const std::string& name) const;
 	const BuildTarget& getTarget(const std::string& name) const;

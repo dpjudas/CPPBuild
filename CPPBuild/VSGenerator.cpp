@@ -11,10 +11,10 @@ VSSolution::VSSolution(const std::string& name, const std::string& location, con
 {
 }
 
-void VSSolution::generate()
+void VSSolution::generate(const std::string& vsversion)
 {
 	VSGenerator generator;
-	generator.writeSolution(this);
+	generator.writeSolution(this, vsversion);
 	for (const auto& project : projects)
 	{
 		generator.writeProject(project.get());
@@ -23,33 +23,66 @@ void VSSolution::generate()
 
 /////////////////////////////////////////////////////////////////////////////
 
-void VSGenerator::writeSolution(const VSSolution* solution)
+void VSGenerator::writeSolution(const VSSolution* solution, const std::string& vsversion)
 {
 #ifdef WIN32
+	JsonValue vsinfo;
 	try
 	{
 		std::cout << "Checking for Visual Studio version" << std::endl;
 		// Microslop at its finest! After over 35 years of devenv development this was the best engineered solution they could come up with!
 		std::string vsinfotxt;
-		ConsoleProcess::runCommand("\"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\"\" -utf8 -format json -latest", [&](const std::string& line) { vsinfotxt += line; vsinfotxt += '\n'; });
-		JsonValue vsinfo = JsonValue::parse(vsinfotxt);
-		if (!vsinfo.is_array() || vsinfo.items().size() == 0)
-			throw std::runtime_error("Visual Studio not found");
-
-		std::string productLineVersion = vsinfo.items().front()["catalog"]["productLineVersion"].to_string();
-		if (productLineVersion.empty())
-			throw std::runtime_error("Could not find catalog.productLineVersion in vswhere's output");
-		version = productLineVersion;
-		if (version == "17" || version == "2022")
-			platformToolset = "v143";
-		else
-			platformToolset = "v145"; // is there a way to find this?
-		std::cout << "Using platform toolset " << platformToolset.c_str() << std::endl;
+		ConsoleProcess::runCommand("\"\"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\"\" -utf8 -format json -sort", [&](const std::string& line) { vsinfotxt += line; vsinfotxt += '\n'; });
+		vsinfo = JsonValue::parse(vsinfotxt);
 	}
 	catch (...)
 	{
 		throw std::runtime_error("Could not run \"%ProgramFiles(x86)%\\Microsoft Visual Studio\\Installer\\vswhere.exe\"");
 	}
+
+	if (!vsinfo.is_array() || vsinfo.items().size() == 0)
+		throw std::runtime_error("Visual Studio not found");
+
+	if (vsversion.empty())
+	{
+		std::string productLineVersion = vsinfo.items().front()["catalog"]["productLineVersion"].to_string();
+		if (productLineVersion.empty())
+			throw std::runtime_error("Could not find catalog.productLineVersion in vswhere's output");
+		version = productLineVersion;
+	}
+	else
+	{
+		for (const auto& item : vsinfo.items())
+		{
+			std::string displayName = item["displayName"].to_string();
+			if (displayName == vsversion)
+			{
+				std::string productLineVersion = item["catalog"]["productLineVersion"].to_string();
+				if (productLineVersion.empty())
+					throw std::runtime_error("Could not find catalog.productLineVersion in vswhere's output");
+				version = productLineVersion;
+			}
+		}
+		if (version.empty())
+		{
+			std::cout << "Could not find a version matching " << vsversion.c_str() << std::endl;
+			std::cout << "Found versions:" << std::endl;
+			for (const auto& item : vsinfo.items())
+			{
+				std::string displayName = item["displayName"].to_string();
+				std::cout << "\t" << displayName.c_str() << std::endl;
+			}
+			throw std::runtime_error("Requested Visual Studio version not found");
+		}
+	}
+
+	if (version == "17" || version == "2022")
+		platformToolset = "v143";
+	else
+		platformToolset = "v145"; // is there a way to find this?
+
+	std::cout << "Using platform toolset " << platformToolset.c_str() << std::endl;
+
 #else
 	version = "18";
 	platformToolset = "v145";

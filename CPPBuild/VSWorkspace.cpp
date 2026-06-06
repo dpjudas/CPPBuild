@@ -10,7 +10,7 @@
 #include "IOData/File.h"
 #include <set>
 
-void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir)
+void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion)
 {
 	std::string cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
 
@@ -612,7 +612,7 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 		solution->folders.push_back(std::move(vsFolder));
 	}
 
-	solution->generate();
+	solution->generate(vsversion);
 	saveSolutionGuids(guids, cppbuildDir);
 }
 

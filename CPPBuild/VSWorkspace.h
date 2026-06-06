@@ -17,7 +17,7 @@ public:
 class VSWorkspace
 {
 public:
-	void generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir);
+	void generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion);
 
 private:
 	VSGuids loadSolutionGuids(const std::string& cppbuildDir);

@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 			args.push_back(argv[i]);
 
 		std::string workdir;
-		if (args.size() > 3 && (args[1].substr(0, 8) == "--workdir" || args[1].substr(0, 8) == "-workdir")) // also -workdir for legacy reasons
+		if (args.size() > 3 && (args[1].substr(0, 9) == "--workdir" || args[1].substr(0, 8) == "-workdir")) // also -workdir for legacy reasons
 		{
 			workdir = args[2];
 			args.erase(args.begin() + 1, args.begin() + 3);
@@ -73,10 +73,15 @@ int main(int argc, char** argv)
 		{
 			app.setProperty(args[3], args[4], true);
 		}
+		else if (args.size() == 2 && args[1] == "list")
+		{
+			app.listProperties();
+		}
 		else
 		{
 			std::cout << "cppbuild configure [source path]" << std::endl;
 			std::cout << "cppbuild set [--global] <property> <value>" << std::endl;
+			std::cout << "cppbuild list" << std::endl;
 			std::cout << "cppbuild [--workdir <path>] build <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [--workdir <path>] clean <target> <configuration>" << std::endl;
 			std::cout << "cppbuild [--workdir <path>] rebuild <target> <configuration>" << std::endl;

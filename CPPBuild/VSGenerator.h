@@ -25,7 +25,7 @@ class VSSolution
 public:
 	VSSolution(const std::string& name, const std::string& location, const std::string& solutionGuid);
 
-	void generate();
+	void generate(const std::string& vsversion);
 
 	std::string name;
 	std::string location;
@@ -482,7 +482,7 @@ public:
 class VSGenerator
 {
 public:
-	void writeSolution(const VSSolution* solution);
+	void writeSolution(const VSSolution* solution, const std::string& vsversion);
 	void writeProject(const VSCppProject* project);
 	void writeProjectFilters(const VSCppProject* project);
 

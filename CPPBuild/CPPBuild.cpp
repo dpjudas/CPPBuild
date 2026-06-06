@@ -44,7 +44,11 @@ JsonValue CPPBuild::loadProperties(const std::string& filename)
 	catch (...)
 	{
 	}
-	return text.empty() ? JsonValue::object() : JsonValue::parse(text);
+
+	if (text.empty())
+		return JsonValue::object();
+	else
+		return JsonValue::parse(text);
 }
 
 void CPPBuild::setProperty(std::string name, std::string value, bool global)
@@ -63,15 +67,35 @@ void CPPBuild::setProperty(std::string name, std::string value, bool global)
 	File::writeAllText(filename, properties.to_json());
 }
 
+void CPPBuild::listProperties()
+{
+	JsonValue properties = loadProperties(FilePath::combine(getGlobalConfigDir(), "properties.json"));
+	for (const auto& it : properties.properties())
+	{
+		std::cout << it.first.c_str() << " = " << it.second.to_string() << " [global]" << std::endl;
+	}
+
+	properties = loadProperties(FilePath::combine(getLocalConfigDir(), "properties.json"));
+	for (const auto& it : properties.properties())
+	{
+		std::cout << it.first.c_str() << " = " << it.second.to_string() << " [local]" << std::endl;
+	}
+}
+
 void CPPBuild::configure(std::string sourcePath)
 {
 	if (sourcePath.empty())
 		sourcePath = Directory::currentDirectory();
 
+	JsonValue properties = loadProperties(FilePath::combine(getGlobalConfigDir(), "properties.json"));
+	JsonValue localProperties = loadProperties(FilePath::combine(getLocalConfigDir(), "properties.json"));
+	for (const auto& it : localProperties.properties())
+		properties[it.first] = it.second;
+
 	JsonValue config = JsonValue::object();
 	config["version"] = JsonValue::number(1);
 	config["sourcePath"] = JsonValue::string(sourcePath);
-	config["project"] = runConfigureScript(sourcePath);
+	config["project"] = runConfigureScript(sourcePath, properties);
 
 	BuildSetup setup = BuildSetup::fromJson(config);
 	validateConfig(setup);
@@ -84,7 +108,7 @@ void CPPBuild::configure(std::string sourcePath)
 	packages.update(setup);
 
 	if (!setup.project.targets.empty())
-		generateWorkspace();
+		generateWorkspace(properties);
 }
 
 void CPPBuild::updateMakefile()
@@ -153,15 +177,11 @@ void CPPBuild::validateConfig(const BuildSetup& setup)
 	throw std::runtime_error("No targets or installers specified");
 }
 
-JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
+JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath, const JsonValue& properties)
 {
 	std::string scriptFilename = FilePath::combine(sourcePath, "Configure.js");
 	std::string configureScript = File::readAllText(scriptFilename);
 	std::string buildDir = FilePath::combine(workDir, "Build");
-
-	JsonValue properties = loadProperties(FilePath::combine(getGlobalConfigDir(), "properties.json"));
-	for (const auto& it : loadProperties(FilePath::combine(getLocalConfigDir(), "properties.json")).properties())
-		properties[it.first] = it.second;
 
 	ScriptContext context(sourcePath, buildDir, properties.to_json());
 	ScriptValue result = context.eval(configureScript, scriptFilename, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_STRICT);
@@ -175,12 +195,12 @@ JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
 	return JsonValue::parse(context.generateConfiguration());
 }
 
-void CPPBuild::generateWorkspace()
+void CPPBuild::generateWorkspace(const JsonValue& properties)
 {
 #ifdef WIN32
 	PackageManager packages(workDir);
 	VSWorkspace workspace;
-	workspace.generate(loadBuildSetup(), &packages, workDir, cppbuildDir);
+	workspace.generate(loadBuildSetup(), &packages, workDir, cppbuildDir, properties["cppbuild.vsversion"].to_string());
 #else
 	MakefileWorkspace workspace;
 	workspace.generate(loadBuildSetup(), workDir, cppbuildDir);

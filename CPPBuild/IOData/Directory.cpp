@@ -23,6 +23,8 @@
 #define NOMINMAX
 #define WIN32_MEAN_AND_LEAN
 #include <Windows.h>
+#include <Shlwapi.h>
+#include <Shlobj.h>
 #endif
 
 #ifdef WIN32
@@ -53,6 +55,37 @@ std::string Directory::currentDirectory()
 	}
 	buffer.resize(strlen(buffer.data()));
 	return buffer;
+}
+#endif
+
+#ifdef WIN32
+std::string Directory::localAppData()
+{
+	PWSTR path = nullptr;
+	if (FAILED(SHGetKnownFolderPath(FOLDERID_LocalAppData, KF_FLAG_CREATE, nullptr, &path)))
+		throw std::runtime_error("SHGetKnownFolderPath(FOLDERID_LocalAppData) failed");
+	try
+	{
+		std::string folder = from_utf16(path);
+		CoTaskMemFree(path);
+		return folder;
+	}
+	catch (...)
+	{
+		CoTaskMemFree(path);
+		throw;
+	}
+}
+#else
+std::string Directory::localAppData()
+{
+	// We're trying to find "~/.config" here
+	const char* homeDir = std::getenv("HOME");
+
+	if (!homeDir)
+		throw std::runtime_error("HOME environment variable is not set");
+
+	return FilePath::combine(homeDir, ".config");
 }
 #endif
 

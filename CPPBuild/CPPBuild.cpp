@@ -24,6 +24,45 @@ CPPBuild::CPPBuild(std::string workDir) : workDir(workDir)
 	cppbuildDir = FilePath::combine(workDir, ".cppbuild");
 }
 
+std::string CPPBuild::getGlobalConfigDir()
+{
+	return FilePath::combine(Directory::localAppData(), "cppbuild");
+}
+
+std::string CPPBuild::getLocalConfigDir()
+{
+	return cppbuildDir;
+}
+
+JsonValue CPPBuild::loadProperties(const std::string& filename)
+{
+	std::string text;
+	try
+	{
+		text = File::readAllText(filename);
+	}
+	catch (...)
+	{
+	}
+	return text.empty() ? JsonValue::object() : JsonValue::parse(text);
+}
+
+void CPPBuild::setProperty(std::string name, std::string value, bool global)
+{
+	if (name.empty())
+		throw std::runtime_error("Property name is an empty string");
+
+	std::string configDir = global ? getGlobalConfigDir() : getLocalConfigDir();
+
+	Directory::create(configDir);
+	Directory::trySetHidden(configDir);
+
+	std::string filename = FilePath::combine(configDir, "properties.json");
+	JsonValue properties = loadProperties(filename);
+	properties[name] = JsonValue::string(value);
+	File::writeAllText(filename, properties.to_json());
+}
+
 void CPPBuild::configure(std::string sourcePath)
 {
 	if (sourcePath.empty())
@@ -120,7 +159,11 @@ JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath)
 	std::string configureScript = File::readAllText(scriptFilename);
 	std::string buildDir = FilePath::combine(workDir, "Build");
 
-	ScriptContext context(sourcePath, buildDir);
+	JsonValue properties = loadProperties(FilePath::combine(getGlobalConfigDir(), "properties.json"));
+	for (const auto& it : loadProperties(FilePath::combine(getLocalConfigDir(), "properties.json")).properties())
+		properties[it.first] = it.second;
+
+	ScriptContext context(sourcePath, buildDir, properties.to_json());
 	ScriptValue result = context.eval(configureScript, scriptFilename, JS_EVAL_TYPE_MODULE | JS_EVAL_FLAG_STRICT);
 
 	if (result.isException())

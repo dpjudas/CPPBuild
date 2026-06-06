@@ -2,10 +2,12 @@
 
 #include "ScriptValue.h"
 
+class JsonValue;
+
 class ScriptContext
 {
 public:
-	ScriptContext(const std::string& sourcePath, const std::string& buildPath);
+	ScriptContext(const std::string& sourcePath, const std::string& buildPath, const std::string& properties);
 	~ScriptContext();
 
 	ScriptValue eval(const std::string& code, const std::string& filename, int flags);

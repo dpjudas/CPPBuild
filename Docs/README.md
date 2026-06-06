@@ -6,17 +6,21 @@ CPPBuild is a build system and a project generator for C and C++ projects.
 
 ```
 cppbuild configure [source path]
-cppbuild [-workdir <path>] build <target> <configuration>
-cppbuild [-workdir <path>] clean <target> <configuration>
-cppbuild [-workdir <path>] rebuild <target> <configuration>
-cppbuild [-workdir <path>] create-package
-cppbuild [-workdir <path>] create-installer
+cppbuild set [--global] <property> <value>
+cppbuild [--workdir <path>] build <target> <configuration>
+cppbuild [--workdir <path>] clean <target> <configuration>
+cppbuild [--workdir <path>] rebuild <target> <configuration>
+cppbuild [--workdir <path>] create-package
+cppbuild [--workdir <path>] create-installer
 ```
 
 `cppbuild configure` runs `Configure.js` and outputs makefiles for the platform: a Visual Studio solution on Windows and a Makefile for
 Linux.
 
 After this the project can be built either by running cppbuild directly, opening the Visual Studio solution, running `msbuild`, or via `make all`.
+
+`cppbuild set` sets a property value that can then be read via `Project.getProperty(name)` in the configure script. If `--global` is
+specified the property is set globally for all cppbuild projects.
 
 `cppbuild build` will build a specific target.
 

@@ -14,7 +14,7 @@ int main(int argc, char** argv)
 			args.push_back(argv[i]);
 
 		std::string workdir;
-		if (args.size() > 3 && args[1].substr(0, 8) == "-workdir")
+		if (args.size() > 3 && (args[1].substr(0, 8) == "--workdir" || args[1].substr(0, 8) == "-workdir")) // also -workdir for legacy reasons
 		{
 			workdir = args[2];
 			args.erase(args.begin() + 1, args.begin() + 3);
@@ -65,15 +65,24 @@ int main(int argc, char** argv)
 		{
 			return app.postBuild(args[2], args[3]);
 		}
+		else if (args.size() == 4 && args[1] == "set")
+		{
+			app.setProperty(args[2], args[3], false);
+		}
+		else if (args.size() == 5 && args[1] == "set" && args[2] == "--global")
+		{
+			app.setProperty(args[3], args[4], true);
+		}
 		else
 		{
 			std::cout << "cppbuild configure [source path]" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] build <target> <configuration>" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] clean <target> <configuration>" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] rebuild <target> <configuration>" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] postbuild <target> <configuration>" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] create-installer" << std::endl;
-			std::cout << "cppbuild [-workdir <path>] create-package" << std::endl;
+			std::cout << "cppbuild set [--global] <property> <value>" << std::endl;
+			std::cout << "cppbuild [--workdir <path>] build <target> <configuration>" << std::endl;
+			std::cout << "cppbuild [--workdir <path>] clean <target> <configuration>" << std::endl;
+			std::cout << "cppbuild [--workdir <path>] rebuild <target> <configuration>" << std::endl;
+			std::cout << "cppbuild [--workdir <path>] postbuild <target> <configuration>" << std::endl;
+			std::cout << "cppbuild [--workdir <path>] create-installer" << std::endl;
+			std::cout << "cppbuild [--workdir <path>] create-package" << std::endl;
 			return 1;
 		}
 	}

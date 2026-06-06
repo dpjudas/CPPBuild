@@ -974,6 +974,10 @@ class Project
 	static addSolutionFolder(name, files) {
 		solutionFolderList.push({ name: name, files: files });
 	}
+
+	static getProperty(name) {
+		return native.properties[name];
+	}
 }
 
 native.generate = function() {

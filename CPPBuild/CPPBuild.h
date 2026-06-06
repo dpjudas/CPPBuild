@@ -20,12 +20,17 @@ public:
 	void clean(std::string target, std::string configuration);
 	void createInstaller();
 	void createPackage();
+	void setProperty(std::string name, std::string value, bool global);
 
 private:
 	void updateMakefile();
 	JsonValue runConfigureScript(const std::string& sourcePath);
 	void validateConfig(const BuildSetup& setup);
 	void generateWorkspace();
+
+	std::string getGlobalConfigDir();
+	std::string getLocalConfigDir();
+	static JsonValue loadProperties(const std::string& filename);
 
 	BuildSetup loadBuildSetup();
 

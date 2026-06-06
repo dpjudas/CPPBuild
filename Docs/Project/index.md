@@ -24,3 +24,7 @@ The **`Project`** interface is used to set up project global settings.
 
     Adds a Visual Studio solution folder containing file items. Ignored by other generators.
 
+- [`Project.getProperty()`](getProperty/index.md)
+
+    Returns the value of a property set using `cppbuild set`.
+

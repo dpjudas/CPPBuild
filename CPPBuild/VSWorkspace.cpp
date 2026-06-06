@@ -59,7 +59,7 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 			props->message = "Running CPPBuild generate";
 			props->useUtf8Encoding = "Always";
 			props->linkObjects = "false";
-			props->command = cppbuildexe + " -workdir $(SolutionDir) check-makefile";
+			props->command = cppbuildexe + " --workdir $(SolutionDir) check-makefile";
 			props->outputs.push_back(FilePath::combine(cppbuildDir, "Makefile.timestamp"));
 
 			for (const BuildTarget& target : setup.project.targets)
@@ -478,9 +478,9 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 				projConfig->general.nmakePreprocessorDefinitions = configDefines;
 				projConfig->general.nmakeIncludeSearchPath = configIncludes;
 				projConfig->general.nmakeOutput = outputFile;
-				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
-				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
-				projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) build " + projectName + " " + configName;
+				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " --workdir $(SolutionDir) clean " + projectName + " " + configName;
+				projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) rebuild " + projectName + " " + configName;
 			}
 			else if (projectType == "custom")
 			{
@@ -488,9 +488,9 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 				projConfig->general.nmakePreprocessorDefinitions = configDefines;
 				projConfig->general.nmakeIncludeSearchPath = configIncludes;
 				projConfig->general.nmakeOutput = outputFile;
-				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) build " + projectName + " " + configName;
-				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " -workdir $(SolutionDir) clean " + projectName + " " + configName;
-				projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " -workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+				projConfig->general.nmakeBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) build " + projectName + " " + configName;
+				projConfig->general.nmakeCleanCommandLine = cppbuildexe + " --workdir $(SolutionDir) clean " + projectName + " " + configName;
+				projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) rebuild " + projectName + " " + configName;
 			}
 			else if (projectType == "utility")
 			{
@@ -517,7 +517,7 @@ void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, co
 				projConfig->link.subSystem = "Windows";
 			}
 
-			projConfig->postBuild.command = cppbuildexe + " -workdir $(SolutionDir) postbuild " + projectName + " " + configName;
+			projConfig->postBuild.command = cppbuildexe + " --workdir $(SolutionDir) postbuild " + projectName + " " + configName;
 
 			if (!configDefines.empty())
 				configDefines.push_back("%(PreprocessorDefinitions)");

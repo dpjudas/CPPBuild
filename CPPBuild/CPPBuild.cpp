@@ -199,8 +199,7 @@ void CPPBuild::generateWorkspace(const JsonValue& properties)
 {
 #ifdef WIN32
 	PackageManager packages(workDir);
-	VSWorkspace workspace;
-	workspace.generate(loadBuildSetup(), &packages, workDir, cppbuildDir, properties["cppbuild.vsversion"].to_string());
+	VSWorkspace::generate(loadBuildSetup(), &packages, workDir, cppbuildDir, properties["cppbuild.vsversion"].to_string());
 #else
 	MakefileWorkspace workspace;
 	workspace.generate(loadBuildSetup(), workDir, cppbuildDir);

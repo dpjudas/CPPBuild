@@ -215,13 +215,16 @@ void VSWorkspace::addCPPBuildCheck()
 		props->command = cppbuildexe + " --workdir $(SolutionDir) check-makefile";
 		props->outputs.push_back(FilePath::combine(cppbuildDir, "Makefile.timestamp"));
 
+		std::set<std::string> additionalInputs;
 		for (const BuildTarget& target : setup.project.targets)
 		{
 			if (!target.subdirectory.empty())
 			{
 				std::string sourcePath = FilePath::combine(setup.sourcePath, target.subdirectory);
 				std::string scriptFile = FilePath::lastComponent(target.subdirectory) + ".js";
-				props->additionalInputs.push_back(FilePath::combine(sourcePath, scriptFile));
+				std::string additionalInput = FilePath::combine(sourcePath, scriptFile);
+				if (additionalInputs.insert(additionalInput).second)
+					props->additionalInputs.push_back(additionalInput);
 			}
 		}
 
@@ -230,13 +233,13 @@ void VSWorkspace::addCPPBuildCheck()
 	}
 	project->customFiles.push_back(customBuildFile);
 
-	std::vector<std::string> configureFiles; // To do: include javascript modules?
+	std::set<std::string> configureFiles; // To do: include javascript modules?
 	for (const auto& targetDef : setup.project.targets)
 	{
 		if (!targetDef.subdirectory.empty())
 		{
 			std::string sourceFile = FilePath::lastComponent(targetDef.subdirectory) + ".js";
-			configureFiles.push_back(FilePath::combine(targetDef.subdirectory, sourceFile));
+			configureFiles.insert(FilePath::combine(targetDef.subdirectory, sourceFile));
 		}
 	}
 

@@ -403,6 +403,42 @@
     <ClInclude Include="Package.h" />
     <ClInclude Include="ProcessMutex.h" />
     <ClInclude Include="FileTimeCache.h" />
+    <ClInclude Include="ScriptModule\JSTarget.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSConfiguration.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSFile.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSFilePath.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSDirectory.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSEnvironment.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSInstaller.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSPackageInstaller.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSPackage.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSProject.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSProlog.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
+    <ClInclude Include="ScriptModule\JSEpilog.h">
+      <Filter>ScriptModule</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="IOData">
@@ -434,6 +470,9 @@
     </Filter>
     <Filter Include="HttpClient">
       <UniqueIdentifier>{e3e76286-44ca-4070-9076-0b4bad76b965}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ScriptModule">
+      <UniqueIdentifier>{648e6483-5806-4836-b82d-f00d5b9e9082}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>

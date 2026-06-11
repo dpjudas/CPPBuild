@@ -566,8 +566,8 @@ JSModuleDef* ScriptContext::moduleLoader(JSContext* ctx, const char* moduleName,
 		std::string code;
 		if (strcmp(moduleName, "cppbuild") == 0)
 		{
-			code = cppbuildJS;
-			code += cppbuildJS2;
+			for (const char* part : cppbuildJSParts)
+				code += part;
 		}
 		else
 		{

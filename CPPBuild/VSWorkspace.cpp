@@ -82,7 +82,12 @@ std::string VSWorkspace::addPathToCommand(std::string cmdline, const std::string
 		{
 			// std::string binPath = "$(SolutionDir)Build\\$(Configuration)\\bin\\";
 			std::string binPath = FilePath::combine(workDir, { "Build", configName, "bin" });
-			return FilePath::combine(binPath, tool) + cmdline.substr(pos);
+			std::string outputName = tool;
+#ifdef _WIN32
+			if (target.type == "application" || target.type == "console")
+				outputName += ".exe";
+#endif
+			return FilePath::combine(binPath, outputName) + cmdline.substr(pos);
 		}
 	}
 

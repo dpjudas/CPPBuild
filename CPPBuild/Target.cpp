@@ -1249,7 +1249,12 @@ std::string Target::addPathToCommand(std::string cmdline, const BuildSetup& setu
 	{
 		if (target.name == tool)
 		{
-			return FilePath::combine(binDir, tool) + cmdline.substr(pos);
+			std::string outputName = tool;
+#ifdef _WIN32
+			if (target.type == "application" || target.type == "console")
+				outputName += ".exe";
+#endif
+			return FilePath::combine(binDir, outputName) + cmdline.substr(pos);
 		}
 	}
 

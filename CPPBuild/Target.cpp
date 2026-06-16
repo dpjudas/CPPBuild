@@ -104,6 +104,14 @@ void Target::clean()
 		return;
 	}
 
+	for (const auto& pch : precompiledHeaders)
+	{
+		std::string pchFilename = FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch";
+		printLine("Cleaning " + pchFilename);
+		std::string objFile = FilePath::combine(objDir, pchFilename);
+		File::tryDelete(objFile);
+	}
+
 	for (const std::string& inputFile : sourceFiles)
 	{
 		if (isCppFile(inputFile))
@@ -146,6 +154,8 @@ int Target::rebuild()
 
 bool Target::compile()
 {
+	compilePrecompiledHeaders();
+
 	for (const std::unique_ptr<CustomCommandFile>& inputFile : customFiles)
 	{
 		std::unique_lock lock(mutex);
@@ -207,6 +217,53 @@ bool Target::compile()
 	return !compileFailed;
 }
 
+void Target::compilePrecompiledHeaders()
+{
+	for (const auto& pch : precompiledHeaders)
+	{
+		std::string filename = FilePath::lastComponent(pch.headerFile);
+		std::string objFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".pch"); // To do: does this need to be .gch for gcc? the documentation is awful for both compilers :(
+		std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".d");
+
+		bool needsCompile = false;
+		try
+		{
+			int64_t objTime = FileTimeCache::getLastWriteTime(objFile);
+			for (const std::string& dependency : readMakefileDependencyFile(depFile))
+			{
+				int64_t depTime = FileTimeCache::getLastWriteTime(dependency);
+				if (depTime > objTime)
+				{
+					needsCompile = true;
+					break;
+				}
+			}
+		}
+		catch (...)
+		{
+			needsCompile = true;
+		}
+
+		if (needsCompile)
+		{
+			printLine(filename);
+
+			if (FilePath::hasExtension(pch.sourceFile, "c"))
+			{
+				std::string commandline = cc + " " + cflags + " -MD -x c-header " + pch.headerFile + " -o " + objFile;
+				runCommand(commandline, "Could not create precompiled header file for " + filename);
+			}
+			else
+			{
+				std::string commandline = ccpp + " " + cxxflags + " -MD -x c++-header " + pch.headerFile + " -o " + objFile;
+				runCommand(commandline, "Could not create precompiled header file for " + filename);
+			}
+
+			FileTimeCache::setTouched(objFile);
+		}
+	}
+}
+
 void Target::compileThreadMain(int threadIndex, int numThreads)
 {
 	try
@@ -252,14 +309,30 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 				{
 					printLine(filename);
 
+					std::string pchflags;
+					bool pchIgnore = precompiledIgnoreList.find(inputFile) != precompiledIgnoreList.end();
+					if (!pchIgnore)
+					{
+						std::string extension = FilePath::extension(filename);
+						for (const auto& pch : precompiledHeaders)
+						{
+							if (FilePath::hasExtension(pch.sourceFile, extension.c_str()))
+							{
+								std::string pchFile = FilePath::combine(objDir, FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch");
+								pchflags = "-include-pch " + pchFile + " ";
+								break;
+							}
+						}
+					}
+
 					if (FilePath::hasExtension(filename, "c"))
 					{
-						std::string commandline = cc + " " + cflags + " -MD -c " + cppFile + " -o " + objFile;
+						std::string commandline = cc + " " + pchflags + cflags + " -MD -c " + cppFile + " -o " + objFile;
 						runCommand(commandline, "Could not compile " + filename);
 					}
 					else
 					{
-						std::string commandline = ccpp + " " + cxxflags + " -MD -c " + cppFile + " -o " + objFile;
+						std::string commandline = ccpp + " " + pchflags + cxxflags + " -MD -c " + cppFile + " -o " + objFile;
 						runCommand(commandline, "Could not compile " + filename);
 					}
 
@@ -901,6 +974,15 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 	}
 
 	wwwrootDir = FilePath::combine(sourcePath, targetDef.wwwRootDir);
+
+	for (const BuildPrecompiledHeader& pchDef : targetDef.precompiledHeaders)
+	{
+		precompiledHeaders.push_back({ FilePath::combine(sourcePath, pchDef.sourceFile), FilePath::combine(sourcePath, pchDef.headerFile) });
+	}
+	for (const std::string& pchIgnoreName : targetDef.precompiledIgnoreList)
+	{
+		precompiledIgnoreList.insert(FilePath::combine(sourcePath, pchIgnoreName));
+	}
 
 	std::unordered_map<std::string, std::vector<const BuildCustomCommand*>> fileToCustomCmd;
 	for (const BuildCustomCommand& cmd : targetDef.customCommands)

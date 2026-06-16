@@ -72,6 +72,16 @@ BuildFilePropertySet BuildFilePropertySet::fromJson(const JsonValue& json)
 
 /////////////////////////////////////////////////////////////////////////////
 
+BuildPrecompiledHeader BuildPrecompiledHeader::fromJson(const JsonValue& json)
+{
+	BuildPrecompiledHeader pch;
+	pch.sourceFile = json["sourceFile"].to_string();
+	pch.headerFile = json["headerFile"].to_string();
+	return pch;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+
 BuildTarget BuildTarget::fromJson(const JsonValue& json)
 {
 	BuildTarget target;
@@ -98,6 +108,10 @@ BuildTarget BuildTarget::fromJson(const JsonValue& json)
 		target.linkOptions.push_back(item.to_string());
 	for (const JsonValue& item : json["includePaths"].items())
 		target.includePaths.push_back(item.to_string());
+	for (const JsonValue& item : json["precompiledHeaders"].items())
+		target.precompiledHeaders.push_back(BuildPrecompiledHeader::fromJson(item));
+	for (const JsonValue& item : json["precompiledIgnoreList"].items())
+		target.precompiledIgnoreList.push_back(item.to_string());
 	for (const JsonValue& item : json["files"].items())
 		target.files.push_back(item.to_string());
 	for (const JsonValue& item : json["filePropertySets"].items())

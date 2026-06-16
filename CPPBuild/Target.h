@@ -3,6 +3,7 @@
 #include "Json/JsonValue.h"
 #include <mutex>
 #include <optional>
+#include <unordered_set>
 
 class ZipWriter;
 class BuildSetup;
@@ -35,6 +36,14 @@ public:
 	TargetType targetType = TargetType::website;
 	std::vector<std::string> sourceFiles;
 	std::vector<std::string> linkLibraries;
+
+	struct PrecompiledHeader
+	{
+		std::string sourceFile;
+		std::string headerFile;
+	};
+	std::vector<PrecompiledHeader> precompiledHeaders;
+	std::unordered_set<std::string> precompiledIgnoreList;
 
 	std::string wwwrootDir;
 	std::string cssFile;
@@ -72,6 +81,7 @@ public:
 	int postBuild();
 
 private:
+	void compilePrecompiledHeaders();
 	void compileThreadMain(int threadIndex, int numThreads);
 	void loadTarget(BuildSetup& setup, PackageManager* packages);
 	bool isCppFile(const std::string& filename);

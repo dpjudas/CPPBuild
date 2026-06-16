@@ -61,6 +61,8 @@ class Target
 		this.cxxCompileOptions = [];
 		this.linkOptions = [];
 		this.includePaths = [];
+		this.precompiledHeaders = [];
+		this.precompiledIgnoreList = [];
 		this.files = [];
 		this.filePropertySets = [];
 		this.customCommands = [];
@@ -261,6 +263,15 @@ class Target
 		names.forEach(function(name) { self.addPackage(name, options); });
 	}
 
+	addPrecompiledHeader(sourceFile, headerFile) {
+		this.precompiledHeaders.push({ sourceFile: sourceFile, headerFile: headerFile });
+	}
+
+	addPrecompiledHeaderIgnoreList(files) {
+		var self = this;
+		files.forEach(function(file) { self.precompiledIgnoreList.push(file); });
+	}
+
 	setWebRootPath(path) {
 		this.wwwRootDir = path;
 	}
@@ -305,6 +316,8 @@ class Target
 			cxxCompileOptions: this.cxxCompileOptions,
 			linkOptions: this.linkOptions,
 			includePaths: this.includePaths,
+			precompiledHeaders: this.precompiledHeaders,
+			precompiledIgnoreList: this.precompiledIgnoreList,
 			files: this.files,
 			filePropertySets: this.filePropertySets,
 			customCommands: this.customCommands,

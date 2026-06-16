@@ -62,6 +62,15 @@ public:
 	static BuildFilePropertySet fromJson(const JsonValue& json);
 };
 
+class BuildPrecompiledHeader
+{
+public:
+	std::string sourceFile;
+	std::string headerFile;
+
+	static BuildPrecompiledHeader fromJson(const JsonValue& json);
+};
+
 class BuildTarget
 {
 public:
@@ -75,6 +84,8 @@ public:
 	std::vector<std::string> cxxCompileOptions;
 	std::vector<std::string> linkOptions;
 	std::vector<std::string> includePaths;
+	std::vector<BuildPrecompiledHeader> precompiledHeaders;
+	std::vector<std::string> precompiledIgnoreList;
 	std::vector<std::string> files;
 	std::vector<BuildCustomCommand> customCommands;
 	std::vector<BuildFilePropertySet> filePropertySets;

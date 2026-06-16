@@ -43,6 +43,7 @@ public:
 	std::string inputFile;
 	std::vector<std::string> commands;
 	std::vector<std::string> outputFiles;
+	std::vector<std::string> dependencies;
 	std::string configName;
 
 	static BuildCustomCommand fromJson(const JsonValue& json);

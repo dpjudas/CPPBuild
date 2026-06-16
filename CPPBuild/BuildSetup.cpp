@@ -47,6 +47,8 @@ BuildCustomCommand BuildCustomCommand::fromJson(const JsonValue& json)
 		cmd.commands.push_back(item.to_string());
 	for (const JsonValue& item : json["outputFiles"].items())
 		cmd.outputFiles.push_back(item.to_string());
+	for (const JsonValue& item : json["dependencies"].items())
+		cmd.dependencies.push_back(item.to_string());
 	cmd.configName = json["configName"].to_string();
 	return cmd;
 }

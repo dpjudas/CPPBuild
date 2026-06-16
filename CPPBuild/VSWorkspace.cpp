@@ -368,6 +368,10 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 							task->command += addPathToCommand(cmdline, configDef.name, setup, workDir);
 						}
 						task->outputs = cmd->outputFiles;
+						for (const std::string& dep : cmd->dependencies)
+							task->additionalInputs.push_back(addPathToCommand(dep, configDef.name, setup, workDir));
+						if (!cmd->dependencies.empty())
+							task->additionalInputs.push_back("%(AdditionalInputs)");
 					}
 				}
 			}
@@ -387,6 +391,10 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 						task->command += addPathToCommand(cmdline, cmd->configName, setup, workDir);
 					}
 					task->outputs = cmd->outputFiles;
+					for (const std::string& dep : cmd->dependencies)
+						task->additionalInputs.push_back(addPathToCommand(dep, cmd->configName, setup, workDir));
+					if (!cmd->dependencies.empty())
+						task->additionalInputs.push_back("%(AdditionalInputs)");
 				}
 			}
 

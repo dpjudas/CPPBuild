@@ -62,6 +62,7 @@ public:
 		std::string filename;
 		std::vector<std::string> commands;
 		std::vector<std::string> outputFiles;
+		std::vector<std::string> dependencies;
 	};
 	std::vector<std::unique_ptr<CustomCommandFile>> customFiles;
 

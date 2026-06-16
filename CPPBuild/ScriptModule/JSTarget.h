@@ -114,6 +114,7 @@ class Target
 			inputFile: desc.inputFile,
 			commands: [].concat(desc.commands),
 			outputFiles: [].concat(desc.outputFiles),
+			dependencies: desc.dependencies !== undefined ? [].concat(desc.dependencies) : [],
 			configName: ""
 		};
 		if (desc.configuration !== undefined) {

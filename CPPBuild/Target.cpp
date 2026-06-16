@@ -160,6 +160,16 @@ bool Target::compile()
 		try
 		{
 			int64_t inputTime = FileTimeCache::getLastWriteTime(inputFile->filename);
+			for (const std::string& dep : inputFile->dependencies)
+			{
+				try
+				{
+					inputTime = std::max(inputTime, FileTimeCache::getLastWriteTime(dep));
+				}
+				catch (...)
+				{
+				}
+			}
 			int64_t depTime = FileTimeCache::getLastWriteTime(depFile);
 			needsCompile = inputTime > depTime;
 		}
@@ -921,6 +931,9 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 					{
 						file->outputFiles.push_back(FilePath::combine(sourcePath, outputFile));
 					}
+
+					for (const std::string& dep : cmd->dependencies)
+						file->dependencies.push_back(addPathToCommand(dep, setup));
 				}
 			}
 
@@ -938,6 +951,9 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 					{
 						file->outputFiles.push_back(FilePath::combine(sourcePath, outputFile));
 					}
+
+					for (const std::string& dep : cmd->dependencies)
+						file->dependencies.push_back(addPathToCommand(dep, setup));
 				}
 			}
 

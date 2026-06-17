@@ -19,6 +19,9 @@
 #include <linux/limits.h>
 #endif
 #include <fnmatch.h>
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#endif
 #else
 #define NOMINMAX
 #define WIN32_MEAN_AND_LEAN

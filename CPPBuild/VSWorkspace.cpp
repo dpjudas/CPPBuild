@@ -9,6 +9,7 @@
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 #include <set>
+#include <unordered_set>
 
 void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion)
 {
@@ -83,7 +84,7 @@ std::string VSWorkspace::addPathToCommand(std::string cmdline, const std::string
 			// std::string binPath = "$(SolutionDir)Build\\$(Configuration)\\bin\\";
 			std::string binPath = FilePath::combine(workDir, { "Build", configName, "bin" });
 			std::string outputName = tool;
-#ifdef _WIN32
+#ifdef WIN32
 			if (target.type == "application" || target.type == "console")
 				outputName += ".exe";
 #endif
@@ -323,6 +324,12 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 		fileToCustomCmd[cmd.inputFile].push_back(&cmd);
 	}
 
+	std::unordered_set<std::string> precompiledIgnoreList;
+	for (const std::string& pchIgnoreName : targetDef.precompiledIgnoreList)
+	{
+		precompiledIgnoreList.insert(pchIgnoreName);
+	}
+
 	std::set<std::string> objDuplicates;
 
 	for (const std::string& item : targetDef.files)
@@ -425,6 +432,27 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 				{
 					VSCompileTask* task = file.getTask(config.name, platform);
 					task->objectFileName = "$(IntDir)" + dupObjName + ".obj";
+				}
+			}
+
+			if (!targetDef.precompiledHeaders.empty())
+			{
+				bool pchIgnore = precompiledIgnoreList.find(item) != precompiledIgnoreList.end();
+
+				for (const auto& config : setup.project.configurations)
+				{
+					// To do: add support for multiple precompiled headers if it is ever used
+					const BuildPrecompiledHeader& pchDef = targetDef.precompiledHeaders.front();
+
+					VSCompileTask* task = file.getTask(config.name, platform);
+					if (pchIgnore)
+					{
+						task->precompiledHeader = "NotUsing";
+					}
+					else if (item == pchDef.sourceFile)
+					{
+						task->precompiledHeader = "Create";
+					}
 				}
 			}
 
@@ -771,6 +799,13 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 			projConfig->clCompile.functionLevelLinking = "true";
 			projConfig->link.enableCOMDATFolding = "true";
 			projConfig->link.optimizeReferences = "true";
+		}
+
+		if (!targetDef.precompiledHeaders.empty())
+		{
+			const BuildPrecompiledHeader& pchDef = targetDef.precompiledHeaders.front();
+			projConfig->clCompile.precompiledHeader = "Use";
+			projConfig->clCompile.precompiledHeaderFile = pchDef.headerFile;
 		}
 
 		// To do: deal with configCCompileOptions - apply it to every C file encountered?

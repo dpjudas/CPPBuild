@@ -14,6 +14,7 @@
 #include <netinet/in.h>
 #include <netinet/tcp.h>
 #include <errno.h>
+#include <unistd.h>
 
 typedef int SOCKET;
 #define INVALID_SOCKET (SOCKET)(-1)

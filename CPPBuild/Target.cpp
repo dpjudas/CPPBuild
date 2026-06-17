@@ -277,6 +277,15 @@ void Target::compilePrecompiledHeaders()
 				runCommand(commandline, "Could not create precompiled header file for " + filename);
 			}
 
+			if (isGcc)
+			{
+#ifdef WIN32
+				File::writeAllText(FilePath::combine(objDir, filename), "#pragma GCC warning \"Precompiled header file not used by the compiler\"\r\n");
+#else
+				File::writeAllText(FilePath::combine(objDir, filename), "#pragma GCC warning \"Precompiled header file not used by the compiler\"\n");
+#endif
+			}
+
 			FileTimeCache::setTouched(objFile);
 		}
 	}
@@ -345,7 +354,7 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 									}
 									else // if (isGcc)
 									{
-										std::string hFile = FilePath::removeExtension(FilePath::lastComponent(pch.headerFile));
+										std::string hFile = FilePath::combine(objDir, FilePath::lastComponent(pch.headerFile));
 										pchflags = "-include \"" + hFile + "\" -Winvalid-pch ";
 									}
 									break;

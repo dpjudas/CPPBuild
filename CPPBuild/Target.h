@@ -60,6 +60,7 @@ public:
 	bool isClang = false;
 	bool isGcc = false;
 	bool isMsvc = false;
+	bool isEmcc = false;
 
 	std::string cc, ccpp;
 	std::string ar;

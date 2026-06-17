@@ -106,10 +106,13 @@ void Target::clean()
 
 	if (!isMsvc)
 	{
-		std::string extension = isClang ? ".pch" : ".gch";
 		for (const auto& pch : precompiledHeaders)
 		{
-			std::string pchFilename = FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + extension;
+			std::string pchFilename;
+			if (isClang || isEmcc)
+				pchFilename = FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch";
+			else
+				pchFilename = FilePath::lastComponent(pch.headerFile) + ".gch";
 			printLine("Cleaning " + pchFilename);
 			std::string objFile = FilePath::combine(objDir, pchFilename);
 			File::tryDelete(objFile);
@@ -223,13 +226,13 @@ bool Target::compile()
 
 void Target::compilePrecompiledHeaders()
 {
-	if (!isClang) // We can only do this for clang at the moment (thanks msvc, gcc and clang for no consistency here!)
+	if (isMsvc) // To do: compile the .cpp file here and skip it later when compiling source files
 		return;
 
 	for (const auto& pch : precompiledHeaders)
 	{
 		std::string filename = FilePath::lastComponent(pch.headerFile);
-		std::string objFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".pch"); // To do: does this need to be .gch for gcc? the documentation is awful for both compilers :(
+		std::string objFile = FilePath::combine(objDir, (isEmcc || isClang) ? FilePath::removeExtension(filename) + ".pch" : filename + ".gch");
 		std::string depFile = FilePath::combine(objDir, FilePath::removeExtension(filename) + ".d");
 
 		bool needsCompile = false;
@@ -257,12 +260,20 @@ void Target::compilePrecompiledHeaders()
 
 			if (FilePath::hasExtension(pch.sourceFile, "c"))
 			{
-				std::string commandline = cc + " " + cflags + " -MD -x c-header " + pch.headerFile + " -o " + objFile;
+				std::string commandline;
+				if (isEmcc || isClang)
+					commandline = cc + " " + cflags + " -MD -x c-header " + pch.headerFile + " -o " + objFile;
+				else // if (isGcc)
+					commandline = cc + " " + cflags + " -MD -c " + pch.headerFile + " -o " + objFile;
 				runCommand(commandline, "Could not create precompiled header file for " + filename);
 			}
 			else
 			{
-				std::string commandline = ccpp + " " + cxxflags + " -MD -x c++-header " + pch.headerFile + " -o " + objFile;
+				std::string commandline;
+				if (isEmcc || isClang)
+					commandline = ccpp + " " + cxxflags + " -MD -x c++-header " + pch.headerFile + " -o " + objFile;
+				else // if (isGcc)
+					commandline = ccpp + " " + cxxflags + " -MD -c " + pch.headerFile + " -o " + objFile;
 				runCommand(commandline, "Could not create precompiled header file for " + filename);
 			}
 
@@ -317,20 +328,28 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 					printLine(filename);
 
 					std::string pchflags;
-					if (isClang) // To do: also support gcc and msvc here
+					if (!isMsvc)
 					{
 						bool pchIgnore = precompiledIgnoreList.find(inputFile) != precompiledIgnoreList.end();
 						if (!pchIgnore)
 						{
 							std::string extension = FilePath::extension(filename);
-							for (const auto& pch : precompiledHeaders)
+							if (isClang || isEmcc)
 							{
-								if (FilePath::hasExtension(pch.sourceFile, extension.c_str()))
+								for (const auto& pch : precompiledHeaders)
 								{
-									std::string pchFile = FilePath::combine(objDir, FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch");
-									pchflags = "-include-pch " + pchFile + " ";
-									break;
+									if (FilePath::hasExtension(pch.sourceFile, extension.c_str()))
+									{
+										std::string pchFile = FilePath::combine(objDir, FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch");
+										pchflags = "-include-pch " + pchFile + " ";
+										break;
+									}
 								}
+							}
+							else
+							{
+								// The precompiled header <header>.h.gch is placed in obj and picked up by gcc automatically
+								pchflags = "-I \"" + objDir + "\" ";
 							}
 						}
 					}
@@ -965,7 +984,7 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		cc = "emcc";
 		ccpp = "emcc";
 		ar = "emar";
-		isClang = true; // Emscripten uses clang
+		isEmcc = true;
 	}
 	else
 	{

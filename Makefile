@@ -2,8 +2,8 @@
 CC=gcc
 CX=g++
 
-CFLAGS = -I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11
-CXXFLAGS = -I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20
+CFLAGS = -I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11 -O2
+CXXFLAGS = -I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20 -O2
 
 UNAME_S := $(shell uname -s)
 ifeq ($(UNAME_S),Darwin)

@@ -2,10 +2,18 @@
 CC=gcc
 CX=g++
 
-CFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11 -I/opt/homebrew/opt/openssl@3/include
-CXXFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20 -I/opt/homebrew/opt/openssl@3/include
-LIBS=-L"/opt/homebrew/opt/openssl@3/lib" -lssl -lcrypto
-ODIR=build/obj
+CFLAGS = -I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11
+CXXFLAGS = -I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20
+
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+	CFLAGS += -I/opt/homebrew/opt/openssl@3/include
+	CXXFLAGS += -I/opt/homebrew/opt/openssl@3/include
+	LIBS += -L"/opt/homebrew/opt/openssl@3/lib" -framework CoreFoundation
+endif
+
+LIBS += -lssl -lcrypto
+ODIR = build/obj
 
 _OBJ=\
 	CPPBuild/BuildSetup.o \

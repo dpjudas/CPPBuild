@@ -2,8 +2,8 @@
 CC=gcc
 CX=g++
 
-CFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11
-CXXFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20
+CFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=gnu11 -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
+CXXFLAGS=-I . -I CPPBuild -D MINIZ_NO_STDIO --std=c++20 -I/usr/local/opt/openssl/include -L/usr/local/opt/openssl/lib
 LIBS=-lssl -lcrypto
 ODIR=build/obj
 

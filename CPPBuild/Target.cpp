@@ -571,7 +571,7 @@ void Target::link()
 
 			File::writeAllText(responsefilename, responsefile);
 
-			std::string cmdline = ccpp + " \"@" + responsefilename + "\"";
+			std::string cmdline = linker + " \"@" + responsefilename + "\"";
 			runCommand(cmdline, "Could not link " + outputFile);
 		}
 	}
@@ -992,6 +992,7 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 	{
 		cc = "emcc";
 		ccpp = "emcc";
+		linker = "emcc";
 		ar = "emar";
 		isEmcc = true;
 	}
@@ -1014,6 +1015,7 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		isGcc = true;
 #endif
 
+		linker = ccpp;
 		if (setup.ccache)
 		{
 			cc = "ccache " + cc;

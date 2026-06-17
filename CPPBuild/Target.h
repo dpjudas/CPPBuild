@@ -62,7 +62,7 @@ public:
 	bool isMsvc = false;
 	bool isEmcc = false;
 
-	std::string cc, ccpp;
+	std::string cc, ccpp, linker;
 	std::string ar;
 	std::string cflags, cxxflags;
 	std::string linkFlags;

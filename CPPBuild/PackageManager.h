@@ -4,6 +4,7 @@
 
 class HttpUri;
 class BuildSetup;
+class BuildPackage;
 
 class PackageManager
 {
@@ -18,6 +19,8 @@ public:
 	std::string getPackagePath(const std::string& name);
 
 private:
+	void updatePackage(const BuildSetup& setup, const BuildPackage& pkgdesc, std::map<std::string, std::string>& etags);
+
 	bool download(const HttpUri& url, const std::string& filename, std::string& etag);
 	std::string getPackageCacheFilename();
 	std::map<std::string, std::string> loadPackageCache();

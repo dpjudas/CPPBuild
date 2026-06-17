@@ -92,57 +92,62 @@ void PackageManager::update(const BuildSetup& setup)
 	std::map<std::string, std::string> etags = loadPackageCache();
 	for (const BuildPackage& pkgdesc : setup.project.packages)
 	{
-		bool deletePackageZip = false;
-		std::string packageZip;
+		updatePackage(setup, pkgdesc, etags);
+	}
+	savePackageCache(etags);
+}
 
-		if ((pkgdesc.source.size() >= 5 && pkgdesc.source.substr(0, 5) == "http:") ||
-			(pkgdesc.source.size() >= 6 && pkgdesc.source.substr(0, 6) == "https:"))
+void PackageManager::updatePackage(const BuildSetup& setup, const BuildPackage& pkgdesc, std::map<std::string, std::string>& etags)
+{
+	bool deletePackageZip = false;
+	std::string packageZip;
+
+	if ((pkgdesc.source.size() >= 5 && pkgdesc.source.substr(0, 5) == "http:") ||
+		(pkgdesc.source.size() >= 6 && pkgdesc.source.substr(0, 6) == "https:"))
+	{
+		HttpUri source = pkgdesc.source;
+		packageZip = FilePath::combine(packagesDir, "package.zip");
+		if (download(source, packageZip, etags[pkgdesc.source]))
 		{
-			HttpUri source = pkgdesc.source;
-			packageZip = FilePath::combine(packagesDir, "package.zip");
-			if (download(source, packageZip, etags[pkgdesc.source]))
-			{
-				std::cout << "Downloaded " << pkgdesc.source << std::endl;
-			}
-			else
-			{
-				continue;
-			}
-			deletePackageZip = true;
-		}
-		else if (!pkgdesc.source.empty())
-		{
-			packageZip = FilePath::combine(setup.sourcePath, { pkgdesc.subdirectory, pkgdesc.source });
+			std::cout << "Downloaded " << pkgdesc.source << std::endl;
 		}
 		else
 		{
-			throw std::runtime_error("Empty package url");
+			return;
 		}
-
-		// unzip package
-		{
-			std::unique_ptr<ZipReader> zip = ZipReader::open(File::openExisting(packageZip));
-
-			Package pkg = Package::fromJson(JsonValue::parse(zip->readAllText("package.json")));
-
-			std::string packageDir = FilePath::combine(packagesDir, pkg.name);
-			Directory::create(packageDir);
-			std::unordered_set<std::string> createdDirs;
-
-			for (const ZipFileEntry& entry : zip->getFiles())
-			{
-				std::string path = FilePath::removeLastComponent(entry.filename);
-				if (createdDirs.insert(path).second)
-					Directory::create(FilePath::combine(packageDir, path));
-				File::writeAllBytes(FilePath::combine(packageDir, entry.filename), zip->readAllBytes(entry.filename));
-			}
-		}
-
-		// delete temp package
-		if (deletePackageZip == true)
-			File::tryDelete(packageZip);
+		deletePackageZip = true;
 	}
-	savePackageCache(etags);
+	else if (!pkgdesc.source.empty())
+	{
+		packageZip = FilePath::combine(setup.sourcePath, { pkgdesc.subdirectory, pkgdesc.source });
+	}
+	else
+	{
+		throw std::runtime_error("Empty package url");
+	}
+
+	// unzip package
+	{
+		std::unique_ptr<ZipReader> zip = ZipReader::open(File::openExisting(packageZip));
+
+		Package pkg = Package::fromJson(JsonValue::parse(zip->readAllText("package.json")));
+
+		std::string packageDir = FilePath::combine(packagesDir, pkg.name);
+		Directory::create(packageDir);
+		std::unordered_set<std::string> createdDirs;
+
+		for (const ZipFileEntry& entry : zip->getFiles())
+		{
+			std::string path = FilePath::removeLastComponent(entry.filename);
+			if (createdDirs.insert(path).second)
+				Directory::create(FilePath::combine(packageDir, path));
+			File::writeAllBytes(FilePath::combine(packageDir, entry.filename), zip->readAllBytes(entry.filename));
+		}
+	}
+
+	// delete temp package
+	if (deletePackageZip == true)
+		File::tryDelete(packageZip);
 }
 
 bool PackageManager::download(const HttpUri& url, const std::string& filename, std::string& etag)

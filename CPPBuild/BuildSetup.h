@@ -216,6 +216,7 @@ public:
 	int version = 1;
 	std::string sourcePath;
 	BuildProject project;
+	bool ccache = false;
 
 	static BuildSetup fromJson(const JsonValue& json);
 };

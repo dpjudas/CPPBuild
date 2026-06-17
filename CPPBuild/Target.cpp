@@ -1013,6 +1013,12 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		ar = "ar";
 		isGcc = true;
 #endif
+
+		if (setup.ccache && system("which ccache >/dev/null 2>&1") == 0)
+		{
+			cc = "ccache " + cc;
+			ccpp = "ccache " + ccpp;
+		}
 	}
 
 	wwwrootDir = FilePath::combine(sourcePath, targetDef.wwwRootDir);

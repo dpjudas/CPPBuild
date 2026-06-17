@@ -7,9 +7,9 @@ CPPBuild is a build system and a project generator for C and C++ projects.
 ```
 cppbuild configure [source path]
 cppbuild set [--global] <property> <value>
-cppbuild [--workdir <path>] build <target> <configuration>
-cppbuild [--workdir <path>] clean <target> <configuration>
-cppbuild [--workdir <path>] rebuild <target> <configuration>
+cppbuild [--workdir <path>] build [--no-deps] <target> <configuration>
+cppbuild [--workdir <path>] clean [--no-deps] <target> <configuration>
+cppbuild [--workdir <path>] rebuild [--no-deps] <target> <configuration>
 cppbuild [--workdir <path>] create-package
 cppbuild [--workdir <path>] create-installer
 ```
@@ -22,15 +22,39 @@ After this the project can be built either by running cppbuild directly, opening
 `cppbuild set` sets a property value that can then be read via `Project.getProperty(name)` in the configure script. If `--global` is
 specified the property is set globally for all cppbuild projects.
 
-`cppbuild build` will build a specific target.
+`cppbuild build` will build a specific target and all of its dependencies in the correct order.
 
-`cppbuild clean` will remove all intermediate and output files from earlier builds.
+`cppbuild clean` will remove all intermediate and output files for a target and its dependencies.
 
 `cppbuild rebuild` is shorthand for first running clean followed by build.
+
+The optional `--no-deps` flag skips dependency resolution and builds only the named target itself. This is used internally by the generated Visual Studio project files, where Visual Studio handles dependency ordering via project references.
 
 `cppbuild create-package` creates packages described via `PackageInstaller.add()`.
 
 `cppbuild create-installer` creates MSI installers described via `Installer.add()`.
+
+## Built-in Properties
+
+Some properties are recognized directly by CPPBuild and affect how it builds targets. They are set with `cppbuild set` like any other property.
+
+| Property | Platform | Values | Default | Description |
+|---|---|---|---|---|
+| `ccache.enable` | Linux, macOS | `true` / `false` | `false` | Prepends `ccache` to the C and C++ compiler commands. ccache must be installed. Has no effect if ccache is not found on `PATH`. |
+| `cppbuild.vsversion` | Windows | VS display name | latest installed | Selects the Visual Studio installation used when generating the solution. The value must match the VS display name exactly, e.g. `Visual Studio 2022`. If not set, the most recently installed version is used. |
+
+Examples:
+
+```
+cppbuild set ccache.enable true
+cppbuild set cppbuild.vsversion "Visual Studio 2022"
+```
+
+Use `--global` to apply the setting to all CPPBuild projects on the machine:
+
+```
+cppbuild set --global ccache.enable true
+```
 
 ## Configure.js
 

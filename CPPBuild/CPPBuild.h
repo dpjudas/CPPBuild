@@ -14,10 +14,10 @@ public:
 
 	void configure(std::string sourcePath);
 	void checkMakefile();
-	int build(std::string target, std::string configuration);
-	int rebuild(std::string target, std::string configuration);
-	int postBuild(std::string target, std::string configuration);
-	void clean(std::string target, std::string configuration);
+	int build(std::string target, std::string configuration, bool nodeps = false);
+	int rebuild(std::string target, std::string configuration, bool nodeps = false);
+	int postBuild(std::string target, std::string configuration, bool nodeps = false);
+	void clean(std::string target, std::string configuration, bool nodeps = false);
 	void createInstaller();
 	void createPackage();
 	void setProperty(std::string name, std::string value, bool global);

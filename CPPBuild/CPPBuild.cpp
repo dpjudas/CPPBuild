@@ -287,7 +287,13 @@ void CPPBuild::createPackage()
 
 BuildSetup CPPBuild::loadBuildSetup()
 {
-	return BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
+	BuildSetup setup = BuildSetup::fromJson(JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json"))));
+	JsonValue properties = loadProperties(FilePath::combine(getGlobalConfigDir(), "properties.json"));
+	JsonValue localProperties = loadProperties(FilePath::combine(getLocalConfigDir(), "properties.json"));
+	for (const auto& it : localProperties.properties())
+		properties[it.first] = it.second;
+	setup.ccache = (properties["ccache.enable"].to_string() == "true");
+	return setup;
 }
 
 std::vector<std::string> CPPBuild::getBuildOrder(BuildSetup& setup, std::string targetName, std::string configuration)

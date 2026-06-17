@@ -58,7 +58,7 @@ jobs:
            submodules: true
 
        - name: ⬇️ Install dependencies
-         run: brew install openssl
+         run: brew install openssl@3
 
        - name: Build
          working-directory: ${{github.workspace}}

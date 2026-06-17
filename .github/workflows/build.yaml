@@ -29,7 +29,7 @@ jobs:
         run: make
 
   win:
-    runs-on: windows-latest
+    runs-on: windows-2022
     name: 🟦 Windows x64
     steps:
 
@@ -57,8 +57,8 @@ jobs:
            fetch-depth: 0
            submodules: true
 
-#       - name: ⬇️ Install dependencies
-#         run: brew install openssl-dev
+       - name: ⬇️ Install dependencies
+         run: brew install openssl
 
        - name: Build
          working-directory: ${{github.workspace}}

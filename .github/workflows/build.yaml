@@ -1,0 +1,64 @@
+name: build
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  linux:
+    runs-on: ubuntu-latest
+    name: 🐧 Ubuntu x64
+    steps:
+      - name: 🧰 Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: false
+
+#      - name: ⬇️ Install dependencies
+#        env:
+#          DEBIAN_FRONTEND: noninteractive
+#        run: |
+#          sudo apt-get -qq update
+#          sudo apt-get -qq install \
+#            build-essential
+
+      - name: Build
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: make
+
+  win:
+    runs-on: windows-latest
+    name: 🟦 Windows x64
+    steps:
+
+      - name: 🧰 Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          submodules: false
+
+      - name: Build
+        working-directory: ${{github.workspace}}
+        shell: bash
+        run: msbuild -p:Configuration=Release
+
+  macos-build:
+     runs-on: macos-latest
+     name: 🍎 macOS arm64
+     steps:
+
+       - name: 🧰 Checkout
+         uses: actions/checkout@v2
+         with:
+           fetch-depth: 0
+           submodules: true
+
+#       - name: ⬇️ Install dependencies
+#         run: brew install openssl-dev
+
+       - name: Build
+         working-directory: ${{github.workspace}}
+         shell: bash
+         run: make

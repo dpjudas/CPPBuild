@@ -1014,7 +1014,7 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		isGcc = true;
 #endif
 
-		if (setup.ccache && system("which ccache >/dev/null 2>&1") == 0)
+		if (setup.ccache)
 		{
 			cc = "ccache " + cc;
 			ccpp = "ccache " + ccpp;

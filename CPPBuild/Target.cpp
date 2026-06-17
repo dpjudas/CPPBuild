@@ -334,22 +334,22 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 						if (!pchIgnore)
 						{
 							std::string extension = FilePath::extension(filename);
-							if (isClang || isEmcc)
+							for (const auto& pch : precompiledHeaders)
 							{
-								for (const auto& pch : precompiledHeaders)
+								if (FilePath::hasExtension(pch.sourceFile, extension.c_str()))
 								{
-									if (FilePath::hasExtension(pch.sourceFile, extension.c_str()))
+									if (isClang || isEmcc)
 									{
 										std::string pchFile = FilePath::combine(objDir, FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch");
-										pchflags = "-include-pch " + pchFile + " ";
-										break;
+										pchflags = "-include-pch \"" + pchFile + "\" -Winvalid-pch ";
 									}
+									else // if (isGcc)
+									{
+										std::string hFile = FilePath::removeExtension(FilePath::lastComponent(pch.headerFile));
+										pchflags = "-include \"" + hFile + "\" -Winvalid-pch ";
+									}
+									break;
 								}
-							}
-							else
-							{
-								// The precompiled header <header>.h.gch is placed in obj and picked up by gcc automatically
-								pchflags = "-I \"" + objDir + "\" ";
 							}
 						}
 					}

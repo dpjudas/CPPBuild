@@ -60,13 +60,13 @@ public:
 		return files;
 	}
 
-	std::string readAllText(uint32_t file_index)
+	std::string readAllText(uint32_t file_index) override
 	{
 		auto data = readAllBytes(file_index);
 		return std::string(data->data(), data->size());
 	}
 
-	std::string readAllText(const std::string& filename)
+	std::string readAllText(const std::string& filename) override
 	{
 		auto data = readAllBytes(filename);
 		return std::string(data->data(), data->size());

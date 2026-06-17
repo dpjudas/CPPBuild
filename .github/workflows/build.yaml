@@ -44,7 +44,6 @@ jobs:
 
       - name: Build
         working-directory: ${{github.workspace}}
-        shell: bash
         run: msbuild -p:Configuration=Release
 
   macos-build:

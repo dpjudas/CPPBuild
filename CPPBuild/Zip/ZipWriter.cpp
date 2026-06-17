@@ -33,7 +33,7 @@ public:
 	void addFile(const std::string& filename, bool compress_file, const void* data, uint64_t size, int64_t lastModified) override
 	{
 		mz_uint flags = compress_file ? MZ_BEST_SPEED : MZ_NO_COMPRESSION;
-		mz_bool result = mz_zip_writer_add_mem_ex_v2(&zip, filename.c_str(), data, size, nullptr, 0, flags, 0, 0, &lastModified, nullptr, 0, nullptr, 0);
+		mz_bool result = mz_zip_writer_add_mem_ex_v2(&zip, filename.c_str(), data, size, nullptr, 0, flags, 0, 0, (MZ_TIME_T*)&lastModified, nullptr, 0, nullptr, 0);
 		if (result == MZ_FALSE)
 			throw std::runtime_error("mz_zip_writer_add_mem_ex_v2 failed");
 	}

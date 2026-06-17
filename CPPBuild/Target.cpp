@@ -264,7 +264,7 @@ void Target::compilePrecompiledHeaders()
 				if (isEmcc || isClang)
 					commandline = cc + " " + cflags + " -MD -x c-header " + pch.headerFile + " -o " + objFile;
 				else // if (isGcc)
-					commandline = cc + " " + cflags + " -MD -c " + pch.headerFile + " -o " + objFile;
+					commandline = cc + " " + cflags + " -MD -x c-header -c " + pch.sourceFile + " -o " + objFile;
 				runCommand(commandline, "Could not create precompiled header file for " + filename);
 			}
 			else
@@ -273,7 +273,7 @@ void Target::compilePrecompiledHeaders()
 				if (isEmcc || isClang)
 					commandline = ccpp + " " + cxxflags + " -MD -x c++-header " + pch.headerFile + " -o " + objFile;
 				else // if (isGcc)
-					commandline = ccpp + " " + cxxflags + " -MD -c " + pch.headerFile + " -o " + objFile;
+					commandline = ccpp + " " + cxxflags + " -MD -x c++-header -c " + pch.sourceFile + " -o " + objFile;
 				runCommand(commandline, "Could not create precompiled header file for " + filename);
 			}
 

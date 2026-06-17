@@ -104,12 +104,16 @@ void Target::clean()
 		return;
 	}
 
-	for (const auto& pch : precompiledHeaders)
+	if (!isMsvc)
 	{
-		std::string pchFilename = FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch";
-		printLine("Cleaning " + pchFilename);
-		std::string objFile = FilePath::combine(objDir, pchFilename);
-		File::tryDelete(objFile);
+		std::string extension = isClang ? ".pch" : ".gch";
+		for (const auto& pch : precompiledHeaders)
+		{
+			std::string pchFilename = FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + extension;
+			printLine("Cleaning " + pchFilename);
+			std::string objFile = FilePath::combine(objDir, pchFilename);
+			File::tryDelete(objFile);
+		}
 	}
 
 	for (const std::string& inputFile : sourceFiles)
@@ -219,6 +223,9 @@ bool Target::compile()
 
 void Target::compilePrecompiledHeaders()
 {
+	if (!isClang) // We can only do this for clang at the moment (thanks msvc, gcc and clang for no consistency here!)
+		return;
+
 	for (const auto& pch : precompiledHeaders)
 	{
 		std::string filename = FilePath::lastComponent(pch.headerFile);
@@ -310,17 +317,20 @@ void Target::compileThreadMain(int threadIndex, int numThreads)
 					printLine(filename);
 
 					std::string pchflags;
-					bool pchIgnore = precompiledIgnoreList.find(inputFile) != precompiledIgnoreList.end();
-					if (!pchIgnore)
+					if (isClang) // To do: also support gcc and msvc here
 					{
-						std::string extension = FilePath::extension(filename);
-						for (const auto& pch : precompiledHeaders)
+						bool pchIgnore = precompiledIgnoreList.find(inputFile) != precompiledIgnoreList.end();
+						if (!pchIgnore)
 						{
-							if (FilePath::hasExtension(pch.sourceFile, extension.c_str()))
+							std::string extension = FilePath::extension(filename);
+							for (const auto& pch : precompiledHeaders)
 							{
-								std::string pchFile = FilePath::combine(objDir, FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch");
-								pchflags = "-include-pch " + pchFile + " ";
-								break;
+								if (FilePath::hasExtension(pch.sourceFile, extension.c_str()))
+								{
+									std::string pchFile = FilePath::combine(objDir, FilePath::removeExtension(FilePath::lastComponent(pch.headerFile)) + ".pch");
+									pchflags = "-include-pch " + pchFile + " ";
+									break;
+								}
 							}
 						}
 					}
@@ -955,6 +965,7 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		cc = "emcc";
 		ccpp = "emcc";
 		ar = "emar";
+		isClang = true; // Emscripten uses clang
 	}
 	else
 	{
@@ -962,14 +973,17 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 		cc = "cl";
 		ccpp = "cl";
 		ar = "link";
+		isMsvc = true;
 #elif __APPLE__
 		cc = "clang";
 		ccpp = "clang";
 		ar = "ar";
+		isClang = true;
 #else
 		cc = "gcc";
 		ccpp = "g++";
 		ar = "ar";
+		isGcc = true;
 #endif
 	}
 

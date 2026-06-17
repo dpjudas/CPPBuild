@@ -57,6 +57,10 @@ public:
 
 	std::vector<std::string> outputFiles;
 
+	bool isClang = false;
+	bool isGcc = false;
+	bool isMsvc = false;
+
 	std::string cc, ccpp;
 	std::string ar;
 	std::string cflags, cxxflags;

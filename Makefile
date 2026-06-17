@@ -55,7 +55,7 @@ all: build/cppbuild
 install: build/cppbuild
 	cp build/cppbuild /usr/local/bin
 
-build/cppbuild: build/createdir $(OBJ)
+build/cppbuild: $(OBJ)
 	@echo Linking $@
 	@$(CX) -o $@ $^ $(CXXFLAGS) $(LIBS)
 

@@ -206,11 +206,12 @@ void CPPBuild::generateWorkspace(const JsonValue& properties)
 #endif
 }
 
-int CPPBuild::postBuild(std::string targetName, std::string configuration)
+int CPPBuild::postBuild(std::string targetName, std::string configuration, bool nodeps)
 {
 	BuildSetup setup = loadBuildSetup();
 	PackageManager packages(workDir);
-	for (std::string name : getBuildOrder(setup, targetName, configuration))
+	std::vector<std::string> order = nodeps ? std::vector<std::string>{ targetName } : getBuildOrder(setup, targetName, configuration);
+	for (std::string name : order)
 	{
 		Target target(setup, &packages, workDir, name, configuration);
 		int result = target.postBuild();
@@ -220,11 +221,12 @@ int CPPBuild::postBuild(std::string targetName, std::string configuration)
 	return 0;
 }
 
-int CPPBuild::build(std::string targetName, std::string configuration)
+int CPPBuild::build(std::string targetName, std::string configuration, bool nodeps)
 {
 	BuildSetup setup = loadBuildSetup();
 	PackageManager packages(workDir);
-	for (std::string name : getBuildOrder(setup, targetName, configuration))
+	std::vector<std::string> order = nodeps ? std::vector<std::string>{ targetName } : getBuildOrder(setup, targetName, configuration);
+	for (std::string name : order)
 	{
 		Target target(setup, &packages, workDir, name, configuration);
 		int result = target.build();
@@ -234,22 +236,24 @@ int CPPBuild::build(std::string targetName, std::string configuration)
 	return 0;
 }
 
-void CPPBuild::clean(std::string targetName, std::string configuration)
+void CPPBuild::clean(std::string targetName, std::string configuration, bool nodeps)
 {
 	BuildSetup setup = loadBuildSetup();
 	PackageManager packages(workDir);
-	for (std::string name : getBuildOrder(setup, targetName, configuration))
+	std::vector<std::string> order = nodeps ? std::vector<std::string>{ targetName } : getBuildOrder(setup, targetName, configuration);
+	for (std::string name : order)
 	{
 		Target target(setup, &packages, workDir, name, configuration);
 		target.clean();
 	}
 }
 
-int CPPBuild::rebuild(std::string targetName, std::string configuration)
+int CPPBuild::rebuild(std::string targetName, std::string configuration, bool nodeps)
 {
 	BuildSetup setup = loadBuildSetup();
 	PackageManager packages(workDir);
-	for (std::string name : getBuildOrder(setup, targetName, configuration))
+	std::vector<std::string> order = nodeps ? std::vector<std::string>{ targetName } : getBuildOrder(setup, targetName, configuration);
+	for (std::string name : order)
 	{
 		Target target(setup, &packages, workDir, name, configuration);
 		int result = target.rebuild();

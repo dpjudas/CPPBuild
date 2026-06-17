@@ -712,9 +712,9 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 			projConfig->general.nmakePreprocessorDefinitions = configDefines;
 			projConfig->general.nmakeIncludeSearchPath = configIncludes;
 			projConfig->general.nmakeOutput = outputFile;
-			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) build " + projectName + " " + configName;
-			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " --workdir $(SolutionDir) clean " + projectName + " " + configName;
-			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) build --no-deps " + projectName + " " + configName;
+			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " --workdir $(SolutionDir) clean --no-deps " + projectName + " " + configName;
+			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) rebuild --no-deps " + projectName + " " + configName;
 		}
 		else if (projectType == "custom")
 		{
@@ -722,9 +722,9 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 			projConfig->general.nmakePreprocessorDefinitions = configDefines;
 			projConfig->general.nmakeIncludeSearchPath = configIncludes;
 			projConfig->general.nmakeOutput = outputFile;
-			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) build " + projectName + " " + configName;
-			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " --workdir $(SolutionDir) clean " + projectName + " " + configName;
-			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) rebuild " + projectName + " " + configName;
+			projConfig->general.nmakeBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) build --no-deps " + projectName + " " + configName;
+			projConfig->general.nmakeCleanCommandLine = cppbuildexe + " --workdir $(SolutionDir) clean --no-deps " + projectName + " " + configName;
+			projConfig->general.nmakeReBuildCommandLine = cppbuildexe + " --workdir $(SolutionDir) rebuild --no-deps " + projectName + " " + configName;
 		}
 		else if (projectType == "utility")
 		{
@@ -751,7 +751,7 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 			projConfig->link.subSystem = "Windows";
 		}
 
-		projConfig->postBuild.command = cppbuildexe + " --workdir $(SolutionDir) postbuild " + projectName + " " + configName;
+		projConfig->postBuild.command = cppbuildexe + " --workdir $(SolutionDir) postbuild --no-deps " + projectName + " " + configName;
 
 		if (!configDefines.empty())
 			configDefines.push_back("%(PreprocessorDefinitions)");

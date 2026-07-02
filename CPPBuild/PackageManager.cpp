@@ -138,10 +138,13 @@ void PackageManager::updatePackage(const BuildSetup& setup, const BuildPackage& 
 
 		for (const ZipFileEntry& entry : zip->getFiles())
 		{
-			std::string path = FilePath::removeLastComponent(entry.filename);
-			if (createdDirs.insert(path).second)
-				Directory::create(FilePath::combine(packageDir, path));
-			File::writeAllBytes(FilePath::combine(packageDir, entry.filename), zip->readAllBytes(entry.filename));
+			if (!entry.filename.empty() && entry.filename.back() != '/' && entry.filename.back() != '\\')
+			{
+				std::string path = FilePath::removeLastComponent(entry.filename);
+				if (createdDirs.insert(path).second)
+					Directory::create(FilePath::combine(packageDir, path));
+				File::writeAllBytes(FilePath::combine(packageDir, entry.filename), zip->readAllBytes(entry.filename));
+			}
 		}
 	}
 

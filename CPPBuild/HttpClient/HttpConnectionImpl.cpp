@@ -94,7 +94,11 @@ std::string HttpConnectionImpl::readLine()
 
 		if (linebufferend == linebuffersize)
 			throw std::runtime_error("HTTP line longer than " + std::to_string(linebuffersize) + " bytes");
-		linebufferend += read(data + linebufferend, linebuffersize - linebufferend);
+
+		size_t bytesRead = streamRead(data + linebufferend, linebuffersize - linebufferend);;
+		if (bytesRead == 0)
+			throw std::runtime_error("Unexpected end of HTTP header");
+		linebufferend += bytesRead;
 	}
 }
 
@@ -102,7 +106,7 @@ size_t HttpConnectionImpl::read(void* data, size_t size)
 {
 	if (size == 0) return 0;
 
-	if (linebuffer && linebufferpos != linebufferend)
+	if (linebuffer && linebufferpos != linebufferend) // Read leftovers from http header read buffer before reading more from the actual stream
 	{
 		size = std::min(linebufferend - linebufferpos, size);
 		memcpy(data, linebuffer.get() + linebufferpos, size);
@@ -111,16 +115,21 @@ size_t HttpConnectionImpl::read(void* data, size_t size)
 	}
 	else
 	{
-		bool done = false;
-		size_t result = 0;
-		datastream->read(data, size, [&](size_t bytesRead) {
-			result = bytesRead;
-			done = true;
-			});
-
-		while (!done)
-			socketstream->process();
-
-		return result;
+		return streamRead(data, size);
 	}
+}
+
+size_t HttpConnectionImpl::streamRead(void* data, size_t size)
+{
+	bool done = false;
+	size_t result = 0;
+	datastream->read(data, size, [&](size_t bytesRead) {
+		result = bytesRead;
+		done = true;
+		});
+
+	while (!done)
+		socketstream->process();
+
+	return result;
 }

@@ -155,24 +155,34 @@ void PackageManager::updatePackage(const BuildSetup& setup, const BuildPackage& 
 
 bool PackageManager::download(const HttpUri& url, const std::string& filename, std::string& etag)
 {
-	HttpRequest request("GET", url);
-	if (!etag.empty())
-		request.headers["If-None-Match"] = etag;
-	HttpResponse response = HttpClient::send(request);
-	if (response.statusCode == 200)
+	HttpUri curUrl = url;
+	int maxRedirects = 3;
+	for (int redirectCount = 0; redirectCount < maxRedirects + 1; redirectCount++)
 	{
-		etag = response.getHeader("ETag");
-		File::writeAllBytes(filename, response.data.data(), response.data.size());
-		return true;
+		HttpRequest request("GET", curUrl);
+		if (!etag.empty())
+			request.headers["If-None-Match"] = etag;
+		HttpResponse response = HttpClient::send(request);
+		if (response.statusCode == 200)
+		{
+			etag = response.getHeader("ETag");
+			File::writeAllBytes(filename, response.data.data(), response.data.size());
+			return true;
+		}
+		else if (response.statusCode == 301 || response.statusCode == 302 || response.statusCode == 303 || response.statusCode == 307 || response.statusCode == 308)
+		{
+			curUrl = response.getHeader("Location");
+		}
+		else if (response.statusCode == 304)
+		{
+			return false;
+		}
+		else
+		{
+			throw std::runtime_error(std::format("Could not download {}: {} ({})", url.toString(), response.statusText, response.statusCode));
+		}
 	}
-	else if (response.statusCode == 304)
-	{
-		return false;
-	}
-	else
-	{
-		throw std::runtime_error(std::format("Could not download {}: {} ({})", url.toString(), response.statusText, response.statusCode));
-	}
+	throw std::runtime_error(std::format("Could not download {}: Too many redirects!", url.toString()));
 }
 
 void PackageManager::createPackage(const BuildSetup& setup)

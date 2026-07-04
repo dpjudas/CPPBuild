@@ -20,6 +20,7 @@ public:
 
 private:
 	size_t read(void* data, size_t size);
+	size_t streamRead(void* data, size_t size);
 
 	std::unique_ptr<SocketStream> socketstream;
 	std::unique_ptr<TlsStream> tlsstream;

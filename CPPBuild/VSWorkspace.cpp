@@ -22,13 +22,24 @@ VSWorkspace::VSWorkspace(const BuildSetup& setup, PackageManager* packages, cons
 {
 }
 
+std::string VSWorkspace::createGuid()
+{
+	std::string guid = Guid::makeGuid().toString();
+	for (char& c : guid)
+	{
+		if (c >= 'a' && c <= 'Z')
+			c = c - 'a' + 'A';
+	}
+	return guid;
+}
+
 void VSWorkspace::generate()
 {
 	cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
 
 	guids = loadSolutionGuids(cppbuildDir);
 	if (guids.solutionGuid.empty())
-		guids.solutionGuid = Guid::makeGuid().toString();
+		guids.solutionGuid = createGuid();
 
 	solution = std::make_unique<VSSolution>(setup.project.name, workDir, guids.solutionGuid);
 	platform = getActivePlatform();
@@ -53,13 +64,13 @@ void VSWorkspace::createProjectGuids()
 	std::string projectName = "CPPBuildCheck";
 	auto& guid = guids.projectGuids[projectName];
 	if (guid.empty())
-		guid = Guid::makeGuid().toString();
+		guid = createGuid();
 
 	for (const BuildTarget& targetDef : setup.project.targets)
 	{
 		auto& guid = guids.projectGuids[targetDef.name];
 		if (guid.empty())
-			guid = Guid::makeGuid().toString();
+			guid = createGuid();
 	}
 }
 
@@ -175,7 +186,7 @@ void VSWorkspace::addSolutionFolders()
 	{
 		auto& guid = guids.solutionFolderGuids[folderDef.name];
 		if (guid.empty())
-			guid = Guid::makeGuid().toString();
+			guid = createGuid();
 		fileFolderGuids[folderDef.name] = guid;
 	}
 
@@ -259,7 +270,7 @@ void VSWorkspace::addCPPBuildCheck()
 		{
 			auto& item = filters[folder];
 			if (!item)
-				item = std::make_unique<VSCppProjectFilter>(folder, Guid::makeGuid().toString());
+				item = std::make_unique<VSCppProjectFilter>(folder, createGuid());
 			filter = item.get();
 
 			std::string parent = folder;
@@ -270,7 +281,7 @@ void VSWorkspace::addCPPBuildCheck()
 					break;
 				auto& parentitem = filters[parent];
 				if (!parentitem)
-					parentitem = std::make_unique<VSCppProjectFilter>(parent, Guid::makeGuid().toString());
+					parentitem = std::make_unique<VSCppProjectFilter>(parent, createGuid());
 			}
 		}
 
@@ -340,7 +351,7 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 		{
 			auto& item = filters[folder];
 			if (!item)
-				item = std::make_unique<VSCppProjectFilter>(folder, Guid::makeGuid().toString());
+				item = std::make_unique<VSCppProjectFilter>(folder, createGuid());
 			filter = item.get();
 
 			std::string parent = folder;
@@ -351,7 +362,7 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 					break;
 				auto& parentitem = filters[parent];
 				if (!parentitem)
-					parentitem = std::make_unique<VSCppProjectFilter>(parent, Guid::makeGuid().toString());
+					parentitem = std::make_unique<VSCppProjectFilter>(parent, createGuid());
 			}
 		}
 
@@ -582,7 +593,7 @@ void VSWorkspace::addTargetProject(const BuildTarget& targetDef)
 	{
 		auto& guid = guids.solutionFolderGuids[targetDef.group];
 		if (guid.empty())
-			guid = Guid::makeGuid().toString();
+			guid = createGuid();
 		project->solutionFolderGuid = guid;
 		solutionFolders.insert(targetDef.group);
 	}

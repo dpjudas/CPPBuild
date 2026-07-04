@@ -32,6 +32,8 @@ private:
 
 	static std::string getActivePlatform();
 
+	static std::string createGuid();
+
 	void createProjectGuids();
 	void addSolutionFolders();
 	void addCPPBuildCheck();

@@ -97,7 +97,7 @@ void VSGenerator::writeSolution(const VSSolution* solution, const std::string& v
 		output.writeLine("MinimumVisualStudioVersion = " + solution->minimumVisualStudioVersion);
 	for (const auto& project : solution->projects)
 	{
-		output.writeLine("Project(\"" + project->typeGuid + "\") = \"" + project->name + "\", \"" + FilePath::combine(project->location, project->name + ".vcxproj") + "\", \"" + project->projectGuid + "\")");
+		output.writeLine("Project(\"{" + project->typeGuid + "}\") = \"" + project->name + "\", \"" + FilePath::combine(project->location, project->name + ".vcxproj") + "\", \"{" + project->projectGuid + "}\")");
 		output.writeLine("EndProject");
 	}
 	for (const auto& folder : solution->folders)

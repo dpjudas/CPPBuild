@@ -27,7 +27,7 @@ std::string VSWorkspace::createGuid()
 	std::string guid = Guid::makeGuid().toString();
 	for (char& c : guid)
 	{
-		if (c >= 'a' && c <= 'Z')
+		if (c >= 'a' && c <= 'z')
 			c = c - 'a' + 'A';
 	}
 	return guid;

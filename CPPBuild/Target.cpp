@@ -1240,11 +1240,14 @@ void Target::loadTarget(BuildSetup& setup, PackageManager* packages)
 	}
 
 	// Don't actually link to a target that doesn't produce a library
-	// To do: improve this check
 	std::erase_if(linkLibraries, [&](const std::string& name) -> bool {
 		for (const BuildTarget& target : setup.project.targets)
 		{
-			if (name == target.name && target.type == "custom" && target.buildCommand.empty())
+			if (name != target.name)
+				continue;
+			if (target.type == "custom" && target.buildCommand.empty())
+				return true;
+			if (target.type == "application" || target.type == "console")
 				return true;
 		}
 		return false;

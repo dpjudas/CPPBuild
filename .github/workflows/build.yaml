@@ -29,7 +29,7 @@ jobs:
         run: make
 
   win:
-    runs-on: windows-2022
+    runs-on: windows-latest
     name: 🟦 Windows x64
     steps:
 

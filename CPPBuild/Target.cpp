@@ -86,14 +86,23 @@ int Target::build()
 	if (targetType == TargetType::custom)
 	{
 		runCommand(buildCommand, "Could not run build command");
+#ifndef WIN32
+		return postBuild();
+#else
 		return 0;
+#endif
 	}
 
 	link();
 	linkCSS();
 	package();
 
+#ifndef WIN32
+	// On Windows msbuild runs postbuild as a post-build event; elsewhere nothing else would copy the target's copyFiles
+	return postBuild();
+#else
 	return 0;
+#endif
 }
 
 void Target::clean()

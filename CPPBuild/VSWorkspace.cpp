@@ -214,6 +214,8 @@ void VSWorkspace::addCPPBuildCheck()
 	std::string projectName = "CPPBuildCheck";
 	auto project = std::make_unique<VSCppProject>(projectName, cppbuildDir, guids.projectGuids[projectName]);
 
+	project->configureCheckProject = true;
+
 	for (const BuildConfiguration& configDef : setup.project.configurations)
 	{
 		auto projConfig = std::make_unique<VSCppProjectConfiguration>(configDef.name, platform);

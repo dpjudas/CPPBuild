@@ -323,6 +323,20 @@ void VSGenerator::writeProject(const VSCppProject* project)
 	output.writeLine("  <Import Project=\"$(VCTargetsPath)\\Microsoft.Cpp.targets\" />");
 	output.writeLine("  <ImportGroup Label=\"ExtensionTargets\">");
 	output.writeLine("  </ImportGroup>");
+
+	if (!project->configureCheckProject)
+	{
+		output.writeLine("  <Target Name=\"CheckCPPBuildConfigure\" BeforeTargets=\"PrepareForBuild\">");
+		output.writeLine("    <Error Condition=\"Exists('$(SolutionDir).cppbuild\\CancelMSBuild')\" Text=\"Build aborted: cppbuild configure updated the solution.\" />");
+		output.writeLine("  </Target>");
+	}
+	else
+	{
+		output.writeLine("  <Target Name=\"CheckCPPBuildConfigure\" BeforeTargets=\"PrepareForBuild\">");
+		output.writeLine("    <Delete Condition=\"Exists('$(SolutionDir).cppbuild\\CancelMSBuild')\" Files=\"$(SolutionDir).cppbuild\\CancelMSBuild\" />");
+		output.writeLine("  </Target>");
+	}
+
 	output.writeLine("</Project>");
 	output.save(FilePath::combine(project->location, project->name + ".vcxproj"));
 

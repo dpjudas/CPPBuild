@@ -13,7 +13,7 @@ public:
 	CPPBuild(std::string workDir);
 
 	void configure(std::string sourcePath);
-	void checkMakefile();
+	int checkMakefile();
 	int build(std::string target, std::string configuration, bool nodeps = false);
 	int rebuild(std::string target, std::string configuration, bool nodeps = false);
 	int postBuild(std::string target, std::string configuration, bool nodeps = false);

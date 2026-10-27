@@ -117,7 +117,7 @@ void CPPBuild::updateMakefile()
 	configure(config["sourcePath"].to_string());
 }
 
-void CPPBuild::checkMakefile()
+int CPPBuild::checkMakefile()
 {
 	bool needsUpdate = false;
 	try
@@ -156,6 +156,18 @@ void CPPBuild::checkMakefile()
 	// msbuild wants an output file that always gets updated, so we give it that.
 	int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
 	File::writeAllText(FilePath::combine(cppbuildDir, "Makefile.timestamp"), std::to_string(timestamp));
+
+	if (needsUpdate)
+	{
+		std::cout << "Solution or projects updated. Please restart the build." << std::endl;
+		File::writeAllText(FilePath::combine(cppbuildDir, "CancelMSBuild"), "CancelMSBuild");
+		return 255;
+	}
+	else
+	{
+		File::tryDelete(FilePath::combine(cppbuildDir, "CancelMSBuild"));
+		return 0;
+	}
 }
 
 void CPPBuild::validateConfig(const BuildSetup& setup)

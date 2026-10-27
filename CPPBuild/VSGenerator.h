@@ -477,6 +477,7 @@ public:
 	std::vector<VSFile<VSNoneTask>> extraFiles;
 	std::vector<std::unique_ptr<VSCppProjectFilter>> filters;
 	std::vector<VSCppProjectReference> references;
+	bool configureCheckProject = false;
 };
 
 class VSGenerator

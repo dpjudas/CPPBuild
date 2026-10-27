@@ -43,8 +43,7 @@ int main(int argc, char** argv)
 		}
 		if (args.size() == 2 && args[1] == "check-makefile")
 		{
-			app.checkMakefile();
-			return 0;
+			return app.checkMakefile();
 		}
 		else if (args.size() == 4 && args[1] == "build")
 		{

@@ -344,8 +344,8 @@ bool VSGenerator::writeProject(const VSCppProject* project)
 
 	if (!project->filters.empty())
 	{
-		if (writeProjectFilters(project))
-			updated = true;
+		// To do: project filters generate new guids every run currently so we can't check if the file changed
+		writeProjectFilters(project);
 	}
 
 	return updated;

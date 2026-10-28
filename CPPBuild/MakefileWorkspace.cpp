@@ -6,7 +6,7 @@
 #include "IOData/FilePath.h"
 #include "IOData/File.h"
 
-void MakefileWorkspace::generate(const BuildSetup& setup, const std::string& workDir, const std::string& cppbuildDir)
+bool MakefileWorkspace::generate(const BuildSetup& setup, const std::string& workDir, const std::string& cppbuildDir)
 {
 	std::string configName = "Release"; // To do: needs to be changable via cppbuild configure commandline
 
@@ -22,5 +22,16 @@ void MakefileWorkspace::generate(const BuildSetup& setup, const std::string& wor
 
 	makefile += "ForceCppBuild:\n\n";
 
-	File::writeAllText(FilePath::combine(workDir, "Makefile"), makefile);
+	std::string filename = FilePath::combine(workDir, "Makefile");
+	try
+	{
+		// Don't touch file if nothing changed
+		if (File::readAllText(filename) == makefile)
+			return false;
+	}
+	catch (...)
+	{
+	}
+
+	File::writeAllText(filename, makefile);
 }

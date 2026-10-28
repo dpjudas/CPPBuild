@@ -13,7 +13,7 @@ public:
 	void writeLine(const std::string& text);
 	void writeProperty(int indent, const std::string& propName, const std::string& condition, const std::string& propValue);
 	void writeProperty(int indent, const std::string& propName, const std::string& condition, const std::vector<std::string>& propValues, char splitter = ';');
-	void save(const std::string& filename);
+	bool save(const std::string& filename);
 
 private:
 	std::string lines;
@@ -25,7 +25,7 @@ class VSSolution
 public:
 	VSSolution(const std::string& name, const std::string& location, const std::string& solutionGuid);
 
-	void generate(const std::string& vsversion);
+	bool generate(const std::string& vsversion);
 
 	std::string name;
 	std::string location;
@@ -483,9 +483,9 @@ public:
 class VSGenerator
 {
 public:
-	void writeSolution(const VSSolution* solution, const std::string& vsversion);
-	void writeProject(const VSCppProject* project);
-	void writeProjectFilters(const VSCppProject* project);
+	bool writeSolution(const VSSolution* solution, const std::string& vsversion);
+	bool writeProject(const VSCppProject* project);
+	bool writeProjectFilters(const VSCppProject* project);
 
 private:
 	std::string version;

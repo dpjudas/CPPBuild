@@ -82,7 +82,7 @@ void CPPBuild::listProperties()
 	}
 }
 
-void CPPBuild::configure(std::string sourcePath)
+bool CPPBuild::configure(std::string sourcePath)
 {
 	if (sourcePath.empty())
 		sourcePath = Directory::currentDirectory();
@@ -108,13 +108,14 @@ void CPPBuild::configure(std::string sourcePath)
 	packages.update(setup);
 
 	if (!setup.project.targets.empty())
-		generateWorkspace(properties);
+		return generateWorkspace(properties);
+	return false;
 }
 
-void CPPBuild::updateMakefile()
+bool CPPBuild::updateMakefile()
 {
 	JsonValue config = JsonValue::parse(File::readAllText(FilePath::combine(cppbuildDir, "config.json")));
-	configure(config["sourcePath"].to_string());
+	return configure(config["sourcePath"].to_string());
 }
 
 int CPPBuild::checkMakefile()
@@ -150,14 +151,15 @@ int CPPBuild::checkMakefile()
 		needsUpdate = true;
 	}
 
+	bool updated = false;
 	if (needsUpdate)
-		updateMakefile();
+		updated = updateMakefile();
 
 	// msbuild wants an output file that always gets updated, so we give it that.
 	int64_t timestamp = std::chrono::system_clock::now().time_since_epoch().count();
 	File::writeAllText(FilePath::combine(cppbuildDir, "Makefile.timestamp"), std::to_string(timestamp));
 
-	if (needsUpdate)
+	if (updated)
 	{
 		std::cout << "Solution or projects updated. Please restart the build." << std::endl;
 		File::writeAllText(FilePath::combine(cppbuildDir, "CancelMSBuild"), "CancelMSBuild");
@@ -207,14 +209,14 @@ JsonValue CPPBuild::runConfigureScript(const std::string& sourcePath, const Json
 	return JsonValue::parse(context.generateConfiguration());
 }
 
-void CPPBuild::generateWorkspace(const JsonValue& properties)
+bool CPPBuild::generateWorkspace(const JsonValue& properties)
 {
 #ifdef WIN32
 	PackageManager packages(workDir);
-	VSWorkspace::generate(loadBuildSetup(), &packages, workDir, cppbuildDir, properties["cppbuild.vsversion"].to_string());
+	return VSWorkspace::generate(loadBuildSetup(), &packages, workDir, cppbuildDir, properties["cppbuild.vsversion"].to_string());
 #else
 	MakefileWorkspace workspace;
-	workspace.generate(loadBuildSetup(), workDir, cppbuildDir);
+	return workspace.generate(loadBuildSetup(), workDir, cppbuildDir);
 #endif
 }
 

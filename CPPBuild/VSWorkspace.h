@@ -20,11 +20,11 @@ public:
 class VSWorkspace
 {
 public:
-	static void generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion);
+	static bool generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion);
 
 private:
 	VSWorkspace(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion);
-	void generate();
+	bool generate();
 
 	VSGuids loadSolutionGuids(const std::string& cppbuildDir);
 	void saveSolutionGuids(const VSGuids& guids, const std::string& cppbuildDir);

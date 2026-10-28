@@ -11,19 +11,21 @@ VSSolution::VSSolution(const std::string& name, const std::string& location, con
 {
 }
 
-void VSSolution::generate(const std::string& vsversion)
+bool VSSolution::generate(const std::string& vsversion)
 {
 	VSGenerator generator;
-	generator.writeSolution(this, vsversion);
+	bool updated = generator.writeSolution(this, vsversion);
 	for (const auto& project : projects)
 	{
-		generator.writeProject(project.get());
+		if (generator.writeProject(project.get()))
+			updated = true;
 	}
+	return updated;
 }
 
 /////////////////////////////////////////////////////////////////////////////
 
-void VSGenerator::writeSolution(const VSSolution* solution, const std::string& vsversion)
+bool VSGenerator::writeSolution(const VSSolution* solution, const std::string& vsversion)
 {
 #ifdef WIN32
 	JsonValue vsinfo;
@@ -160,10 +162,10 @@ void VSGenerator::writeSolution(const VSSolution* solution, const std::string& v
 	output.writeLine("\t\tSolutionGuid = {" + solution->solutionGuid + "}");
 	output.writeLine("\tEndGlobalSection");
 	output.writeLine("EndGlobal");
-	output.save(FilePath::combine(solution->location, solution->name + ".sln"));
+	return output.save(FilePath::combine(solution->location, solution->name + ".sln"));
 }
 
-void VSGenerator::writeProject(const VSCppProject* project)
+bool VSGenerator::writeProject(const VSCppProject* project)
 {
 	VSLineWriter output;
 	output.writeLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
@@ -338,12 +340,15 @@ void VSGenerator::writeProject(const VSCppProject* project)
 	}
 
 	output.writeLine("</Project>");
-	output.save(FilePath::combine(project->location, project->name + ".vcxproj"));
+	bool updated = output.save(FilePath::combine(project->location, project->name + ".vcxproj"));
 
 	if (!project->filters.empty())
 	{
-		writeProjectFilters(project);
+		if (writeProjectFilters(project))
+			updated = true;
 	}
+
+	return updated;
 }
 
 template<typename T>
@@ -369,7 +374,7 @@ void VSGenerator::writeItemGroup(VSLineWriter& output, const std::string& taskNa
 	}
 }
 
-void VSGenerator::writeProjectFilters(const VSCppProject* project)
+bool VSGenerator::writeProjectFilters(const VSCppProject* project)
 {
 	VSLineWriter output;
 	output.writeLine("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
@@ -520,7 +525,7 @@ void VSGenerator::writeProjectFilters(const VSCppProject* project)
 	output.writeLine("  </ItemGroup>");
 
 	output.writeLine("</Project>");
-	output.save(FilePath::combine(project->location, project->name + ".vcxproj.filters"));
+	return output.save(FilePath::combine(project->location, project->name + ".vcxproj.filters"));
 }
 
 std::string VSGenerator::toLowerCase(std::string text)
@@ -1553,17 +1558,18 @@ void VSLineWriter::writeProperty(int indent, const std::string& propName, const 
 	}
 }
 
-void VSLineWriter::save(const std::string& filename)
+bool VSLineWriter::save(const std::string& filename)
 {
 	try
 	{
 		// Don't touch file if nothing changed
 		if (File::readAllText(filename) == lines)
-			return;
+			return false;
 	}
 	catch (...)
 	{
 	}
 
 	File::writeAllText(filename, lines);
+	return true;
 }

@@ -11,10 +11,10 @@
 #include <set>
 #include <unordered_set>
 
-void VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion)
+bool VSWorkspace::generate(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion)
 {
 	VSWorkspace workspace(setup, packages, workDir, cppbuildDir, vsversion);
-	workspace.generate();
+	return workspace.generate();
 }
 
 VSWorkspace::VSWorkspace(const BuildSetup& setup, PackageManager* packages, const std::string& workDir, const std::string& cppbuildDir, const std::string& vsversion)
@@ -33,7 +33,7 @@ std::string VSWorkspace::createGuid()
 	return guid;
 }
 
-void VSWorkspace::generate()
+bool VSWorkspace::generate()
 {
 	cppbuildexe = "\"" + FilePath::combine(Directory::exePath(), "cppbuild.exe") + "\"";
 
@@ -55,8 +55,9 @@ void VSWorkspace::generate()
 	}
 	addSolutionFolders();
 
-	solution->generate(vsversion);
+	bool updated = solution->generate(vsversion);
 	saveSolutionGuids(guids, cppbuildDir);
+	return updated;
 }
 
 void VSWorkspace::createProjectGuids()

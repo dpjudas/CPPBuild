@@ -12,7 +12,7 @@ class CPPBuild
 public:
 	CPPBuild(std::string workDir);
 
-	void configure(std::string sourcePath);
+	bool configure(std::string sourcePath);
 	int checkMakefile();
 	int build(std::string target, std::string configuration, bool nodeps = false);
 	int rebuild(std::string target, std::string configuration, bool nodeps = false);
@@ -24,10 +24,10 @@ public:
 	void listProperties();
 
 private:
-	void updateMakefile();
+	bool updateMakefile();
 	JsonValue runConfigureScript(const std::string& sourcePath, const JsonValue& properties);
 	void validateConfig(const BuildSetup& setup);
-	void generateWorkspace(const JsonValue& properties);
+	bool generateWorkspace(const JsonValue& properties);
 
 	std::string getGlobalConfigDir();
 	std::string getLocalConfigDir();

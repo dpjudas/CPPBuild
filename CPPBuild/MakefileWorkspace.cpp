@@ -34,4 +34,5 @@ bool MakefileWorkspace::generate(const BuildSetup& setup, const std::string& wor
 	}
 
 	File::writeAllText(filename, makefile);
+	return true;
 }

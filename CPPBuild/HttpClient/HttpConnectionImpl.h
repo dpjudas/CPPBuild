@@ -26,7 +26,7 @@ private:
 	std::unique_ptr<TlsStream> tlsstream;
 	ByteStream* datastream = nullptr;
 
-	static const size_t linebuffersize = 4 * 1024;
+	static const size_t linebuffersize = 64 * 1024;
 	std::unique_ptr<uint8_t[]> linebuffer;
 	size_t linebufferpos = 0, linebufferend = 0;
 };
